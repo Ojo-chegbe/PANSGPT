@@ -123,7 +123,7 @@ export function filterForDiversity(
 }
 
 /**
- * Generate diverse query variations
+ * Generate diverse query variations - simplified to just 2 queries for efficiency
  */
 export function generateQueryVariations(
   baseQuery: string,
@@ -133,48 +133,14 @@ export function generateQueryVariations(
 ): string[] {
   const variations = [baseQuery];
   
-  // Topic-specific variations
+  // Add just one focused variation for efficiency
   if (topic) {
-    variations.push(`${baseQuery} ${topic}`);
-    variations.push(`${topic} ${baseQuery}`);
-    variations.push(`${baseQuery} concepts ${topic}`);
-    variations.push(`${baseQuery} principles ${topic}`);
+    variations.push(`${baseQuery} ${topic} concepts principles examples`);
+  } else {
+    variations.push(`${baseQuery} concepts principles examples`);
   }
   
-  // Course-specific variations
-  if (courseCode) {
-    variations.push(`${baseQuery} ${courseCode}`);
-    variations.push(`${courseCode} ${baseQuery}`);
-    variations.push(`${baseQuery} course ${courseCode}`);
-  }
-  
-  // Level-specific variations
-  if (level) {
-    variations.push(`${baseQuery} ${level} level`);
-    variations.push(`${level} level ${baseQuery}`);
-  }
-  
-  // Concept-based variations
-  const conceptTypes = [
-    'definitions', 'examples', 'applications', 'methods',
-    'theories', 'principles', 'concepts', 'processes',
-    'techniques', 'approaches', 'strategies'
-  ];
-  
-  conceptTypes.forEach(concept => {
-    variations.push(`${baseQuery} ${concept}`);
-    if (topic) {
-      variations.push(`${baseQuery} ${concept} ${topic}`);
-    }
-  });
-  
-  // Question-type specific variations
-  const questionTypes = ['multiple choice', 'true false', 'short answer', 'objective'];
-  questionTypes.forEach(type => {
-    variations.push(`${baseQuery} ${type} questions`);
-  });
-  
-  return [...new Set(variations)]; // Remove duplicates
+  return variations;
 }
 
 /**

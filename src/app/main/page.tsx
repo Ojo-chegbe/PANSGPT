@@ -56,14 +56,14 @@ const MessageList = React.memo(({
   handleCopy: (idx: number, content: string) => void;
   isLoading: boolean;
 }) => (
-  <div className="max-w-6xl mx-auto w-full flex flex-col gap-4 md:gap-8">
+  <div className="max-w-6xl mx-auto w-full flex flex-col gap-6 md:gap-8">
     {messages.map((message, idx) => (
       <div key={idx} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
         <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className={`rounded-lg p-2.5 md:p-3 ${
+          <div className={`rounded-xl p-4 md:p-5 shadow-sm ${
             message.role === 'user'
-              ? 'bg-green-500 text-white'
-              : 'text-white'
+              ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
+              : 'bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg'
           }`}>
             {editingIdx === idx ? (
               <div className="flex flex-col gap-2">

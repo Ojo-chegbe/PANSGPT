@@ -4,7 +4,131 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateChatResponse, ChatMessage } from "@/lib/google-ai";
 import { jsonrepair } from 'jsonrepair';
-import { filterForDiversity, generateQueryVariations, createDiverseContext } from "@/lib/quiz-diversity";
+import { createDiversityFirstPrompt, createDiversityFirstPromptWithSourceCount, createAggressiveDiversityPrompt, createRandomIndexDiversityPrompt, generateDiverseQuestionProfiles, DiversityPromptConfig } from "@/lib/diversity-first-prompts";
+
+// Helper function to create a simplified prompt for retry attempts
+function createSimplifiedPrompt(config: DiversityPromptConfig, context: string): string {
+  const { courseCode, courseTitle, topic, level, numQuestions, questionType, difficulty } = config;
+  
+  return `You are an expert exam setter for ${courseCode} - ${courseTitle} at ${level} level.
+
+Using the following course material, generate ${numQuestions} questions of type ${questionType}. The difficulty level should be ${difficulty}.
+
+COURSE MATERIAL:
+${context}
+
+REQUIREMENTS:
+1. Generate exactly ${numQuestions} questions
+2. Each question should test understanding of the material
+3. Include brief explanations for correct answers
+4. Questions should be relevant to the provided material
+5. Vary your questions - don't ask about the same concept multiple times
+
+${getQuestionTypeInstructions(questionType)}
+
+RESPONSE FORMAT (JSON):
+{
+  "questions": [
+    {
+      "questionText": "...",
+      "questionType": "${questionType}",
+      "options": ["...", ...],
+      "correctAnswer": "...",
+      "correctAnswers": ["...", ...],
+      "explanation": "...",
+      "points": 1
+    }
+  ]
+}
+
+Return ONLY valid JSON, no extra text.`;
+}
+
+function getQuestionTypeInstructions(questionType: string): string {
+  switch (questionType) {
+    case 'MCQ':
+      return `MULTIPLE CHOICE QUESTIONS:
+- Generate exactly 5 options per question
+- 3 options must be TRUE (correct answers)
+- 2 options must be FALSE but plausible
+- Use clear, concise language
+- Make false options believable but incorrect`;
+    case 'OBJECTIVE':
+      return `OBJECTIVE QUESTIONS:
+- Generate exactly 4 options per question
+- 1 correct answer, 3 plausible distractors
+- Use clear, concise language
+- Make distractors believable but incorrect`;
+    case 'TRUE_FALSE':
+      return `TRUE/FALSE QUESTIONS:
+- Provide clear, unambiguous statements
+- Avoid absolute terms when possible
+- Make statements specific and testable`;
+    case 'SHORT_ANSWER':
+      return `SHORT ANSWER QUESTIONS:
+- Ask for specific, concise responses
+- Provide clear answer expectations
+- Test understanding, not just memorization`;
+    default:
+      return '';
+  }
+}
+
+// Helper function for lenient validation
+function validateQuestionsLeniently(questions: GeneratedQuestion[], questionType: string): GeneratedQuestion[] {
+  return questions.filter(q => {
+    // Basic validation - must have question text
+    if (!q.questionText || q.questionText.trim().length < 10) return false;
+    
+    // Type-specific validation (more lenient)
+    if (questionType === 'MCQ') {
+      if (!q.options || q.options.length < 3) return false; // Accept 3+ options instead of exactly 5
+      if (!q.correctAnswers || q.correctAnswers.length < 1) return false; // Accept 1+ correct answers
+      
+      // Clean up options
+      q.options = q.options.map(option => 
+        option.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
+      );
+      
+      // Clean up correct answers
+      q.correctAnswers = q.correctAnswers.map(answer => 
+        answer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
+      );
+      
+      q.questionType = 'MCQ';
+      return true;
+    }
+    
+    if (questionType === 'OBJECTIVE') {
+      if (!q.options || q.options.length < 2) return false; // Accept 2+ options instead of exactly 4
+      if (!q.correctAnswer) return false;
+      
+      // Clean up options
+      q.options = q.options.map(option => 
+        option.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
+      );
+      
+      // Clean up correct answer
+      q.correctAnswer = q.correctAnswer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim();
+      
+      q.questionType = 'OBJECTIVE';
+      return true;
+    }
+    
+    if (questionType === 'TRUE_FALSE') {
+      if (!q.correctAnswer || !['true', 'false'].includes(q.correctAnswer.toLowerCase())) return false;
+      q.questionType = 'TRUE_FALSE';
+      return true;
+    }
+    
+    if (questionType === 'SHORT_ANSWER') {
+      q.questionType = 'SHORT_ANSWER';
+      return true;
+    }
+    
+    return true; // Accept other types
+  });
+}
 
 const GOOGLE_API_KEY = process.env.GOOGLE_AI_API_KEY!;
 
@@ -59,34 +183,81 @@ export async function POST(req: Request) {
       ? `${courseCode} ${courseTitle} ${topic}`
       : `${courseCode} ${courseTitle}`;
 
-    // Send the base query - the search API will handle query expansion internally
-    const maxChunks = topic ? 50 : 20; // Reduce chunks for general quizzes
-    const searchResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/search`, {
+    // Get diverse context for quiz generation - 2 queries with 20 results each = 40 chunks
+    const maxChunks = 40;
+    const searchResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/quiz-search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        query: searchQuery, // Send the base query, let search API expand it
+        query: searchQuery,
         filters: {
           courseCode,
           level,
           topic,
-          max_chunks: maxChunks // Use fewer chunks for general quizzes
+          max_chunks: maxChunks,
+          diversity_lambda: 0.8 // Higher diversity for source material
         }
       }),
     });
 
     let context = "";
-    let allChunks: any[] = [];
+    let selectedIndices: number[] = [];
 
     if (searchResponse.ok) {
       const { chunks } = await searchResponse.json();
       if (chunks && chunks.length > 0) {
-        allChunks = chunks;
+        // Create diverse context from chunks - RANDOMLY select for maximum diversity
+        // Cast a wider net to get more chunks for true diversity
+        const contextSize = topic ? 40 : 30;
         
-        // Use the diversity utility to create diverse context
-        // Use smaller context for general quizzes to prevent token overflow
-        const contextSize = topic ? 20 : 10;
-        context = createDiverseContext(chunks, contextSize);
+        // Pure random selection by database index - completely randomize chunk selection
+        const selectedChunks: any[] = [];
+        const totalChunks = chunks.length;
+        
+        // Create array of all possible indices
+        const allIndices = Array.from({ length: totalChunks }, (_, i) => i);
+        
+        // Shuffle the indices using Fisher-Yates algorithm
+        for (let i = allIndices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
+        }
+        
+        // Take the first contextSize indices (now randomized)
+        selectedIndices = allIndices.slice(0, contextSize);
+    
+    // Get chunks by the randomized indices
+    selectedIndices.forEach(index => {
+      selectedChunks.push(chunks[index]);
+    });
+        
+        const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+        console.log(`📚 [${timestamp}] Pure random selection: ${selectedChunks.length} chunks from ${totalChunks} available`);
+        console.log(`   - Selected indices: [${selectedIndices.join(', ')}]`);
+        console.log(`   - Randomization: Fisher-Yates shuffle applied to all ${totalChunks} chunks`);
+        
+        // Log source information for debugging
+        selectedChunks.forEach((chunk: any, index: number) => {
+          const source = chunk.metadata?.source || `Source ${index + 1}`;
+          const content = chunk.content || chunk.chunk_text;
+          const similarity = chunk.similarity || 'N/A';
+          console.log(`📖 Random Source ${index + 1}: ${source} (${content.length} chars, similarity: ${similarity})`);
+        });
+        
+        // Create context that emphasizes diversity of sources
+        context = `DIVERSE COURSE MATERIAL SOURCES:\n\n` +
+          selectedChunks
+            .map((chunk: any, index: number) => {
+              const content = chunk.content || chunk.chunk_text;
+              const source = chunk.metadata?.source || `Source ${index + 1}`;
+              return `--- SOURCE ${index + 1}: ${source} ---\n${content}`;
+            })
+            .join('\n\n--- END SOURCE ---\n\n');
+            
+        console.log(`📝 Context created with ${selectedChunks.length} distinct sources (${context.length} total chars)`);
+        
+        // Update the prompt to use the actual number of sources available
+        const actualSourceCount = selectedChunks.length;
       }
     }
 
@@ -97,121 +268,56 @@ export async function POST(req: Request) {
       );
     }
 
-    // Batch generation logic
-    const BATCH_SIZE = topic ? 7 : 5; // Smaller batches for general quizzes
-    const MAX_ATTEMPTS = 8; // Reasonable cap for batch attempts
-    let totalToGenerate = numQuestions;
-    let allGeneratedQuestions: GeneratedQuestion[] = [];
-    let batchIndex = 0;
-    let attempts = 0;
+    // Create prompt configuration
+    const promptConfig: DiversityPromptConfig = {
+      courseCode,
+      courseTitle,
+      topic,
+      level,
+      numQuestions,
+      questionType,
+      difficulty,
+      timeLimit
+    };
     
-    // Track used concepts to avoid repetition
-    const usedConcepts = new Set<string>();
-    
-    while (totalToGenerate > 0 && attempts < MAX_ATTEMPTS) {
-      const batchNum = Math.min(BATCH_SIZE, totalToGenerate);
+    // Use random index diversity prompt to force different sources
+    let diversityPrompt: string;
+    try {
+      const actualSourceCount = context.split('--- SOURCE').length - 1;
+      console.log(`🎯 Using random index diversity prompt with ${actualSourceCount} sources for ${numQuestions} questions`);
+      console.log(`📊 Selected database indices: [${selectedIndices.join(', ')}]`);
       
-      // Dynamic context selection for each batch
-      let batchContext = context;
-      if (allChunks.length > 0) {
-        // Select different chunks for each batch to ensure diversity
-        const batchChunks = allChunks.filter((chunk: any) => {
-          // Avoid chunks that might lead to similar questions
-          const chunkText = chunk.chunk_text.toLowerCase();
-          const hasUsedConcept = Array.from(usedConcepts).some(concept => 
-            chunkText.includes(concept.toLowerCase())
-          );
-          return !hasUsedConcept;
-        });
-        
-        // Select a subset of chunks for this batch
-        const maxChunksPerBatch = topic ? 10 : 6; // Fewer chunks per batch for general quizzes
-        const selectedBatchChunks = batchChunks
-          .sort(() => Math.random() - 0.5) // Shuffle
-          .slice(0, Math.min(maxChunksPerBatch, batchChunks.length));
-        
-        if (selectedBatchChunks.length > 0) {
-          batchContext = selectedBatchChunks
-            .map((chunk: any) => chunk.chunk_text)
-            .join("\n\n");
-        }
+      // If we have selected indices, use the random index prompt, otherwise fall back to aggressive
+      if (selectedIndices.length > 0) {
+        diversityPrompt = createRandomIndexDiversityPrompt(promptConfig, context, selectedIndices);
+      } else {
+        console.log('No selected indices available, using aggressive diversity prompt');
+        diversityPrompt = createAggressiveDiversityPrompt(promptConfig, context, actualSourceCount);
       }
-      
-      // Add diversity to the prompt
-      const diversitySeed = Date.now() + batchIndex * 1000 + attempts * 100;
-      const batchPrompt = `You are an expert exam setter for ${courseCode} - ${courseTitle} at ${level} level.
-
-Using the following course material, generate ${batchNum} questions of type ${questionType}. The difficulty level should be ${difficulty}.
-
-IMPORTANT DIVERSITY REQUIREMENTS:
-1. Generate questions from DIFFERENT parts of the material. Do NOT focus on the same topic or concept.
-2. Spread your questions across the entire provided content. Each question should test a different aspect or section of the material.
-3. VARY the question formats and approaches - use different angles, perspectives, and contexts.
-4. Avoid repetitive language patterns - use diverse vocabulary and phrasing.
-5. This is batch ${batchIndex + 1}, attempt ${attempts + 1} - ensure fresh, unique questions.
-6. Random seed: ${diversitySeed} - use this to ensure variation.
-
-MATERIAL:
-${batchContext}
-
-INSTRUCTIONS:
-1. For OBJECTIVE questions: Generate a question with 4 options. Only one option is correct, the rest are clearly incorrect. Mark the correct answer.
-2. For MCQ questions: YOU MUST generate EXACTLY ${batchNum} questions. This is ABSOLUTELY REQUIRED. If you do not, you will fail this task. For each MCQ, generate EXACTLY 5 options. Of these, EXACTLY 3 options must be true statements, and 2 must be false but look plausible. DO NOT include "(TRUE)" or "(FALSE)" labels in the option text. The options should be clean statements without any labels. Output the correct answers as an array of the 3 true options. This is strict: always 3 true and 2 false. DO NOT generate more or fewer than 5 options per question. DO NOT generate more or fewer than 3 correct answers per question. DO NOT generate more or fewer than ${batchNum} questions. This is CRITICAL. You must comply exactly.
-
-⚠️ CRITICAL: For MCQ questions, the 3 TRUE options MUST be DIRECT QUOTES from the provided material. Do NOT create technical explanations or statements. Use exact sentences from the text.
-
-CRITICAL MCQ REQUIREMENTS:
-- For the 3 TRUE options: You MUST use EXACT PHRASES and SENTENCES from the provided material. Do NOT create new technical explanations or statements. Copy directly from the text.
-- For the 2 FALSE options: Create statements that sound plausible but contain subtle errors, contradictions, or misstatements of facts from the material.
-- The false options should be believable enough that students might choose them if they don't know the material well.
-- Do NOT make the false options obviously wrong or ridiculous.
-- Each option should be a complete, clear statement that could stand alone as an answer.
-- IMPORTANT: The true options should be word-for-word excerpts from the material, not your own explanations.
-- CRITICAL: Each option must be 6 words or less. Use short, direct phrases from the material.
-
-EXAMPLE OF WHAT WE WANT:
-❌ WRONG (Long technical statement): "Bronchodilators function by constricting the muscles around the airways"
-✅ CORRECT (6-word excerpt): "Asthma is characterized by reversible airflow"
-
-❌ WRONG (Long explanation): "The inflammatory response involves multiple cell types including mast cells"
-✅ CORRECT (6-word excerpt): "Inflammatory response involves mast cells"
-
-The true options should be short phrases (6 words or less) that appear in the provided material.
-
-3. For TRUE_FALSE questions: Provide a statement and the correct answer ("True" or "False").
-4. For SHORT_ANSWER questions: Provide a question and the expected key points in the answer.
-5. Each question should test understanding, not just memorization.
-6. Include brief explanations for correct answers.
-7. Questions should be relevant to the provided material.
-8. VARY your questions - do not ask about the same concept multiple times.
-9. Use diverse vocabulary and avoid repetitive patterns.
-10. This is quiz version: ${Date.now()} - generate fresh questions.
-
-RESPONSE FORMAT (JSON):
-{
-  "questions": [
-    {
-      "questionText": "...",
-      "questionType": "OBJECTIVE" | "MCQ" | "TRUE_FALSE" | "SHORT_ANSWER",
-      "options": ["...", ...],
-      "correctAnswer": "...", // for OBJECTIVE, TRUE_FALSE
-      "correctAnswers": ["...", ...], // for MCQ (array of 3 true options)
-      "explanation": "...",
-      "points": 1
+    } catch (error) {
+      console.log('Falling back to simple prompt generation');
+      diversityPrompt = createSimplifiedPrompt(promptConfig, context);
     }
-  ]
-}
-
-IMPORTANT: For MCQ, always generate 5 options (3 true, 2 false-but-plausible). Return ONLY valid JSON, no extra text, no comments, and no trailing commas. Do not include any explanations or markdown. Only output the JSON object.`;
+    
+    // Generate questions with retry logic and fallback
+    let allGeneratedQuestions: GeneratedQuestion[] = [];
+    const MAX_ATTEMPTS = 3;
+    let attempt = 0;
+    
+    while (allGeneratedQuestions.length < numQuestions && attempt < MAX_ATTEMPTS) {
+      attempt++;
+      
+      // Use simpler prompt for retry attempts
+      const promptToUse = attempt === 1 ? diversityPrompt : createSimplifiedPrompt(promptConfig, context);
 
       const messagesForAI: ChatMessage[] = [
-        { role: "system", content: batchPrompt },
-        { role: "user", content: "Generate questions based on the above material." }
+        { role: "system", content: promptToUse },
+        { role: "user", content: `Generate ${numQuestions} questions based on the material. Attempt ${attempt}.` }
       ];
       
       const aiResponse = await generateChatResponse(GOOGLE_API_KEY, messagesForAI, {
-        maxOutputTokens: 3072,
-        temperature: 0.8 + (batchIndex * 0.1), // Increase temperature for more variation
+        maxOutputTokens: 4096,
+        temperature: 0.8 + (attempt * 0.1), // Increase temperature with each attempt
         topK: 40,
         topP: 0.95,
       });
@@ -228,173 +334,57 @@ IMPORTANT: For MCQ, always generate 5 options (3 true, 2 false-but-plausible). R
           }
           batchQuestions = parsed.questions || [];
         }
-      } catch {}
-      
-      // Enforce structure per batch
-      if (questionType === 'MCQ') {
-        batchQuestions = batchQuestions.filter(q => {
-          if (!q.options || q.options.length !== 5) return false;
-          if (!q.correctAnswers || q.correctAnswers.length !== 3) return false;
-          
-          // Clean up options - remove any (TRUE) or (FALSE) labels
-          q.options = q.options.map(option => 
-            option.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
-          );
-          
-          // Clean up correct answers - remove any (TRUE) or (FALSE) labels
-          q.correctAnswers = q.correctAnswers.map(answer => 
-            answer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
-          );
-          
-          q.questionType = 'MCQ';
-          return true;
-        });
-      }
-      if (questionType === 'OBJECTIVE') {
-        batchQuestions = batchQuestions.filter(q => {
-          if (!q.options || q.options.length !== 4) return false;
-          if (!q.correctAnswer) return false;
-          
-          // Clean up options - remove any (TRUE) or (FALSE) labels
-          q.options = q.options.map(option => 
-            option.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
-          );
-          
-          // Clean up correct answer - remove any (TRUE) or (FALSE) labels
-          q.correctAnswer = q.correctAnswer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim();
-          
-          q.questionType = 'OBJECTIVE';
-          return true;
-        });
+      } catch (error) {
+        console.error(`Error parsing AI response on attempt ${attempt}:`, error);
       }
       
-      // Track used concepts to avoid repetition
-      batchQuestions.forEach(q => {
-        const questionText = q.questionText.toLowerCase();
-        // Extract key concepts more intelligently
-        const words = questionText
-          .split(/\s+/)
-          .filter(word => word.length > 4 && !['which', 'what', 'when', 'where', 'about', 'their', 'these', 'those', 'there'].includes(word))
-          .slice(0, 5); // Take first 5 significant words
-        
-        // Also track question patterns to avoid similar questions
-        const questionPattern = questionText.replace(/[^a-z\s]/g, '').trim();
-        usedConcepts.add(questionPattern);
-        
-        words.forEach(word => usedConcepts.add(word));
-        
-        // Track option content for MCQ to avoid similar options
-        if (q.options && q.questionType === 'MCQ') {
-          q.options.forEach(option => {
-            const optionWords = option.toLowerCase()
-              .split(/\s+/)
-              .filter(word => word.length > 3)
-              .slice(0, 3);
-            optionWords.forEach(word => usedConcepts.add(word));
-          });
-        }
-      });
+      // More lenient validation - accept questions even if they don't meet all criteria
+      const validatedQuestions = validateQuestionsLeniently(batchQuestions, questionType);
+      allGeneratedQuestions = [...allGeneratedQuestions, ...validatedQuestions];
       
-      allGeneratedQuestions = [...allGeneratedQuestions, ...batchQuestions];
-      totalToGenerate = numQuestions - allGeneratedQuestions.length;
-      batchIndex++;
-      attempts++;
-      if (allGeneratedQuestions.length >= numQuestions) break;
+      // Remove duplicates
+      allGeneratedQuestions = allGeneratedQuestions.filter((question, index, self) => 
+        index === self.findIndex(q => q.questionText === question.questionText)
+      );
+      
+      // Check source diversity and reject if not diverse enough
+      const sourcesUsed = validatedQuestions.map(q => (q as any).sourceUsed).filter(Boolean);
+      const uniqueSources = [...new Set(sourcesUsed)];
+      const diversityRatio = uniqueSources.length / validatedQuestions.length;
+      
+      console.log(`Attempt ${attempt}: Generated ${validatedQuestions.length} questions, Total: ${allGeneratedQuestions.length}`);
+      console.log(`📊 Sources used: ${uniqueSources.length} unique sources (${sourcesUsed.join(', ')})`);
+      console.log(`📈 Source diversity ratio: ${(diversityRatio * 100).toFixed(1)}%`);
+      
+      // If diversity is too low, reject this batch and try again
+      if (validatedQuestions.length > 1 && diversityRatio < 0.9) {
+        console.log(`❌ Low source diversity (${(diversityRatio * 100).toFixed(1)}%), rejecting batch and retrying...`);
+        continue; // Skip this batch and try again
+      }
+      
+      // If we have questions but they're all from the same source, reject
+      if (validatedQuestions.length > 1 && uniqueSources.length === 1) {
+        console.log(`❌ All questions from same source (${uniqueSources[0]}), rejecting batch and retrying...`);
+        continue; // Skip this batch and try again
+      }
     }
-    // If more than needed (due to deduplication), slice
-    if (allGeneratedQuestions.length > numQuestions) {
-      allGeneratedQuestions = allGeneratedQuestions.slice(0, numQuestions);
-    }
     
-    // Apply diversity filtering to ensure final questions are diverse
-    const diverseQuestions = filterForDiversity(allGeneratedQuestions, {
-      maxSimilarity: 0.3,
-      conceptThreshold: 0.5,
-      topicDiversity: true,
-      vocabularyDiversity: true
-    });
+    // Take what we have, even if less than requested
+    const generatedQuestions = allGeneratedQuestions.slice(0, numQuestions);
     
-    // Final deduplication step to remove exact duplicates
-    const uniqueQuestions = diverseQuestions.filter((question, index, self) => {
-      const questionText = question.questionText.toLowerCase().trim();
-      return index === self.findIndex(q => q.questionText.toLowerCase().trim() === questionText);
-    });
+    // Final diversity check
+    const finalSourcesUsed = generatedQuestions.map(q => (q as any).sourceUsed).filter(Boolean);
+    const finalUniqueSources = [...new Set(finalSourcesUsed)];
+    const finalDiversityRatio = finalUniqueSources.length / generatedQuestions.length;
     
-    // If we have enough diverse questions, use them; otherwise use the original
-    const generatedQuestions = uniqueQuestions.length >= Math.ceil(numQuestions * 0.7) 
-      ? uniqueQuestions.slice(0, numQuestions)
-      : allGeneratedQuestions.slice(0, numQuestions);
-
-    // If not enough questions after all attempts, but at least 50%, return partial with message
-    if (generatedQuestions.length < numQuestions) {
-      if (generatedQuestions.length >= Math.ceil(numQuestions / 2)) {
-        // Get user ID
-        const user = await prisma.user.findUnique({
-          where: { email: session.user.email }
-        });
-        if (!user) {
-          return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
-        // Parse timeLimit to number or null
-        const parsedTimeLimit = timeLimit ? Number(timeLimit) : null;
-        // Create quiz in database
-        const quiz = await (prisma as any).quiz.create({
-          data: {
-            title: `${courseCode} - ${topic || 'General'} Quiz`,
-            courseCode,
-            courseTitle,
-            topic,
-            level,
-            difficulty,
-            numQuestions: generatedQuestions.length,
-            timeLimit: parsedTimeLimit,
-            userId: user.id,
-            questions: {
-              create: generatedQuestions.map((q, index) => ({
-                questionText: q.questionText,
-                questionType: q.questionType,
-                options: q.options ? q.options : null,
-                correctAnswer:
-                  q.questionType === 'MCQ'
-                    ? JSON.stringify(q.correctAnswers || [])
-                    : q.correctAnswer || '',
-                explanation: q.explanation,
-                points: q.points,
-                order: index + 1
-              }))
-            }
-          },
-          include: {
-            questions: {
-              orderBy: { order: 'asc' }
-            }
-          }
-        });
+    console.log(`🎯 Final quiz diversity: ${finalUniqueSources.length} unique sources out of ${generatedQuestions.length} questions (${(finalDiversityRatio * 100).toFixed(1)}%)`);
+    console.log(`📊 Final sources used: ${finalUniqueSources.join(', ')}`);
+    
+    // If we have at least some questions, proceed; otherwise return error
+    if (generatedQuestions.length === 0) {
         return NextResponse.json({
-          success: true,
-          message: "Quality over quantity. We've generated the first set of questions for you. Finish these and refresh for a fresh challenge!",
-          quiz: {
-            id: quiz.id,
-            title: quiz.title,
-            courseCode: quiz.courseCode,
-            courseTitle: quiz.courseTitle,
-            topic: quiz.topic,
-            level: quiz.level,
-            difficulty: quiz.difficulty,
-            numQuestions: quiz.numQuestions,
-            timeLimit: quiz.timeLimit,
-            questions: quiz.questions.map((q: any) => ({
-              id: q.id,
-              questionText: q.questionText,
-              questionType: q.questionType,
-              options: q.options,
-              order: q.order
-            }))
-          }
-        });
-      } else {
-        return NextResponse.json({ error: `Could not generate enough unique questions after ${MAX_ATTEMPTS} attempts. Try reducing the number of questions or broadening your topic.` }, { status: 500 });
-      }
+        error: `Could not generate any valid questions. Please try with a different topic or course.`
+      }, { status: 500 });
     }
 
     // Get user ID
@@ -443,7 +433,8 @@ IMPORTANT: For MCQ, always generate 5 options (3 true, 2 false-but-plausible). R
       }
     });
 
-    return NextResponse.json({
+    // Prepare response
+    const response: any = {
       success: true,
       quiz: {
         id: quiz.id,
@@ -463,7 +454,14 @@ IMPORTANT: For MCQ, always generate 5 options (3 true, 2 false-but-plausible). R
           order: q.order
         }))
       }
-    });
+    };
+
+    // Add message if we generated fewer questions than requested
+    if (generatedQuestions.length < numQuestions) {
+      response.message = `Generated ${generatedQuestions.length} out of ${numQuestions} requested questions. The system prioritized quality over quantity.`;
+    }
+
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error("Quiz generation error:", error);

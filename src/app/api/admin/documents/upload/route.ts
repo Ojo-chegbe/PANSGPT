@@ -1,19 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { getClient, closeClient } from '@/lib/db';
 import { DataAPIClient } from '@datastax/astra-db-ts';
 import { generateEmbeddings } from '@/lib/embedding-service';
+import { prisma } from '@/lib/prisma';
+import { indexDocument } from '@/lib/document-indexing';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
-
-// Using Jina embeddings API directly via embedding-service.ts
+// Using Qwen3-Embedding-0.6B via embedding-service.ts
 
 // Utility function to sanitize filenames
 function sanitizeFilename(filename: string): string {
@@ -27,7 +22,12 @@ function sanitizeFilename(filename: string): string {
 export async function POST(request: Request) {
   let client: ReturnType<typeof DataAPIClient.prototype.db> | null = null;
   
-  try {
+  // Set a timeout for the entire operation
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Upload timeout')), 120000); // 2 minute timeout
+  });
+  
+  const uploadOperation = async () => {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -67,9 +67,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Only .txt files are supported' }, { status: 400 });
     }
 
+    // Check if document with same filename already exists
+    const originalName = file.name;
+    const existingDocument = await prisma.document.findFirst({
+      where: {
+        fileName: originalName,
+        uploadedBy: session.user.id
+      }
+    });
+
+    if (existingDocument) {
+      return NextResponse.json(
+        { 
+          error: 'A document with this filename already exists. Please rename your file or delete the existing document first.',
+          existingDocumentId: existingDocument.id
+        }, 
+        { status: 409 } // Conflict status
+      );
+    }
+
     // Generate a unique filename
     const timestamp = Date.now();
-    const originalName = file.name;
     const uniqueFilename = `${timestamp}-${sanitizeFilename(originalName)}`;
     const documentId = `doc_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -88,30 +106,37 @@ export async function POST(request: Request) {
 
     const chunks = await splitter.createDocuments([text]);
 
-    // Upload file to Supabase Storage
-    const { data: storageData, error: storageError } = await supabase.storage
-      .from('documents')
-      .upload(uniqueFilename, buffer, {
-        contentType: 'text/plain',
-        cacheControl: '3600',
-      });
+    // Store document metadata in Neon database using Prisma
+    const document = await prisma.document.create({
+      data: {
+        id: documentId,
+        fileName: originalName,
+        title: metadata.title,
+        courseCode: metadata.courseCode,
+        courseTitle: metadata.courseTitle,
+        professorName: metadata.professorName,
+        topic: metadata.topic,
+        fileUrl: uniqueFilename, // Store filename instead of Supabase path
+        uploadedBy: metadata.uploadedBy,
+        uploadedAt: new Date(metadata.uploadedAt),
+        level: metadata.level,
+        content: text // Store the text content directly
+      }
+    });
 
-    if (storageError) {
-      console.error('Supabase storage error:', storageError);
-      return NextResponse.json({ error: 'Failed to upload to storage' }, { status: 500 });
-    }
+    console.log('Document stored in Neon database:', document.id);
 
     try {
       // Get collections
       const documentsCollection = await client.createCollection('documents');
       const chunksCollection = await client.createCollection('document_chunks', {
         vector: {
-          dimension: 384,
+          dimension: 1024,  // Updated for Qwen3-Embedding-0.6B
           metric: 'cosine'
         }
       });
 
-      // Store document metadata
+      // Store document metadata in Astra DB
       await documentsCollection.insertOne({
         _id: documentId,
         file_name: originalName,
@@ -120,7 +145,7 @@ export async function POST(request: Request) {
         course_title: metadata.courseTitle,
         professor_name: metadata.professorName,
         topic: metadata.topic,
-        file_url: storageData.path,
+        file_url: uniqueFilename, // Use filename instead of Supabase path
         uploaded_by: metadata.uploadedBy,
         uploaded_at: metadata.uploadedAt,
         level: metadata.level
@@ -136,7 +161,7 @@ export async function POST(request: Request) {
           totalChunks: chunks.length
         };
 
-        // Generate embedding for the chunk using Jina API
+        // Generate embedding for the chunk using Qwen API
         const embeddings = await generateEmbeddings([chunk.pageContent]);
         const embedding = embeddings[0];
 
@@ -156,19 +181,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to store document data' }, { status: 500 });
     }
 
+    // Start background indexing
+    console.log('Starting background indexing for document:', documentId);
+    indexDocument({
+      documentId,
+      fileName: originalName,
+      content: text,
+      metadata: {
+        courseCode: metadata.courseCode,
+        courseTitle: metadata.courseTitle,
+        professorName: metadata.professorName,
+        topic: metadata.topic,
+        level: metadata.level || ''
+      }
+    }).then(result => {
+      if (result.success) {
+        console.log(`✅ Document ${documentId} indexed successfully with ${result.chunksCreated} chunks`);
+      } else {
+        console.error(`❌ Document ${documentId} indexing failed:`, result.error);
+      }
+    }).catch(error => {
+      console.error(`❌ Document ${documentId} indexing error:`, error);
+    });
+
     // Return success response
     return NextResponse.json({
       success: true,
       documentId,
       fileKey: uniqueFilename,
-      url: storageData.path,
+      url: uniqueFilename, // Use filename instead of Supabase path
       chunks: chunks.length,
+      message: "Document uploaded successfully. Indexing in progress..."
     });
+  };
 
+  try {
+    // Race between upload operation and timeout
+    return await Promise.race([uploadOperation(), timeoutPromise]);
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   } finally {

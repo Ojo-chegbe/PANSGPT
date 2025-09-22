@@ -85,7 +85,17 @@ export default function AdminDocumentsPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-6">Admin Document Management</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Admin Document Management</h1>
+        <div className="space-x-4">
+          <a 
+            href="/admin/uptime" 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+          >
+            Uptime Monitoring
+          </a>
+        </div>
+      </div>
       
       <div className="mb-8 p-4 bg-green-50 rounded-lg border border-green-200">
         <h2 className="text-lg font-semibold text-blue-800 mb-2">Upload New Document</h2>

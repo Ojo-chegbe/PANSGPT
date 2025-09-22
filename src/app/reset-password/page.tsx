@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
-import { supabase } from '@/lib/supabase';
 
 export default function ResetPasswordPageWrapper() {
   return (
@@ -21,26 +20,24 @@ function ResetPasswordPage() {
   const [status, setStatus] = useState<null | "success" | "error">(null);
   const [error, setError] = useState("");
   const [canReset, setCanReset] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setCanReset(true);
-      }
-    });
-    // If already in recovery mode (e.g., after redirect), allow reset
-    if (window.location.hash.includes('type=recovery')) {
+    const tokenParam = searchParams.get('token');
+    if (tokenParam) {
+      setToken(tokenParam);
       setCanReset(true);
+    } else {
+      setError("Invalid or missing reset token.");
+      setStatus("error");
     }
-    return () => {
-      data?.subscription?.unsubscribe();
-    };
-  }, []);
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus(null);
     setError("");
+    
     if (!password || password.length < 6) {
       setError("Password must be at least 6 characters.");
       setStatus("error");
@@ -51,14 +48,29 @@ function ResetPasswordPage() {
       setStatus("error");
       return;
     }
+    if (!token) {
+      setError("Invalid reset token.");
+      setStatus("error");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.updateUser({ password });
-      if (!error) {
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
         setStatus("success");
         setTimeout(() => router.push("/login"), 2000);
       } else {
-        setError(error.message || "Failed to reset password.");
+        setError(data.error || "Failed to reset password.");
         setStatus("error");
       }
     } catch (err) {
@@ -67,6 +79,27 @@ function ResetPasswordPage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (!canReset) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white p-4">
+        <div className="w-full max-w-md p-6 md:p-10 rounded-lg bg-white shadow-xl border border-red-100">
+          <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-red-600">Invalid Reset Link</h1>
+          <p className="text-center text-gray-600 mb-4">
+            This password reset link is invalid or has expired.
+          </p>
+          <div className="text-center">
+            <a 
+              href="/forgot-password" 
+              className="text-green-600 hover:text-green-700 font-medium"
+            >
+              Request a new reset link
+            </a>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -117,4 +150,4 @@ function ResetPasswordPage() {
       </div>
     </div>
   );
-} 
+}

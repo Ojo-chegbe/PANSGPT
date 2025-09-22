@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import QuizSummaryCards from '../../components/QuizSummaryCards';
-import DeviceManagement from '../../components/DeviceManagement';
 import { clearDeviceId } from '../../lib/device-id';
 
 interface TimetableEntry {
@@ -158,16 +157,6 @@ export default function ProfilePage() {
 
     setLoggingOut(true);
     try {
-      // Remove device from UserDevice table
-      const deviceId = localStorage.getItem('pansgpt_device_id');
-      if (deviceId) {
-        await fetch('/api/user/devices', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ deviceId }),
-        });
-      }
-
       // Clear device ID from localStorage
       clearDeviceId();
       
@@ -274,10 +263,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Device Management */}
-        <div className="border-b border-gray-700 pb-8">
-          <DeviceManagement />
-        </div>
 
         {/* Plan Page Button */}
         <div className="flex justify-center gap-4 mt-6">

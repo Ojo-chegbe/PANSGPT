@@ -28,7 +28,7 @@ model User {
   quizResults          QuizResult[]
   sessions             Session[]
   subscription         Subscription?
-  userDevices          UserDevice[]
+  activeSessions       Json?                // Stored as: Session[]
   passwordResetTokens  PasswordResetToken[]
 }
 
@@ -123,8 +123,25 @@ model DocumentAccess {
 }
 
 model Document {
-  id         String           @id @default(cuid())
-  accessLogs DocumentAccess[]
+  id           String           @id @default(cuid())
+  fileName     String
+  title        String
+  courseCode   String
+  courseTitle  String
+  professorName String
+  topic        String?
+  fileUrl      String
+  uploadedBy   String
+  uploadedAt   DateTime
+  level        String?
+  content      String?          // Store the text content
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  accessLogs   DocumentAccess[]
+  
+  @@index([courseCode])
+  @@index([uploadedBy])
+  @@index([uploadedAt])
 }
 
 model Timetable {
@@ -199,17 +216,6 @@ model QuizResult {
   @@index([completedAt])
 }
 
-model UserDevice {
-  id        String   @id @default(cuid())
-  userId    String
-  deviceId  String
-  firstUsed DateTime @default(now())
-  lastUsed  DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, deviceId])
-  @@index([userId])
-}
 
 model PasswordResetToken {
   id        String   @id @default(cuid())

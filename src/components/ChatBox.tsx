@@ -96,7 +96,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ apiKey }) => {
 
   return (
     <div className="flex flex-col h-[600px] w-full max-w-2xl mx-auto bg-white rounded-lg shadow-lg">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -106,10 +106,10 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ apiKey }) => {
           >
             <div className="relative group max-w-[80%]">
               <div
-                className={`rounded-lg p-3 ${
+                className={`rounded-xl p-4 shadow-sm ${
                   message.role === 'user'
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
+                    : 'bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg'
                 }`}
               >
                 {editingMessageIndex === index ? (

@@ -65,6 +65,27 @@ export default function DocumentUploadForm() {
     }
     setFormData(prev => ({ ...prev, file }));
     setError(null);
+    
+    // Check for duplicate filename
+    if (file) {
+      checkDuplicateFilename(file.name);
+    }
+  };
+
+  const checkDuplicateFilename = async (filename: string) => {
+    if (!filename || !session?.user?.id) return;
+    
+    try {
+      const response = await fetch(`/api/documents/check-duplicate?filename=${encodeURIComponent(filename)}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.exists) {
+          setError(`A document with filename "${filename}" already exists. Please rename your file or delete the existing document first.`);
+        }
+      }
+    } catch (error) {
+      // Silently fail - this is just a helpful check
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,10 +120,21 @@ export default function DocumentUploadForm() {
         body: fileData,
       });
 
-      const { fileKey, documentId } = await uploadResponse.json();
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        if (uploadResponse.status === 409) {
+          // Duplicate filename error
+          throw new Error(errorData.error);
+        } else {
+          throw new Error(`Upload failed: ${errorData.error || 'Unknown error'}`);
+        }
+      }
 
-      if (!uploadResponse.ok || !fileKey) {
-        throw new Error('File upload failed');
+      const responseData = await uploadResponse.json();
+      const { fileKey, documentId } = responseData;
+
+      if (!fileKey) {
+        throw new Error('File upload failed - no file key returned');
       }
 
       // Document processing is already handled by the upload endpoint
@@ -124,7 +156,14 @@ export default function DocumentUploadForm() {
       });
 
     } catch (err: any) {
-      setError(err.message || 'Upload failed');
+      console.error('Upload error:', err);
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError('Network error: Please check your connection and try again');
+      } else if (err.message.includes('timeout')) {
+        setError('Upload timeout: The file is too large or server is slow. Please try again with a smaller file.');
+      } else {
+        setError(err.message || 'Upload failed. Please try again.');
+      }
     } finally {
       setIsUploading(false);
     }
@@ -271,7 +310,7 @@ export default function DocumentUploadForm() {
         </div>
 
         <div>
-          <label htmlFor="aiTrainingEnabled" className="block text-sm font-medium text-gray-700 flex items-center">
+          <label htmlFor="aiTrainingEnabled" className="flex items-center text-sm font-medium text-gray-700">
             <input
               type="checkbox"
               id="aiTrainingEnabled"

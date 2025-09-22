@@ -6,18 +6,19 @@ import { prisma } from "./prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Prisma } from "@prisma/client";
 import { isValidDeviceId } from "./device-id";
+import { createId } from '@paralleldrive/cuid2';
 
-// Define interface for UserDevice
-interface UserDevice {
-  id: string;
-  userId: string;
-  deviceId: string;
-  firstUsed: Date;
-  lastUsed: Date;
+// Define interface for Session management
+interface Session {
+  id: string;          // A unique ID for this session/login instance
+  loggedInAt: string;  // ISO string timestamp of login
+  ipAddress?: string;  // The IP address of the user
+  userAgent?: string;  // The user agent string from the browser
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Remove adapter for credentials provider - we'll handle sessions manually
+  // adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -33,7 +34,8 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
+          console.log("Missing credentials");
+          return null;
         }
 
         try {
@@ -43,50 +45,57 @@ export const authOptions: NextAuthOptions = {
 
           if (!user || !user.password) {
             console.log("User not found or no password:", credentials.email);
-            throw new Error("Invalid credentials");
+            return null;
           }
 
-          // --- DEVICE LIMIT ENFORCEMENT ---
+          // Verify the password
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+          if (!isPasswordValid) {
+            console.log("Invalid password for user:", credentials.email);
+            return null;
+          }
+
+          // --- SIMPLIFIED SESSION MANAGEMENT ---
           const clientDeviceId = credentials.clientDeviceId;
           if (!clientDeviceId) {
-            throw new Error("Missing client device ID");
+            console.log("Missing client device ID");
+            return null;
           }
 
           // Validate device ID format
           if (!isValidDeviceId(clientDeviceId)) {
-            throw new Error("Invalid device ID format");
+            console.log("Invalid device ID format");
+            return null;
           }
 
-          // Check UserDevice table for all device IDs ever used
-          const userDevices = await (prisma as any).userDevice.findMany({
-            where: { userId: user.id },
-            orderBy: { firstUsed: "asc" },
-          }) as UserDevice[];
+          // Get current sessions. Default to an empty array if null.
+          let currentSessions: Session[] = (user.activeSessions as Session[]) || [];
 
-          // If two device IDs exist and this one is not among them, block login
-          if (
-            userDevices.length >= 2 &&
-            !userDevices.some((d: UserDevice) => d.deviceId === clientDeviceId)
-          ) {
-            throw new Error(
-              "Maximum number of devices reached for this account. Please log out from another device before logging in."
-            );
+          // Check if the session limit is reached
+          if (currentSessions.length >= 2) {
+            // Sort sessions by login date, oldest first
+            currentSessions.sort((a, b) => new Date(a.loggedInAt).getTime() - new Date(b.loggedInAt).getTime());
+            
+            // Remove the oldest session (the first element after sorting)
+            currentSessions.shift(); 
           }
 
-          // Upsert device ID into UserDevice table
-          await (prisma as any).userDevice.upsert({
-            where: {
-              userId_deviceId: {
-                userId: user.id,
-                deviceId: clientDeviceId,
-              },
-            },
-            update: { lastUsed: new Date() },
-            create: {
-              userId: user.id,
-              deviceId: clientDeviceId,
-              firstUsed: new Date(),
-              lastUsed: new Date(),
+          // Create the new session object for this login
+          const newSession: Session = {
+            id: createId(), // Generate a new unique ID
+            loggedInAt: new Date().toISOString(),
+            ipAddress: req?.ip || req?.headers?.['x-forwarded-for'] as string || 'unknown',
+            userAgent: (req && req.headers && req.headers["user-agent"] as string) || credentials.userAgent,
+          };
+
+          // Add the new session to the array
+          currentSessions.push(newSession);
+
+          // Update the user record in the database with the new session list
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              activeSessions: currentSessions,
             },
           });
 
@@ -103,7 +112,7 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (err) {
           console.error("Authorize error:", err);
-          throw err;
+          return null;
         }
       }
     })
@@ -194,23 +203,6 @@ export const authOptions: NextAuthOptions = {
             data: {
               clientDeviceId: clientDeviceId,
               userAgent: userAgent,
-            },
-          });
-        }
-
-        const userSessions = await prisma.session.findMany({
-          where: {
-            userId: message.user.id,
-          },
-          orderBy: { expires: 'asc' },
-        });
-
-        const maxDevices = 2;
-        if (userSessions.length > maxDevices) {
-          const sessionsToDelete = userSessions.slice(0, userSessions.length - maxDevices);
-          await prisma.session.deleteMany({
-            where: {
-              id: { in: sessionsToDelete.map(s => s.id) },
             },
           });
         }

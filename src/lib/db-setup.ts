@@ -48,7 +48,7 @@ export async function setupCollections() {
     await client.createCollection('documents');
     await client.createCollection('document_chunks', {
       vector: {
-        dimension: 384,
+        dimension: 1024,  // Updated for Qwen3-Embedding-0.6B
         metric: 'cosine'
       }
     });
@@ -72,7 +72,7 @@ export async function setupCollections() {
       document_id: 'test',
       chunk_index: 0,
       chunk_text: 'test',
-      embedding: new Array(384).fill(0),
+      embedding: new Array(1024).fill(0),  // Updated for Qwen3-Embedding-0.6B
       created_at: new Date().toISOString(),
       metadata: {
         professorName: 'test',

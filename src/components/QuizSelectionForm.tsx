@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import QuizLoadingModal from './QuizLoadingModal';
 
 // Add import for combobox
 import { Combobox } from '@headlessui/react';
@@ -28,6 +29,8 @@ export default function QuizSelectionForm() {
   const { data: session } = useSession();
   const router = useRouter();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
@@ -146,6 +149,8 @@ export default function QuizSelectionForm() {
     }
 
     setIsGenerating(true);
+    setShowLoadingModal(true);
+    setIsQuizComplete(false);
     setError(null);
     setInfo(null);
 
@@ -168,14 +173,26 @@ export default function QuizSelectionForm() {
         setInfo(data.message);
       }
 
-      // Navigate to the quiz taking page
-      router.push(`/quiz/${data.quiz.id}`);
+      // Mark quiz as complete and show 100% progress
+      setIsQuizComplete(true);
+      
+      // Wait a moment for the progress bar to reach 100%, then navigate
+      setTimeout(() => {
+        router.push(`/quiz/${data.quiz.id}`);
+      }, 1000);
 
     } catch (err: any) {
       setError(err.message || 'Failed to generate quiz');
+      setShowLoadingModal(false);
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleCloseLoadingModal = () => {
+    setShowLoadingModal(false);
+    setIsGenerating(false);
+    setIsQuizComplete(false);
   };
 
   if (!session) {
@@ -401,6 +418,13 @@ export default function QuizSelectionForm() {
           )}
         </button>
       </form>
+
+      {/* Loading Modal */}
+      <QuizLoadingModal 
+        isOpen={showLoadingModal} 
+        onClose={handleCloseLoadingModal}
+        isComplete={isQuizComplete}
+      />
     </div>
   );
 } 

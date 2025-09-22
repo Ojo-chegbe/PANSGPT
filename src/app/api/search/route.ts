@@ -99,13 +99,13 @@ export async function POST(request: Request) {
 
     // Try vector search first if embedding service is available
     try {
-      console.log('Getting embeddings from Jina API...');
+      console.log('Getting embeddings from Qwen API...');
       
       // Generate diverse queries for better coverage
       const expandedQueries = expandQuery(query, filters.topic, filters.courseCode);
       console.log('Expanded queries:', expandedQueries);
       
-      // Get embeddings for all expanded queries using Jina API
+      // Get embeddings for all expanded queries using Qwen API
       const embeddings = await generateEmbeddings(expandedQueries);
       console.log('Got embedding response:', { 
         hasEmbeddings: !!embeddings,

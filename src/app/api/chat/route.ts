@@ -39,16 +39,13 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: "Message is required" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Search for relevant document chunks with expanded query context
-    const searchResponse = await fetch(`${BASE_URL}/api/search`, {
+    // Search for relevant document chunks using fast chat search
+    const searchResponse = await fetch(`${BASE_URL}/api/chat-search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         query: message,
-        // Include conversation history for better context
-        context: conversationHistory.slice(-3).map((msg: ChatMessage) => msg.content).join(" "),
         filters: {
-          min_relevance: 0.7,
           max_chunks: 8,
           // Extract potential source filters from the query
           source_filters: extractSourceFilters(message)
@@ -63,30 +60,30 @@ export async function POST(req: Request) {
     let documentTypes: Set<string> = new Set();
 
     if (searchResponse.ok) {
-      const { chunks } = await searchResponse.json();
-      console.log('Search response received:', {
-        hasChunks: !!chunks,
-        chunksLength: chunks?.length,
-        chunksType: typeof chunks,
-        firstChunk: chunks?.[0] ? {
-          hasChunkText: !!chunks[0].chunk_text,
-          chunkTextLength: chunks[0].chunk_text?.length,
-          hasMetadata: !!chunks[0].metadata,
-          metadataKeys: chunks[0].metadata ? Object.keys(chunks[0].metadata) : [],
-          source: chunks[0].metadata?.source,
-          author: chunks[0].metadata?.author
+      const { results } = await searchResponse.json();
+      console.log('Fast chat search response received:', {
+        hasResults: !!results,
+        resultsLength: results?.length,
+        resultsType: typeof results,
+        firstResult: results?.[0] ? {
+          hasChunkText: !!results[0].chunk_text,
+          chunkTextLength: results[0].chunk_text?.length,
+          hasMetadata: !!results[0].metadata,
+          metadataKeys: results[0].metadata ? Object.keys(results[0].metadata) : [],
+          source: results[0].metadata?.source,
+          author: results[0].metadata?.author
         } : null
       });
       
-      if (chunks && chunks.length > 0) {
+      if (results && results.length > 0) {
         // Group chunks by source and metadata
         const sourceGroups = new Map<string, { 
           chunks: DocumentChunk[],
           relevance: number 
         }>();
 
-        // Process and group chunks
-        chunks.forEach((chunk: DocumentChunk) => {
+        // Process and group results
+        results.forEach((chunk: DocumentChunk) => {
           // Handle both old and new metadata structures
           const source = chunk.metadata?.source || 
                         (chunk.metadata?.context?.course_info?.code && chunk.metadata?.context?.professor 
@@ -278,7 +275,16 @@ The user is at the ${userLevel || 'unspecified'} academic level. Tailor your exp
 
 RESPONSE STYLE: Be direct, concise, and to-the-point. Give clear, simple answers unless the user specifically asks for detailed explanations. Avoid unnecessary academic verbosity.
 
-Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, and bullet points. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
+Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, bullet points, and well-structured tables. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
+
+TABLE FORMATTING: When presenting data, comparisons, or structured information, use proper markdown tables with clear headers and aligned columns. Format tables like this:
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data 1   | Data 2   | Data 3   |
+| Data 4   | Data 5   | Data 6   |
+
+For chemical data, use tables with headers like "Substance", "Formula", "Molar Mass", etc. For comparisons, use clear comparative headers. Always include proper markdown table separators (|) and ensure data is properly aligned.
 IMPORTANT: For every chemical formula, ion, mathematical equation, calculation, or symbol (even inline), ALWAYS wrap it in LaTeX math delimiters: use $...$ for inline and $$...$$ for block. Do not use plain text for any formulas or symbols. For example: $H_3O^+$, $OH^-$, $x^2 + y^2 = r^2$, $$2H_2O(l) \rightleftharpoons H_3O^+(aq) + OH^-(aq)$$. Repeat: EVERY formula, symbol, or equation must be wrapped in math delimiters.
 IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$
 
@@ -295,7 +301,16 @@ The user is at the ${userLevel || 'unspecified'} academic level. Tailor your exp
 
 RESPONSE STYLE: Be direct, concise, and to-the-point. Give clear, simple answers unless the user specifically asks for detailed explanations. Avoid unnecessary academic verbosity.
 
-Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, and bullet points. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
+Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, bullet points, and well-structured tables. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
+
+TABLE FORMATTING: When presenting data, comparisons, or structured information, use proper markdown tables with clear headers and aligned columns. Format tables like this:
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data 1   | Data 2   | Data 3   |
+| Data 4   | Data 5   | Data 6   |
+
+For chemical data, use tables with headers like "Substance", "Formula", "Molar Mass", etc. For comparisons, use clear comparative headers. Always include proper markdown table separators (|) and ensure data is properly aligned.
 IMPORTANT: For every chemical formula, ion, mathematical equation, calculation, or symbol (even inline), ALWAYS wrap it in LaTeX math delimiters: use $...$ for inline and $$...$$ for block. Do not use plain text for any formulas or symbols. For example: $H_3O^+$, $OH^-$, $x^2 + y^2 = r^2$, $$2H_2O(l) \rightleftharpoons H_3O^+(aq) + OH^-(aq)$$. Repeat: EVERY formula, symbol, or equation must be wrapped in math delimiters.
 IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$
 
@@ -310,7 +325,16 @@ The user is at the ${userLevel || 'unspecified'} academic level. Tailor your exp
 
 RESPONSE STYLE: Be direct, concise, and to-the-point. Give clear, simple answers unless the user specifically asks for detailed explanations. Avoid unnecessary academic verbosity.
 
-Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, and bullet points. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
+Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, bullet points, and well-structured tables. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
+
+TABLE FORMATTING: When presenting data, comparisons, or structured information, use proper markdown tables with clear headers and aligned columns. Format tables like this:
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data 1   | Data 2   | Data 3   |
+| Data 4   | Data 5   | Data 6   |
+
+For chemical data, use tables with headers like "Substance", "Formula", "Molar Mass", etc. For comparisons, use clear comparative headers. Always include proper markdown table separators (|) and ensure data is properly aligned.
 Do not cite sources or reference documents unless the user requests it.
 IMPORTANT: For every chemical formula, ion, mathematical equation, calculation, or symbol (even inline), ALWAYS wrap it in LaTeX math delimiters: use $...$ for inline and $$...$$ for block. Do not use plain text for any formulas or symbols. For example: $H_3O^+$, $OH^-$, $x^2 + y^2 = r^2$, $$2H_2O(l) \rightleftharpoons H_3O^+(aq) + OH^-(aq)$$. Repeat: EVERY formula, symbol, or equation must be wrapped in math delimiters.
 IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$`;

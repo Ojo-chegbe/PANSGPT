@@ -16,4 +16,325 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+/* Enhanced Markdown Styling */
+.markdown-math {
+  @apply max-w-none;
+}
+
+.markdown-math.ai-response {
+  @apply text-white;
+}
+
+.markdown-math.user-message {
+  @apply text-white;
+}
+
+/* Callout Boxes */
+.callout-box {
+  @apply rounded-lg p-4 mb-6 border-l-4 shadow-sm backdrop-blur-sm;
+}
+
+.callout-key-concept {
+  @apply bg-blue-900/30 border-blue-400 text-blue-100;
+}
+
+.callout-example {
+  @apply bg-green-900/30 border-green-400 text-green-100;
+}
+
+.callout-important {
+  @apply bg-yellow-900/30 border-yellow-400 text-yellow-100;
+}
+
+.callout-warning {
+  @apply bg-red-900/30 border-red-400 text-red-100;
+}
+
+.callout-formula {
+  @apply bg-gray-900/30 border-gray-400 text-gray-100;
+}
+
+/* Callout Box Icons */
+.callout-icon {
+  @apply w-5 h-5 mr-2 flex-shrink-0;
+}
+
+.callout-title {
+  @apply font-semibold text-sm uppercase tracking-wide mb-2 flex items-center;
+}
+
+.callout-content {
+  @apply text-sm leading-relaxed;
+}
+
+/* Enhanced Formula Styling */
+.formula-box {
+  @apply bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 my-4 text-center;
+}
+
+.formula-inline {
+  @apply bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-2 py-1 rounded font-mono text-sm;
+}
+
+/* Better List Styling */
+.markdown-math ul {
+  @apply space-y-2;
+}
+
+.markdown-math ol {
+  @apply space-y-0;
+}
+
+.markdown-math li {
+  @apply leading-relaxed;
+}
+
+/* Fix spacing for numbered lists - tight spacing between number and description */
+.markdown-math ol li {
+  @apply mb-0;
+}
+
+/* Add proper spacing between different numbered items */
+.markdown-math ol li:not(:last-child) {
+  @apply mb-3;
+}
+
+/* Ensure the last list item doesn't have extra bottom margin */
+.markdown-math ol li:last-child {
+  @apply mb-0;
+}
+
+/* Enhanced Paragraph Spacing */
+.markdown-math p {
+  @apply mb-4 leading-relaxed;
+}
+
+.markdown-math p:last-child {
+  @apply mb-0;
+}
+
+/* Math Display Improvements */
+.katex-display {
+  @apply my-6 text-center;
+}
+
+.katex {
+  @apply text-base;
+}
+
+/* Code Block Improvements */
+.markdown-math pre {
+  @apply rounded-lg overflow-x-auto;
+}
+
+.markdown-math code {
+  @apply font-mono text-sm;
+}
+
+/* Enhanced Table Styling - Transparent with Complete Grid Lines */
+.markdown-math table {
+  @apply w-full border-collapse border border-white rounded-lg overflow-hidden my-6;
+  background: transparent;
+}
+
+.markdown-math th {
+  @apply font-semibold text-left px-4 py-3 border border-white text-white;
+  background: transparent;
+}
+
+.markdown-math td {
+  @apply px-4 py-3 border border-white text-white;
+  background: transparent;
+}
+
+.markdown-math tr:nth-child(even) {
+  background: transparent;
+}
+
+.markdown-math tr:hover {
+  background: transparent;
+}
+
+/* Table wrapper for responsive scrolling */
+.markdown-math .table-wrapper {
+  @apply overflow-x-auto my-6 rounded-lg border border-white;
+  background: transparent;
+}
+
+/* Chemical/Formula table styling - Transparent */
+.markdown-math .formula-table {
+  background: transparent;
+}
+
+.markdown-math .formula-table th {
+  @apply text-white font-bold;
+  background: transparent;
+}
+
+.markdown-math .formula-table td {
+  @apply text-center font-mono text-white;
+  background: transparent;
+}
+
+/* Data table styling - Transparent */
+.markdown-math .data-table {
+  background: transparent;
+}
+
+.markdown-math .data-table th {
+  @apply text-white;
+  background: transparent;
+}
+
+.markdown-math .data-table td {
+  @apply text-white;
+  background: transparent;
+}
+
+/* Comparison table styling - Transparent */
+.markdown-math .comparison-table {
+  background: transparent;
+}
+
+.markdown-math .comparison-table th {
+  @apply text-white;
+  background: transparent;
+}
+
+.markdown-math .comparison-table td {
+  @apply text-white;
+  background: transparent;
+}
+
+/* Table caption styling */
+.markdown-math table caption {
+  @apply text-sm text-white mt-2 mb-4 font-medium;
+}
+
+/* Table cell content alignment */
+.markdown-math td[align="center"] {
+  @apply text-center;
+}
+
+.markdown-math td[align="right"] {
+  @apply text-right;
+}
+
+.markdown-math th[align="center"] {
+  @apply text-center;
+}
+
+.markdown-math th[align="right"] {
+  @apply text-right;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .callout-box {
+    @apply p-3 mb-4;
+  }
+  
+  .formula-box {
+    @apply p-3 my-3;
+  }
+  
+  .markdown-math {
+    @apply text-sm;
+  }
+  
+  .markdown-math h1 {
+    @apply text-xl;
+  }
+  
+  .markdown-math h2 {
+    @apply text-lg;
+  }
+  
+  .markdown-math h3 {
+    @apply text-base;
+  }
+  
+  .markdown-math ul,
+  .markdown-math ol {
+    @apply ml-4;
+  }
+  
+  .katex {
+    @apply text-sm;
+  }
+  
+  /* Mobile table adjustments */
+  .markdown-math table {
+    @apply text-sm;
+  }
+  
+  .markdown-math th,
+  .markdown-math td {
+    @apply px-2 py-2;
+  }
+  
+  .markdown-math .table-wrapper {
+    @apply -mx-4;
+  }
+}
+
+@media (max-width: 480px) {
+  .callout-box {
+    @apply p-2 mb-3;
+  }
+  
+  .formula-box {
+    @apply p-2 my-2;
+  }
+  
+  .markdown-math {
+    @apply text-xs;
+  }
+  
+  .markdown-math h1 {
+    @apply text-lg;
+  }
+  
+  .markdown-math h2 {
+    @apply text-base;
+  }
+  
+  .markdown-math h3 {
+    @apply text-sm;
+  }
+  
+  /* Extra small mobile table adjustments */
+  .markdown-math table {
+    @apply text-xs;
+  }
+  
+  .markdown-math th,
+  .markdown-math td {
+    @apply px-1 py-1;
+  }
+}
+
+/* Dark Mode Enhancements */
+@media (prefers-color-scheme: dark) {
+  .callout-key-concept {
+    @apply bg-blue-900/20 border-blue-400;
+  }
+  
+  .callout-example {
+    @apply bg-green-900/20 border-green-400;
+  }
+  
+  .callout-important {
+    @apply bg-yellow-900/20 border-yellow-400;
+  }
+  
+  .callout-warning {
+    @apply bg-red-900/20 border-red-400;
+  }
+  
+  .callout-formula {
+    @apply bg-gray-800/50 border-gray-600;
+  }
 } 

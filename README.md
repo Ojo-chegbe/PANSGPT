@@ -1,76 +1,148 @@
-# PansGPT - AI-Powered Educational Assistant
+---
+title: Qwen Embedding Model API
+emoji: 🤖
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+license: mit
+app_port: 7860
+---
 
-## 🎯 **Jina Embeddings Integration**
+# Qwen Embedding Model API
 
-This application now uses **Jina Embeddings API** for all embedding operations, providing enterprise-grade embedding capabilities without the need for local model deployment.
+A stable, Docker-based API for generating text embeddings using the Qwen model. This space provides a reliable service for your applications that need text embeddings.
 
-## 🚀 **Quick Start**
+## Features
 
-1. **Set up environment variables:**
-   ```bash
-   # Create .env.local file with:
-   JINA_API_KEY=jina_039036c9121a40fca5397f08d088fd69UlPcMcmiWpqGdK4WCDu8vfZeLWwx
-   JINA_EMBEDDINGS_MODEL=jina-embeddings-v3
-   ```
+- **Single Text Embedding**: Generate embeddings for individual texts
+- **Batch Processing**: Process multiple texts efficiently
+- **Similarity Calculation**: Compute cosine similarity between embeddings
+- **Docker-based**: Stable deployment with containerization
+- **Health Monitoring**: Built-in health check endpoints
+- **Fallback Support**: Automatic fallback to sentence-transformers if needed
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+## API Endpoints
 
-3. **Test the integration:**
-   ```bash
-   npx tsx test-jina-embeddings.ts
-   ```
+### 1. Single Text Embedding
+```bash
+POST /api/predict
+Content-Type: application/json
 
-4. **Start the application:**
-   ```bash
-   npm run dev
-   ```
+{
+    "data": ["Your text here"]
+}
+```
 
-## 🔧 **What Changed**
+### 2. Batch Text Embedding
+```bash
+POST /api/predict
+Content-Type: application/json
 
-### ✅ **Removed Components**
-- Local embedding service (`embedding-service/` directory)
-- EC2 deployment scripts (`ec2-deployment/` directory)
-- Docker configuration for embedding service
-- All sentence-transformers dependencies
-- Old embedding service URLs and configurations
+{
+    "data": [["Text 1", "Text 2", "Text 3"]]
+}
+```
 
-### ✅ **Updated Components**
-- `src/lib/embedding-service.ts` - Now uses Jina API directly
-- `src/app/api/search/route.ts` - Updated to use new embedding service
-- `src/app/api/admin/documents/upload/route.ts` - Removed old service URL
+### 3. Health Check
+```bash
+GET /health
+```
 
-## 🎉 **Benefits of Jina Embeddings**
+## Usage Examples
 
-1. **Simplified Architecture**: No need for separate embedding service
-2. **Better Performance**: Jina embeddings are optimized and fast
-3. **Reduced Infrastructure**: No need to manage EC2 instances or Docker containers
-4. **Cost Effective**: Pay per API call instead of maintaining servers
-5. **Reliability**: Jina provides enterprise-grade embedding service
-6. **High Quality**: State-of-the-art embedding models
+### Python
+```python
+import requests
+import json
 
-## 📁 **Key Files**
+# Single text embedding
+response = requests.post(
+    "https://your-space-name.hf.space/api/predict",
+    json={"data": ["Hello, world!"]}
+)
+embedding = response.json()["data"][0]
 
-- `src/lib/embedding-service.ts` - Jina API integration
-- `test-jina-embeddings.ts` - Test script for embeddings
-- `JINA_EMBEDDINGS_SETUP.md` - Detailed setup guide
+# Batch embedding
+response = requests.post(
+    "https://your-space-name.hf.space/api/predict",
+    json={"data": [["Text 1", "Text 2", "Text 3"]]}
+)
+embeddings = response.json()["data"][0]
+```
 
-## 🚀 **Features**
+### JavaScript
+```javascript
+// Single text embedding
+const response = await fetch("https://your-space-name.hf.space/api/predict", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: ["Hello, world!"] })
+});
+const embedding = (await response.json()).data[0];
 
-- **Document Upload & Processing**: Upload educational documents and automatically generate embeddings
-- **Semantic Search**: Find relevant content using vector similarity search
-- **Quiz Generation**: AI-powered quiz creation from uploaded content
-- **User Management**: Authentication and subscription management
-- **Real-time Chat**: Interactive AI assistant for educational queries
+// Batch embedding
+const response = await fetch("https://your-space-name.hf.space/api/predict", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: [["Text 1", "Text 2", "Text 3"]] })
+});
+const embeddings = (await response.json()).data[0];
+```
 
-## 💡 **Why Jina Embeddings?**
+## Model Information
 
-- **No Infrastructure Management**: No servers to maintain
-- **Instant Scaling**: Handles any volume of requests
-- **High Performance**: Optimized for speed and accuracy
-- **Cost Effective**: Pay only for what you use
-- **Enterprise Grade**: Reliable and secure API service
+- **Base Model**: Qwen2.5-0.5B-Instruct
+- **Embedding Dimension**: 384 (fallback) or model-specific
+- **Max Input Length**: 512 tokens
+- **Device**: Auto-detects CUDA/CPU
 
-Your application now has a much simpler and more reliable embedding architecture! 
+## Docker Configuration
+
+This space uses Docker for stable deployment:
+
+- **Base Image**: Python 3.11-slim
+- **Port**: 7860
+- **Health Check**: Built-in monitoring
+- **Non-root User**: Security best practices
+
+## Performance
+
+- **Single Text**: ~100-500ms (depending on hardware)
+- **Batch Processing**: Optimized for multiple texts
+- **Memory Usage**: ~2-4GB RAM
+- **Concurrent Requests**: Supports multiple simultaneous requests
+
+## Error Handling
+
+The API includes comprehensive error handling:
+
+- **Model Loading**: Automatic fallback to sentence-transformers
+- **Input Validation**: Handles malformed requests gracefully
+- **Rate Limiting**: Built-in protection against abuse
+- **Health Monitoring**: Continuous status checking
+
+## Integration with Your App
+
+To integrate this API with your existing PansGPT application:
+
+1. Update your `qwen-embedding-service.ts` to use the new endpoint
+2. Replace the Gradio client connection with direct HTTP calls
+3. Update the API URL to point to your new Hugging Face Space
+
+## Monitoring
+
+- **Health Endpoint**: `/health` for status checks
+- **Logging**: Comprehensive logging for debugging
+- **Metrics**: Built-in performance monitoring
+
+## Support
+
+For issues or questions:
+- Check the health endpoint first
+- Review the logs for error details
+- Ensure your input format matches the expected structure
+
+---
+
+**Note**: This space is optimized for stability and reliability. The Docker-based deployment ensures consistent performance across different environments.

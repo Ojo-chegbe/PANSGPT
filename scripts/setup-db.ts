@@ -23,7 +23,7 @@ async function main() {
     console.log('Creating document_chunks collection with vector search...');
     await client.createCollection('document_chunks', {
       vector: {
-        dimension: 384,
+        dimension: 1024,  // Updated for Qwen3-Embedding-0.6B
         metric: 'cosine'
       }
     });
