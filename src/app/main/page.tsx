@@ -60,10 +60,10 @@ const MessageList = React.memo(({
     {messages.map((message, idx) => (
       <div key={idx} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
         <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className={`rounded-xl p-4 md:p-5 shadow-sm ${
+          <div className={`rounded-2xl p-5 md:p-6 shadow-lg transition-all duration-200 ${
             message.role === 'user'
-              ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
-              : 'bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg'
+              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/20'
+              : 'bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl text-white border border-gray-700/50 shadow-xl'
           }`}>
             {editingIdx === idx ? (
               <div className="flex flex-col gap-2">
@@ -130,14 +130,14 @@ const MessageList = React.memo(({
     {isLoading && (
       <div className="flex justify-start">
         <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className="rounded-lg p-2.5 md:p-3 text-white bg-gray-800 border border-gray-700 animate-pulse">
+          <div className="rounded-2xl p-4 md:p-5 text-white bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl border border-gray-700/50 shadow-xl animate-pulse">
             <div className="flex items-center gap-3">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce"></div>
+                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
-              <span className="text-sm text-gray-300 font-medium">PANSGPT is thinking...</span>
+              <span className="text-sm text-gray-200 font-medium">PANSGPT is thinking...</span>
             </div>
           </div>
         </div>
@@ -164,10 +164,10 @@ const InputArea = React.memo(({
     onSubmit={handleSend}
     className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'} px-3 md:px-24 pb-3 md:pb-8`}
   >
-    <div className={`bg-black rounded-lg flex items-center px-3 md:px-8 py-3 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 ${
+    <div className={`bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-xl rounded-2xl flex items-center px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 shadow-2xl ${
       isLoading 
-        ? 'border-green-400 shadow-lg shadow-green-400/20' 
-        : 'border-white'
+        ? 'border-emerald-400 shadow-lg shadow-emerald-400/20' 
+        : 'border-gray-700/50 hover:border-gray-600/50'
     }`}>
       <input
         type="text"
@@ -179,12 +179,12 @@ const InputArea = React.memo(({
       />
       <button
         type="submit"
-        className="ml-3 md:ml-4 bg-white text-black px-2.5 md:px-6 py-1.5 md:py-2 rounded-md font-semibold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        className="ml-3 md:ml-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 shadow-lg shadow-emerald-500/20"
         disabled={isLoading || !input.trim()}
       >
         {isLoading ? (
           <>
-            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <span>Thinking...</span>
           </>
         ) : (
@@ -881,7 +881,7 @@ export default function MainPage() {
     <div className="flex min-h-screen bg-black text-white">
       {/* Sidebar */}
       {sidebarOpen && (
-        <aside className="w-[85vw] md:w-72 bg-[#181A1B] h-screen fixed left-0 top-0 z-50 flex flex-col">
+        <aside className="w-[85vw] md:w-72 bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-xl h-screen fixed left-0 top-0 z-50 flex flex-col border-r border-gray-700/50">
           {/* Close button for mobile */}
           <button
             className="absolute top-3 right-3 md:hidden text-gray-400 hover:text-white text-3xl z-50"
@@ -893,7 +893,7 @@ export default function MainPage() {
           {/* Take a Quiz button at the top */}
           <div className="pt-5 pb-2 flex-shrink-0">
             <button
-              className="w-auto px-6 ml-4 text-left text-white bg-green-600 hover:bg-green-700 text-sm md:text-lg font-semibold rounded-md py-2 transition"
+              className="w-auto px-6 ml-4 text-left text-white bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-sm md:text-lg font-semibold rounded-xl py-3 transition-all duration-200 shadow-lg shadow-emerald-600/20"
               onClick={() => {
                 if (userSubscription && (userSubscription.isActive || userSubscription.isTrial)) {
                   window.location.href = '/quiz';
@@ -927,7 +927,7 @@ export default function MainPage() {
                 {conversations.map((conv, idx) => (
                   <li
                     key={conv.id}
-                    className={`px-2 py-1.5 md:px-3 md:py-2 rounded-md cursor-pointer text-sm flex items-center justify-between ${conv.id === activeId ? "bg-gray-700 text-white" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`}
+                    className={`px-3 py-2.5 md:px-4 md:py-3 rounded-xl cursor-pointer text-sm flex items-center justify-between transition-all duration-200 ${conv.id === activeId ? "bg-gradient-to-r from-emerald-600/20 to-emerald-700/20 text-white border border-emerald-500/30 shadow-lg" : "text-gray-300 hover:bg-gray-800/50 hover:text-white border border-transparent"}`}
                     onClick={() => handleSelectConv(conv.id)}
                   >
                     {renamingIdx === idx ? (
@@ -960,9 +960,9 @@ export default function MainPage() {
                             </svg>
                           </button>
                           {historyMenuIdx === idx && (
-                            <div className="absolute right-0 mt-2 w-32 bg-[#232625] rounded-lg shadow-lg py-2 z-50">
-                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 text-sm" onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}>Rename</button>
-                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 text-sm" onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}>Delete conversation</button>
+                            <div className="absolute right-0 mt-2 w-32 bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl py-2 z-50 border border-gray-700/50">
+                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors" onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}>Rename</button>
+                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors" onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}>Delete conversation</button>
                             </div>
                           )}
                         </div>
@@ -989,10 +989,12 @@ export default function MainPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-h-screen bg-black">
         {/* Top Bar - Fixed */}
-        <div className="fixed top-0 right-0 left-0 md:left-72 z-40 bg-black flex items-center px-3 md:px-6 py-2 md:py-3 gap-2 md:gap-4">
+        <div className={`fixed top-0 right-0 z-40 bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-xl border-b border-gray-700/50 flex items-center px-3 md:px-6 py-3 md:py-4 gap-2 md:gap-4 transition-all duration-300 ${
+          sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'
+        }`}>
           {/* Sidebar toggle button - moved here */}
           <button
-            className={`flex items-center justify-center rounded-full transition-all duration-200 bg-gray-900 border-2 border-white hover:bg-gray-700`}
+            className={`flex items-center justify-center rounded-full transition-all duration-200 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-gray-600 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-400/20`}
             style={{ width: 36, height: 36, fontSize: 24 }}
             onClick={() => setSidebarOpen((open) => !open)}
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
@@ -1015,7 +1017,7 @@ export default function MainPage() {
           {/* Center: Plan status - centered on mobile, right on desktop */}
           <div className="flex-1 flex justify-center md:justify-end">
             <button
-              className="flex items-center gap-1.5 bg-black px-2 md:px-3 py-1 md:py-2 rounded-lg font-medium hover:bg-gray-700 transition text-xs"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-gray-800/80 to-gray-900/80 backdrop-blur-sm px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-medium hover:from-gray-700/80 hover:to-gray-800/80 transition-all duration-200 text-xs border border-gray-700/50 shadow-lg"
               onClick={() => { window.location.href = '/plan'; }}
               disabled={!userSubscription}
             >
@@ -1035,24 +1037,24 @@ export default function MainPage() {
                 />
               </div>
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-40 md:w-48 bg-[#232625] rounded-lg shadow-lg py-2 z-50">
+                <div className="absolute right-0 mt-2 w-40 md:w-48 bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl py-2 z-50 border border-gray-700/50">
                   <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700 text-xs md:text-sm"
+                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors"
                     onClick={() => router.push('/profile')}
                   >
                     View Profile
                   </button>
-                  <button className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700 text-xs md:text-sm"
+                  <button className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors"
                     onClick={() => router.push('/faq')}
                   >Help & FAQs</button>
                   <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700 text-xs md:text-sm"
+                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors"
                     onClick={() => router.push('/feedback')}
                   >
                     Feedback
                   </button>
                   <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700 text-xs md:text-sm" 
+                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors" 
                     onClick={handleLogout}
                   >
                     Logout
@@ -1074,22 +1076,27 @@ export default function MainPage() {
                 </svg>
               </button>
               {showMenu && (
-                <div className="absolute right-0 mt-2 w-32 bg-[#232625] rounded-lg shadow-lg py-2 z-50">
-                  <button className="block w-full text-left px-4 py-2 hover:bg-gray-700 text-sm" onClick={handleDeleteActiveConv}>Delete conversation</button>
+                <div className="absolute right-0 mt-2 w-32 bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl py-2 z-50 border border-gray-700/50">
+                  <button className="block w-full text-left px-4 py-2 hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors" onClick={handleDeleteActiveConv}>Delete conversation</button>
                 </div>
               )}
             </div>
           </div>
         </div>
         {/* Chat Area - Adjusted with top padding to account for fixed topbar */}
-        <div className={`flex-1 flex flex-col px-3 md:px-8 pt-16 md:pt-20 pb-24 md:pb-40 gap-4 md:gap-8 overflow-y-auto bg-black transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}
+        <div className={`flex-1 flex flex-col px-3 md:px-8 pt-20 md:pt-24 pb-28 md:pb-44 gap-6 md:gap-10 overflow-y-auto bg-gradient-to-br from-gray-900 via-black to-gray-900 transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}
           style={{ position: 'relative' }}
         >
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
-              <span className="text-2xl md:text-5xl font-bold text-center text-white">
-                Hello, Great PANSite
-              </span>
+              <div className="text-center space-y-4">
+                <span className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent">
+                  Hello, Great PANSite
+                </span>
+                <p className="text-lg md:text-xl text-gray-300 font-light">
+                  Ask me anything about your courses
+                </p>
+              </div>
             </div>
           ) : (
             <>
