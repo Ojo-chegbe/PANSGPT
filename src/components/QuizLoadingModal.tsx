@@ -7,6 +7,7 @@ import { DID_YOU_KNOW_FACTS, DidYouKnowFact } from '@/lib/did-you-know-facts';
 interface QuizLoadingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCancel?: () => void;
   isComplete?: boolean;
 }
 
@@ -56,76 +57,78 @@ const PROGRESS_STAGES: ProgressStage[] = [
   }
 ];
 
-export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }: QuizLoadingModalProps) {
+export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete = false }: QuizLoadingModalProps) {
   const [currentStage, setCurrentStage] = useState(0);
   const [progress, setProgress] = useState(0);
   const [currentFact, setCurrentFact] = useState<DidYouKnowFact | null>(null);
   const [factIndex, setFactIndex] = useState(0);
-
-  // Shuffle facts array
-  const shuffledFacts = [...DID_YOU_KNOW_FACTS].sort(() => Math.random() - 0.5);
+  const [shuffledFacts, setShuffledFacts] = useState<DidYouKnowFact[]>([]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      // Reset when modal closes
+      setCurrentStage(0);
+      setProgress(0);
+      setShuffledFacts([]);
+      return;
+    }
 
-    // Set initial fact
-    setCurrentFact(shuffledFacts[0]);
+    // Initialize shuffled facts only once when modal opens
+    const shuffled = [...DID_YOU_KNOW_FACTS].sort(() => Math.random() - 0.5);
+    setShuffledFacts(shuffled);
+    setCurrentFact(shuffled[0]);
     setFactIndex(0);
 
     let stageIndex = 0;
-    let stageProgress = 0;
     const totalStages = PROGRESS_STAGES.length;
-    let stageStartTime = Date.now();
+    const startTime = Date.now();
     
-    const updateProgress = () => {
-      const now = Date.now();
-      const stageElapsed = now - stageStartTime;
-      const currentStageData = PROGRESS_STAGES[stageIndex];
+    // Set target duration to 60 seconds (1 minute) to reach 90%
+    const targetDuration = 60000; // 60 seconds in milliseconds
+    const stageDuration = targetDuration / totalStages; // Each stage gets equal time
+    
+    // Update progress every 100ms for smooth animation
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
       
-      // Calculate progress within current stage
-      const stageProgressPercent = Math.min(stageElapsed / currentStageData.duration, 1);
-      
-      // Calculate overall progress - but don't go beyond 90% until isComplete is true
+      // Calculate progress based on elapsed time (60 seconds to reach 90%)
       const maxProgress = isComplete ? 100 : 90;
+      let progressPercent = Math.min(elapsed / targetDuration, 1);
       
-      // Calculate stage-based progress
-      const stageProgress = (stageIndex + stageProgressPercent) / totalStages;
-      let overallProgress = stageProgress * maxProgress;
+      // Apply a smoother curve
+      progressPercent = Math.pow(progressPercent, 0.8);
+      const currentProgress = progressPercent * maxProgress;
       
-      // Apply a slower curve to make it more gradual (but not too slow)
-      overallProgress = Math.pow(overallProgress / maxProgress, 0.8) * maxProgress;
-      
-      setProgress(Math.min(overallProgress, maxProgress));
+      setProgress(Math.min(currentProgress, maxProgress));
 
-      // Move to next stage if current stage is complete
-      if (stageElapsed >= currentStageData.duration && stageIndex < totalStages - 1) {
-        stageIndex++;
-        stageStartTime = now;
-        setCurrentStage(stageIndex);
+      // Update current stage based on elapsed time (equal time per stage)
+      const newStageIndex = Math.min(Math.floor(elapsed / stageDuration), totalStages - 1);
+      
+      if (newStageIndex !== stageIndex) {
+        stageIndex = newStageIndex;
+        setCurrentStage(newStageIndex);
       }
 
-      // Continue if not complete and not at max progress
-      if (overallProgress < maxProgress) {
-        requestAnimationFrame(updateProgress);
+      // Stop if complete or at max progress
+      if (currentProgress >= maxProgress) {
+        clearInterval(progressInterval);
       }
-    };
-
-    // Start progress animation
-    requestAnimationFrame(updateProgress);
+    }, 100);
 
     // Change fact every 6 seconds
     const factInterval = setInterval(() => {
       setFactIndex(prev => {
-        const nextIndex = (prev + 1) % shuffledFacts.length;
-        setCurrentFact(shuffledFacts[nextIndex]);
+        const nextIndex = (prev + 1) % shuffled.length;
+        setCurrentFact(shuffled[nextIndex]);
         return nextIndex;
       });
     }, 6000);
 
     return () => {
+      clearInterval(progressInterval);
       clearInterval(factInterval);
     };
-  }, [isOpen, shuffledFacts, isComplete]);
+  }, [isOpen, isComplete]);
 
   // When quiz is complete, animate to 100%
   useEffect(() => {
@@ -158,8 +161,9 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Creating Your Quiz</h2>
               <button
-                onClick={onClose}
-                className="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                onClick={onCancel || onClose}
+                className="text-gray-400 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                title="Cancel Quiz Generation"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

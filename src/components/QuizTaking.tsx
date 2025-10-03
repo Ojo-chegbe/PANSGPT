@@ -41,6 +41,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   useEffect(() => {
     async function fetchQuiz() {
@@ -171,6 +172,18 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
     }).length;
   };
 
+  const handleCancelQuiz = () => {
+    setShowCancelDialog(true);
+  };
+
+  const confirmCancel = () => {
+    router.push('/quiz');
+  };
+
+  const cancelCancel = () => {
+    setShowCancelDialog(false);
+  };
+
   const canProceed = () => {
     if (currentQuestion.questionType === 'MCQ') {
       return Array.isArray(currentAnswer) && currentAnswer.length === 3;
@@ -212,8 +225,18 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 text-gray-800 dark:text-white py-8">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Theme Toggle */}
-        <div className="flex justify-end mb-4">
+        {/* Header with Theme Toggle and Close Button */}
+        <div className="flex justify-between items-center mb-4">
+          <button
+            onClick={handleCancelQuiz}
+            className="flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-300 dark:border-red-700/40 rounded-lg transition-colors"
+            title="Cancel Quiz"
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Cancel Quiz
+          </button>
           <ThemeToggle />
         </div>
         
@@ -387,6 +410,43 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
         {error && (
           <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/60 border border-red-200 dark:border-red-700/40 rounded-lg text-red-700 dark:text-red-400">
             {error}
+          </div>
+        )}
+
+        {/* Cancel Confirmation Dialog */}
+        {showCancelDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-[#181A1B] rounded-lg p-6 max-w-md mx-4 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 w-10 h-10 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Cancel Quiz?
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                  Are you sure you want to cancel this quiz? Your progress will be lost and you'll need to start over.
+                </p>
+                <div className="flex space-x-3 justify-center">
+                  <button
+                    onClick={cancelCancel}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                  >
+                    Continue Quiz
+                  </button>
+                  <button
+                    onClick={confirmCancel}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                  >
+                    Cancel Quiz
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

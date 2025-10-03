@@ -33,6 +33,7 @@ export default function QuizSelectionForm() {
   const [isQuizComplete, setIsQuizComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
   const [formData, setFormData] = useState<QuizFormData>({
     courseCode: '',
@@ -148,6 +149,10 @@ export default function QuizSelectionForm() {
       return;
     }
 
+    // Create abort controller for cancellation
+    const controller = new AbortController();
+    setAbortController(controller);
+
     setIsGenerating(true);
     setShowLoadingModal(true);
     setIsQuizComplete(false);
@@ -161,6 +166,7 @@ export default function QuizSelectionForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
+        signal: controller.signal,
       });
 
       const data = await response.json();
@@ -182,10 +188,15 @@ export default function QuizSelectionForm() {
       }, 1000);
 
     } catch (err: any) {
-      setError(err.message || 'Failed to generate quiz');
+      if (err.name === 'AbortError') {
+        setError('Quiz generation cancelled');
+      } else {
+        setError(err.message || 'Failed to generate quiz');
+      }
       setShowLoadingModal(false);
     } finally {
       setIsGenerating(false);
+      setAbortController(null);
     }
   };
 
@@ -193,6 +204,16 @@ export default function QuizSelectionForm() {
     setShowLoadingModal(false);
     setIsGenerating(false);
     setIsQuizComplete(false);
+  };
+
+  const handleCancelQuizGeneration = () => {
+    if (abortController) {
+      abortController.abort();
+    }
+    setShowLoadingModal(false);
+    setIsGenerating(false);
+    setIsQuizComplete(false);
+    setError('Quiz generation cancelled');
   };
 
   if (!session) {
@@ -423,6 +444,7 @@ export default function QuizSelectionForm() {
       <QuizLoadingModal 
         isOpen={showLoadingModal} 
         onClose={handleCloseLoadingModal}
+        onCancel={handleCancelQuizGeneration}
         isComplete={isQuizComplete}
       />
     </div>

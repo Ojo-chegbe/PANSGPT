@@ -1,0 +1,38 @@
+[33mcommit a3e5395eae6c3440e9fc0950a486771ad180907d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Ojo-chegbe <104581593+Ojo-chegbe@users.noreply.github.com>
+Date:   Fri Oct 3 10:53:40 2025 +0100
+
+    feat: implement automatic conversation naming and UI improvements
+    
+    - Add automatic conversation title generation from first user message
+    - Create temporary conversations that only save to database when user sends first message
+    - Move logo to top of sidebar and make it bigger, left-aligned
+    - Add click-outside handler for three-dot menu in conversation list
+    - Prevent empty conversations from being saved to database
+    - Improve user experience with better conversation management
+
+public/uploads/Logo 2.png
+src/app/faq/page.tsx
+src/app/feedback/page.tsx
+src/app/globals.css
+src/app/layout.tsx
+src/app/login/page.tsx
+src/app/main/page.tsx
+src/app/page.tsx
+src/app/plan/page.tsx
+src/app/profile/page.tsx
+src/app/providers.tsx
+src/app/quiz/[id]/page.tsx
+src/app/quiz/[id]/results/page.tsx
+src/app/quiz/history/page.tsx
+src/app/quiz/page.tsx
+src/components/QuizHistory.tsx
+src/components/QuizLoadingModal.tsx
+src/components/QuizResults.tsx
+src/components/QuizSelectionForm.tsx
+src/components/QuizSummaryCards.tsx
+src/components/QuizTaking.tsx
+src/components/ThemeToggle.tsx
+src/contexts/ThemeContext.tsx
+src/lib/conversation-title-generator.ts
+tailwind.config.js

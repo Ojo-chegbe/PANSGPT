@@ -13,6 +13,9 @@ const montserrat = Montserrat({
 export const metadata = {
   title: 'PansGPT - AI Academic Assistant',
   description: 'AI-powered academic assistant for students',
+  icons: {
+    icon: '/favicon.png',
+  },
 }
 
 export default function RootLayout({
