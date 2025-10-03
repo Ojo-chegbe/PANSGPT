@@ -8,6 +8,13 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+/* Dark mode variables */
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 17, 24, 39;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
@@ -24,11 +31,11 @@ body {
 }
 
 .markdown-math.ai-response {
-  @apply text-white;
+  @apply text-gray-800 dark:text-white;
 }
 
 .markdown-math.user-message {
-  @apply text-white;
+  @apply text-white dark:text-white;
 }
 
 /* Callout Boxes */
@@ -37,23 +44,23 @@ body {
 }
 
 .callout-key-concept {
-  @apply bg-blue-900/30 border-blue-400 text-blue-100;
+  @apply bg-blue-50 border-blue-500 text-blue-800 dark:bg-blue-900/30 dark:border-blue-400 dark:text-blue-100;
 }
 
 .callout-example {
-  @apply bg-green-900/30 border-green-400 text-green-100;
+  @apply bg-green-50 border-green-500 text-green-800 dark:bg-green-900/30 dark:border-green-400 dark:text-green-100;
 }
 
 .callout-important {
-  @apply bg-yellow-900/30 border-yellow-400 text-yellow-100;
+  @apply bg-yellow-50 border-yellow-500 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-400 dark:text-yellow-100;
 }
 
 .callout-warning {
-  @apply bg-red-900/30 border-red-400 text-red-100;
+  @apply bg-red-50 border-red-500 text-red-800 dark:bg-red-900/30 dark:border-red-400 dark:text-red-100;
 }
 
 .callout-formula {
-  @apply bg-gray-900/30 border-gray-400 text-gray-100;
+  @apply bg-gray-50 border-gray-500 text-gray-800 dark:bg-gray-900/30 dark:border-gray-400 dark:text-gray-100;
 }
 
 /* Callout Box Icons */
@@ -71,11 +78,11 @@ body {
 
 /* Enhanced Formula Styling */
 .formula-box {
-  @apply bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 my-4 text-center;
+  @apply bg-gray-50 border border-gray-200 text-gray-800 dark:bg-gray-800/50 dark:border-gray-700 dark:text-white rounded-lg p-4 my-4 text-center;
 }
 
 .formula-inline {
-  @apply bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-2 py-1 rounded font-mono text-sm;
+  @apply bg-gray-100 text-blue-600 dark:bg-gray-800 dark:text-blue-400 px-2 py-1 rounded font-mono text-sm;
 }
 
 /* Better List Styling */
@@ -133,19 +140,19 @@ body {
   @apply font-mono text-sm;
 }
 
-/* Enhanced Table Styling - Transparent with Complete Grid Lines */
+/* Enhanced Table Styling */
 .markdown-math table {
-  @apply w-full border-collapse border border-white rounded-lg overflow-hidden my-6;
+  @apply w-full border-collapse border border-gray-300 dark:border-white rounded-lg overflow-hidden my-6;
   background: transparent;
 }
 
 .markdown-math th {
-  @apply font-semibold text-left px-4 py-3 border border-white text-white;
+  @apply font-semibold text-left px-4 py-3 border border-gray-300 dark:border-white text-gray-800 dark:text-white;
   background: transparent;
 }
 
 .markdown-math td {
-  @apply px-4 py-3 border border-white text-white;
+  @apply px-4 py-3 border border-gray-300 dark:border-white text-gray-800 dark:text-white;
   background: transparent;
 }
 
@@ -159,7 +166,7 @@ body {
 
 /* Table wrapper for responsive scrolling */
 .markdown-math .table-wrapper {
-  @apply overflow-x-auto my-6 rounded-lg border border-white;
+  @apply overflow-x-auto my-6 rounded-lg border border-gray-300 dark:border-white;
   background: transparent;
 }
 
@@ -169,12 +176,12 @@ body {
 }
 
 .markdown-math .formula-table th {
-  @apply text-white font-bold;
+  @apply text-gray-800 dark:text-white font-bold;
   background: transparent;
 }
 
 .markdown-math .formula-table td {
-  @apply text-center font-mono text-white;
+  @apply text-center font-mono text-gray-800 dark:text-white;
   background: transparent;
 }
 
@@ -184,12 +191,12 @@ body {
 }
 
 .markdown-math .data-table th {
-  @apply text-white;
+  @apply text-gray-800 dark:text-white;
   background: transparent;
 }
 
 .markdown-math .data-table td {
-  @apply text-white;
+  @apply text-gray-800 dark:text-white;
   background: transparent;
 }
 
@@ -199,18 +206,18 @@ body {
 }
 
 .markdown-math .comparison-table th {
-  @apply text-white;
+  @apply text-gray-800 dark:text-white;
   background: transparent;
 }
 
 .markdown-math .comparison-table td {
-  @apply text-white;
+  @apply text-gray-800 dark:text-white;
   background: transparent;
 }
 
 /* Table caption styling */
 .markdown-math table caption {
-  @apply text-sm text-white mt-2 mb-4 font-medium;
+  @apply text-sm text-gray-800 dark:text-white mt-2 mb-4 font-medium;
 }
 
 /* Table cell content alignment */
@@ -316,25 +323,44 @@ body {
   }
 }
 
-/* Dark Mode Enhancements */
-@media (prefers-color-scheme: dark) {
-  .callout-key-concept {
-    @apply bg-blue-900/20 border-blue-400;
-  }
-  
-  .callout-example {
-    @apply bg-green-900/20 border-green-400;
-  }
-  
-  .callout-important {
-    @apply bg-yellow-900/20 border-yellow-400;
-  }
-  
-  .callout-warning {
-    @apply bg-red-900/20 border-red-400;
-  }
-  
-  .callout-formula {
-    @apply bg-gray-800/50 border-gray-600;
-  }
+/* Theme-specific utility classes */
+.bg-theme-primary {
+  @apply bg-white dark:bg-black;
+}
+
+.bg-theme-secondary {
+  @apply bg-gray-50 dark:bg-gray-900;
+}
+
+.bg-theme-card {
+  @apply bg-white dark:bg-gray-800;
+}
+
+.text-theme-primary {
+  @apply text-gray-900 dark:text-white;
+}
+
+.text-theme-secondary {
+  @apply text-gray-600 dark:text-gray-300;
+}
+
+.text-theme-muted {
+  @apply text-gray-500 dark:text-gray-400;
+}
+
+.border-theme {
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.border-theme-light {
+  @apply border-gray-100 dark:border-gray-800;
+}
+
+/* Gradient backgrounds for themes */
+.bg-gradient-theme-primary {
+  @apply bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-black;
+}
+
+.bg-gradient-theme-secondary {
+  @apply bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900;
 } 

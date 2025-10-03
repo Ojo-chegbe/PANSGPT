@@ -14,7 +14,7 @@ interface ProgressStage {
   id: string;
   title: string;
   description: string;
-  duration: number; // in milliseconds
+  duration: number;
   icon: string;
 }
 
@@ -22,47 +22,39 @@ const PROGRESS_STAGES: ProgressStage[] = [
   {
     id: 'analyzing',
     title: 'Analyzing Course Content',
-    description: 'Scanning through your course materials and identifying key concepts...',
-    duration: 6000,
+    description: 'AI is reviewing your course materials and identifying key concepts...',
+    duration: 4000,
     icon: '🔍'
-  },
-  {
-    id: 'processing',
-    title: 'Processing Learning Objectives',
-    description: 'Understanding the learning outcomes and difficulty requirements...',
-    duration: 5000,
-    icon: '🎯'
   },
   {
     id: 'generating',
     title: 'Generating Questions',
-    description: 'Creating diverse and challenging questions tailored to your level...',
-    duration: 8000,
-    icon: '⚡'
+    description: 'Creating thoughtful questions that test your understanding...',
+    duration: 5000,
+    icon: '💡'
   },
   {
     id: 'optimizing',
     title: 'Optimizing Difficulty',
-    description: 'Fine-tuning question complexity and ensuring proper distribution...',
-    duration: 4000,
+    description: 'Balancing question difficulty to match your learning level...',
+    duration: 3500,
     icon: '⚖️'
   },
   {
-    id: 'validating',
-    title: 'Validating Questions',
-    description: 'Checking question quality and ensuring educational value...',
-    duration: 5000,
+    id: 'reviewing',
+    title: 'Quality Review',
+    description: 'Ensuring questions are clear, accurate, and educational...',
+    duration: 3000,
     icon: '✅'
   },
   {
     id: 'finalizing',
     title: 'Finalizing Quiz',
-    description: 'Adding explanations and preparing your personalized quiz...',
+    description: 'Adding finishing touches and preparing your personalized quiz...',
     duration: 3000,
     icon: '✨'
   }
 ];
-
 
 export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }: QuizLoadingModalProps) {
   const [currentStage, setCurrentStage] = useState(0);
@@ -84,6 +76,7 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
     let stageProgress = 0;
     const totalStages = PROGRESS_STAGES.length;
     let stageStartTime = Date.now();
+    
     const updateProgress = () => {
       const now = Date.now();
       const stageElapsed = now - stageStartTime;
@@ -132,7 +125,7 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
     return () => {
       clearInterval(factInterval);
     };
-  }, [isOpen, isComplete]);
+  }, [isOpen, shuffledFacts, isComplete]);
 
   // When quiz is complete, animate to 100%
   useEffect(() => {
@@ -152,21 +145,21 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/80 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       >
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
-          className="bg-gradient-to-br from-[#181A1B] to-[#232625] rounded-2xl shadow-2xl border border-green-700/30 max-w-2xl w-full max-h-[90vh] overflow-hidden"
+          className="bg-gradient-to-br from-white to-gray-50 dark:from-[#181A1B] dark:to-[#232625] rounded-2xl shadow-2xl border border-gray-200 dark:border-emerald-700/30 max-w-2xl w-full max-h-[90vh] overflow-hidden"
         >
           {/* Header */}
-          <div className="p-6 border-b border-green-700/20">
+          <div className="p-6 border-b border-gray-200 dark:border-emerald-700/20">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-green-400">Creating Your Quiz</h2>
+              <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Creating Your Quiz</h2>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -183,20 +176,20 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">{currentStageData.icon}</div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white">{currentStageData.title}</h3>
-                  <p className="text-gray-300 text-sm">{currentStageData.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{currentStageData.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">{currentStageData.description}</p>
                 </div>
               </div>
 
               {/* Progress Bar */}
               <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-400">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                   <span>Progress</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
-                <div className="w-full bg-gray-700/40 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-gray-200 dark:bg-gray-700/40 rounded-full h-3 overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full"
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
@@ -211,10 +204,10 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
                     key={stage.id}
                     className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                       index <= currentStage
-                        ? 'bg-green-500'
+                        ? 'bg-emerald-500'
                         : index === currentStage + 1
-                        ? 'bg-green-500/50'
-                        : 'bg-gray-700/40'
+                        ? 'bg-emerald-500/50'
+                        : 'bg-gray-300 dark:bg-gray-700/40'
                     }`}
                   />
                 ))}
@@ -222,9 +215,9 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
             </div>
 
             {/* Did You Know Section */}
-            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 rounded-xl p-6 border border-blue-700/30">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700/30">
               <div className="flex-1">
-                <h4 className="text-lg font-semibold text-blue-400 mb-4">Did You Know?</h4>
+                <h4 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-4">Did You Know?</h4>
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={currentFact?.id}
@@ -232,7 +225,7 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.5 }}
-                    className="text-white text-sm leading-relaxed"
+                    className="text-gray-800 dark:text-white text-sm leading-relaxed"
                   >
                     {currentFact?.fact}
                   </motion.p>
@@ -243,7 +236,7 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
                       <div
                         key={index}
                         className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                          index === factIndex ? 'bg-blue-400' : 'bg-blue-400/30'
+                          index === factIndex ? 'bg-blue-500 dark:bg-blue-400' : 'bg-blue-300 dark:bg-blue-400/30'
                         }`}
                       />
                     ))}
@@ -251,13 +244,12 @@ export default function QuizLoadingModal({ isOpen, onClose, isComplete = false }
                 </div>
               </div>
             </div>
-
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-green-700/20 bg-gray-900/50">
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-400">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <div className="p-6 border-t border-gray-200 dark:border-emerald-700/20 bg-gray-50 dark:bg-gray-900/50">
+            <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
               <span>AI is working hard to create the perfect quiz for you...</span>
             </div>
           </div>

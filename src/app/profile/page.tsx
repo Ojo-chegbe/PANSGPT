@@ -7,6 +7,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import QuizSummaryCards from '../../components/QuizSummaryCards';
 import { clearDeviceId } from '../../lib/device-id';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface TimetableEntry {
   id: string;
@@ -20,6 +21,7 @@ interface TimetableEntry {
 export default function ProfilePage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { theme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ name: '', bio: '', level: '', image: '' });
@@ -172,21 +174,21 @@ export default function ProfilePage() {
   };
 
   if (!user) {
-    return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-theme-primary">Loading...</div>;
   }
 
   // Use user object for all profile fields, and data.stats/achievements for stats
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white flex flex-col items-center py-10 px-4">
-      <div className="w-full max-w-3xl bg-[#181A1B] rounded-2xl shadow-xl p-8 flex flex-col gap-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-theme-primary flex flex-col items-center py-10 px-4">
+      <div className="w-full max-w-3xl bg-white dark:bg-[#181A1B] rounded-2xl dark:shadow-xl p-8 flex flex-col gap-8 border border-gray-200 dark:border-gray-700">
         {/* Personal Info - Modern Revamp */}
-        <div className="flex flex-col items-center gap-6 border-b border-gray-700 pb-10">
-          <div className="w-full max-w-lg mx-auto bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/80 rounded-3xl shadow-2xl p-8 flex flex-col items-center backdrop-blur-md border border-gray-700">
-            <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-white text-center mb-2 drop-shadow-lg">{user.name}</div>
-            <span className="inline-block px-4 py-1 rounded-full bg-green-500/20 text-green-400 font-bold text-base mb-2 shadow">Level {user.level}</span>
-            <div className="text-base text-gray-400 text-center mb-4 select-all">{user.email}</div>
+        <div className="flex flex-col items-center gap-6 border-b border-theme pb-10">
+          <div className="w-full max-w-lg mx-auto bg-gradient-to-br from-gray-100/80 via-gray-50/70 to-gray-100/80 dark:from-gray-900/80 dark:via-gray-800/70 dark:to-gray-900/80 rounded-3xl dark:shadow-2xl p-8 flex flex-col items-center backdrop-blur-md border border-theme">
+            <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-theme-primary text-center mb-2 dark:drop-shadow-lg">{user.name}</div>
+            <span className="inline-block px-4 py-1 rounded-full bg-green-500/20 text-green-600 dark:text-green-400 font-bold text-base mb-2 dark:shadow">Level {user.level}</span>
+            <div className="text-base text-theme-secondary text-center mb-4 select-all">{user.email}</div>
             {user.bio && (
-              <div className="w-full bg-white/5 border border-green-400/20 rounded-xl px-5 py-3 text-green-200 text-center italic mb-4 shadow-inner backdrop-blur-sm">
+              <div className="w-full bg-green-50/80 dark:bg-white/5 border border-green-300/40 dark:border-green-400/20 rounded-xl px-5 py-3 text-green-700 dark:text-green-200 text-center italic mb-4 dark:shadow-inner backdrop-blur-sm">
                 {user.bio}
               </div>
             )}
@@ -198,14 +200,14 @@ export default function ProfilePage() {
         {quizAnalytics && <QuizSummaryCards analytics={quizAnalytics} />}
 
         {/* Class Timetable */}
-        <div className="border-b border-gray-700 pb-8">
+        <div className="border-b border-theme pb-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-            <div className="text-lg font-bold">Class Timetable</div>
+            <div className="text-lg font-bold text-theme-primary">Class Timetable</div>
             <div className="flex gap-2">
               <select
                 value={selectedDay}
                 onChange={(e) => setSelectedDay(e.target.value)}
-                className="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-white text-sm"
+                className="bg-gray-100 dark:bg-gray-800 border border-theme rounded px-3 py-1 text-theme-primary text-sm"
               >
                 {days.map(day => (
                   <option key={day} value={day}>{day}</option>
@@ -215,29 +217,29 @@ export default function ProfilePage() {
           </div>
           
           {timetableLoading ? (
-            <div className="text-center py-8 text-gray-400">Loading timetable...</div>
+            <div className="text-center py-8 text-theme-muted">Loading timetable...</div>
           ) : (
             <div className="space-y-3">
               {(() => {
                 const dayEntries = timetable.filter(entry => entry.day === selectedDay);
                 return dayEntries.length > 0 ? (
                   dayEntries.map(entry => (
-                    <div key={entry.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                    <div key={entry.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-theme">
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                         <div className="flex-1">
-                          <div className="font-semibold text-yellow-400">{entry.timeSlot}</div>
-                          <div className="text-sm text-gray-300">
+                          <div className="font-semibold text-yellow-600 dark:text-yellow-400">{entry.timeSlot}</div>
+                          <div className="text-sm text-theme-secondary">
                             {entry.courseCode} - {entry.courseTitle}
                           </div>
                         </div>
-                        <div className="text-xs text-gray-500 bg-gray-700 px-2 py-1 rounded">
+                        <div className="text-xs text-theme-muted bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
                           {entry.level} Level
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-400">
+                  <div className="text-center py-8 text-theme-muted">
                     No classes scheduled for {selectedDay}
                   </div>
                 );
@@ -248,17 +250,17 @@ export default function ProfilePage() {
 
         {/* Achievements/Badges */}
         <div className="flex flex-col gap-2 items-center">
-          <div className="text-lg font-bold mb-2">Achievements</div>
+          <div className="text-lg font-bold mb-2 text-theme-primary">Achievements</div>
           <div className="flex flex-wrap gap-4 justify-center">
             {(user.achievements && user.achievements.length > 0) ? (
               user.achievements.map((ach: string) => (
-                <div key={ach} className="flex flex-col items-center bg-gray-800 px-4 py-3 rounded-xl shadow border border-gray-700">
+                <div key={ach} className="flex flex-col items-center bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl dark:shadow border border-theme">
                   <span className="text-3xl mb-1">{achievementIcons[ach] || "🎖️"}</span>
-                  <span className="text-xs text-gray-300 font-semibold">{ach}</span>
+                  <span className="text-xs text-theme-secondary font-semibold">{ach}</span>
               </div>
               ))
             ) : (
-              <div className="text-gray-400 text-sm italic py-4">No achievements yet. Keep using the app to unlock them!</div>
+              <div className="text-theme-muted text-sm italic py-4">No achievements yet. Keep using the app to unlock them!</div>
             )}
           </div>
         </div>
@@ -267,14 +269,14 @@ export default function ProfilePage() {
         {/* Plan Page Button */}
         <div className="flex justify-center gap-4 mt-6">
           <Link href="/plan">
-            <button className="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition">
+            <button className="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition dark:shadow-md">
               Go to Plan Page
             </button>
           </Link>
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="px-6 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed dark:shadow-md"
           >
             {loggingOut ? 'Logging out...' : 'Logout'}
           </button>

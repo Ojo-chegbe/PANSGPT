@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { ClipboardIcon, PencilIcon } from '@heroicons/react/24/outline';
 import MarkdownWithMath from '@/components/MarkdownWithMath';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { generateConversationTitle, isDefaultTitle } from '@/lib/conversation-title-generator';
 
 type MessageRole = 'user' | 'system' | 'model';
 
@@ -60,29 +62,29 @@ const MessageList = React.memo(({
     {messages.map((message, idx) => (
       <div key={idx} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
         <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className={`rounded-2xl p-5 md:p-6 shadow-lg transition-all duration-200 ${
+          <div className={`rounded-2xl p-5 md:p-6 transition-all duration-200 ${
             message.role === 'user'
-              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-emerald-500/20'
-              : 'bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl text-white border border-gray-700/50 shadow-xl'
+              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
+              : 'bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/90 dark:to-gray-900/90 backdrop-blur-xl text-gray-800 dark:text-white border border-gray-200/50 dark:border-gray-700/50'
           }`}>
             {editingIdx === idx ? (
               <div className="flex flex-col gap-2">
                 <textarea
                   value={editingText}
                   onChange={(e) => setEditingText(e.target.value)}
-                  className="w-full p-2 text-gray-800 rounded border focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base"
+                  className="w-full p-2 text-gray-800 dark:text-white bg-white dark:bg-gray-800 rounded border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm md:text-base"
                   rows={3}
                 />
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => handleEditCancel()}
-                    className="px-2 py-1 text-xs md:text-sm text-gray-600 hover:text-gray-800"
+                    className="px-2 py-1 text-xs md:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => handleEditSave(idx)}
-                    className="px-2 py-1 text-xs md:text-sm bg-green-500 text-white rounded hover:bg-green-600"
+                    className="px-2 py-1 text-xs md:text-sm bg-emerald-500 text-white rounded hover:bg-emerald-600"
                   >
                     Send
                   </button>
@@ -92,7 +94,7 @@ const MessageList = React.memo(({
               <>
                 <MarkdownWithMath content={message.content} role={message.role} />
                 {message.role === 'model' && message.hasContext && (
-                  <div className="mt-1.5 md:mt-2 text-xs md:text-sm text-gray-500 italic">
+                  <div className="mt-1.5 md:mt-2 text-xs md:text-sm text-gray-500 dark:text-gray-400 italic">
                     Information from uploaded documents
                   </div>
                 )}
@@ -103,11 +105,11 @@ const MessageList = React.memo(({
           <div className={`flex items-center gap-2 md:gap-3 mt-1 justify-${message.role === 'user' ? 'end' : 'start'} opacity-0 group-hover:opacity-100 transition-opacity`}>
             <button
               onClick={() => handleCopy(idx, message.content)}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors"
               title="Copy message"
             >
               {copiedIdx === idx ? (
-                <span className="text-xs text-green-400">Copied!</span>
+                <span className="text-xs text-emerald-500">Copied!</span>
               ) : (
                 <ClipboardIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
               )}
@@ -115,7 +117,7 @@ const MessageList = React.memo(({
             {message.role === 'user' && (
               <button
                 onClick={() => handleEdit(idx)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors"
                 title="Edit message"
               >
                 <PencilIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -130,14 +132,14 @@ const MessageList = React.memo(({
     {isLoading && (
       <div className="flex justify-start">
         <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className="rounded-2xl p-4 md:p-5 text-white bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-xl border border-gray-700/50 shadow-xl animate-pulse">
+          <div className="rounded-2xl p-4 md:p-5 text-gray-800 dark:text-white bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/90 dark:to-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 animate-pulse">
             <div className="flex items-center gap-3">
               <div className="flex space-x-1">
                 <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce"></div>
                 <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                 <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
-              <span className="text-sm text-gray-200 font-medium">PANSGPT is thinking...</span>
+              <span className="text-sm text-gray-600 dark:text-gray-200 font-medium">PANSGPT is thinking...</span>
             </div>
           </div>
         </div>
@@ -164,22 +166,22 @@ const InputArea = React.memo(({
     onSubmit={handleSend}
     className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'} px-3 md:px-24 pb-3 md:pb-8`}
   >
-    <div className={`bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-xl rounded-2xl flex items-center px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 shadow-2xl ${
+    <div className={`bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl rounded-2xl flex items-center px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 ${
       isLoading 
-        ? 'border-emerald-400 shadow-lg shadow-emerald-400/20' 
-        : 'border-gray-700/50 hover:border-gray-600/50'
+        ? 'border-emerald-400' 
+        : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/50 dark:hover:border-gray-600/50'
     }`}>
       <input
         type="text"
         placeholder={isLoading ? "PANSGPT is processing your message..." : "Ask a question from any course."}
-        className="flex-1 bg-transparent outline-none text-sm md:text-base text-white placeholder-gray-400"
+        className="flex-1 bg-transparent outline-none text-sm md:text-base text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
         value={input}
         onChange={handleInputChange}
         disabled={isLoading}
       />
       <button
         type="submit"
-        className="ml-3 md:ml-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 shadow-lg shadow-emerald-500/20"
+        className="ml-3 md:ml-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200"
         disabled={isLoading || !input.trim()}
       >
         {isLoading ? (
@@ -199,10 +201,9 @@ export default function MainPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const menuRef = useRef(null);
   const userMenuRef = useRef(null);
+  const historyMenuRef = useRef(null);
   const [userSubscription, setUserSubscription] = useState<SubscriptionStatus | null>(null);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
@@ -423,8 +424,12 @@ export default function MainPage() {
   // Close dropdowns on outside click
   React.useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (menuRef.current && !(menuRef.current as any).contains(e.target)) setShowMenu(false);
-      if (userMenuRef.current && !(userMenuRef.current as any).contains(e.target)) setShowUserMenu(false);
+      if (userMenuRef.current && !(userMenuRef.current as any).contains(e.target)) {
+        setShowUserMenu(false);
+      }
+      if (historyMenuRef.current && !(historyMenuRef.current as any).contains(e.target)) {
+        setHistoryMenuIdx(null);
+      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -434,30 +439,23 @@ export default function MainPage() {
   async function handleNewChat() {
     if (!session?.user?.id) return;
     try {
-      const response = await fetch("/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: "New Conversation",
-          messages: [],
-          userId: session.user.id,
-        }),
-        credentials: "include",
-      });
+      // Create a temporary conversation (not saved to database yet)
+      const tempId = `temp_${Date.now()}`;
+      const tempConversation = {
+        id: tempId,
+        name: "New Conversation",
+        messages: []
+      };
       
-      if (response.ok) {
-        const newConversation = await response.json();
-        const formattedConversation = {
-          id: newConversation.id,
-          name: newConversation.title,
-          messages: []
-        };
-        setConversations(prev => [formattedConversation, ...prev]);
-        setActiveId(newConversation.id);
-        setMessages([]);
-        setEditingIdx(null);
-        setEditingText("");
-      }
+      setConversations(prev => [tempConversation, ...prev]);
+      setActiveId(tempId);
+      setMessages([]);
+      setEditingIdx(null);
+      setEditingText("");
+      
+      console.log('Created temporary conversation for new chat:', {
+        tempConversationId: tempId
+      });
     } catch (err) {
       console.error("Error creating new conversation:", err);
     }
@@ -491,30 +489,9 @@ export default function MainPage() {
             } : null
           });
           
-          if (data.conversations && data.conversations.length > 0) {
-            const formattedConversations = data.conversations.map((conv: any) => ({
-              id: conv.id,
-              name: conv.title,
-              messages: conv.messages.map((msg: any) => ({
-                role: msg.role as MessageRole,
-                content: msg.content,
-                createdAt: new Date(msg.createdAt)
-              }))
-            }));
-            setConversations(formattedConversations);
-            setActiveId(formattedConversations[0].id);
-            setMessages(formattedConversations[0].messages);
-            
-            console.log('Set conversations in state:', {
-              conversationsCount: formattedConversations.length,
-              activeId: formattedConversations[0].id,
-              firstConversationMessages: formattedConversations[0].messages.length
-            });
-          } else {
-            // Create a new conversation in the database if none exist
-            console.log('No conversations found, creating new one');
-            await createNewConversation();
-          }
+          // Always create a new conversation when user opens the site
+          console.log('Creating new conversation for user session');
+          await createNewConversation();
         } catch (err) {
           console.error("Error loading user data:", err);
           // Create a new conversation if there's an error
@@ -525,33 +502,48 @@ export default function MainPage() {
     loadData();
   }, [session?.user?.id]);
 
-  // Function to create a new conversation in the database
+  // Function to create a new conversation (UI-only, not saved to database until first message)
   const createNewConversation = async () => {
     if (!session?.user?.id) return;
     
     try {
-      const response = await fetch("/api/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: "New Conversation",
-          messages: [],
-          userId: session.user.id,
-        }),
-        credentials: "include",
+      // Load existing conversations for the sidebar
+      const conversationsResponse = await fetch(`/api/conversations?userId=${session.user.id}&limit=10&messageLimit=50`, {
+        credentials: 'include',
       });
+      const conversationsData = await conversationsResponse.json();
       
-      if (response.ok) {
-        const newConversation = await response.json();
-        const formattedConversation = {
-          id: newConversation.id,
-          name: newConversation.title,
-          messages: []
-        };
-        setConversations([formattedConversation]);
-        setActiveId(newConversation.id);
-        setMessages([]);
+      let existingConversations = [];
+      if (conversationsData.conversations && conversationsData.conversations.length > 0) {
+        existingConversations = conversationsData.conversations.map((conv: any) => ({
+          id: conv.id,
+          name: conv.title,
+          messages: conv.messages.map((msg: any) => ({
+            role: msg.role as MessageRole,
+            content: msg.content,
+            createdAt: new Date(msg.createdAt)
+          }))
+        }));
       }
+      
+      // Create a temporary conversation (not saved to database yet)
+      const tempId = `temp_${Date.now()}`;
+      const tempConversation = {
+        id: tempId,
+        name: "New Conversation",
+        messages: []
+      };
+      
+      // Add the temporary conversation to the beginning of the list
+      const allConversations = [tempConversation, ...existingConversations];
+      setConversations(allConversations);
+      setActiveId(tempId);
+      setMessages([]);
+      
+      console.log('Created temporary conversation (not saved to database yet):', {
+        tempConversationId: tempId,
+        totalConversations: allConversations.length
+      });
     } catch (err) {
       console.error("Error creating new conversation:", err);
     }
@@ -665,68 +657,128 @@ export default function MainPage() {
       // Auto-save after streaming completes, using latest messages from ref
       if (session?.user?.id) {
         const latestMessages = messagesRef.current;
-        const payload = {
-          id: activeId,
-          title: activeConv?.name || 'Conversation',
-          messages: latestMessages,
-          userId: session.user.id
-        };
         
-        console.log('Saving conversation:', {
-          activeId,
-          hasActiveConv: !!activeConv,
-          messageCount: latestMessages.length,
-          payload
-        });
+        // Check if this is a temporary conversation (first message)
+        const isTemporaryConversation = activeId?.startsWith('temp_');
         
-        const saveResponse = await fetch("/api/conversations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          credentials: 'include',
-        });
+        // Generate title from first user message if this is a new conversation or has default title
+        let conversationTitle = activeConv?.name || 'Conversation';
+        if (isDefaultTitle(conversationTitle) && latestMessages.length > 0) {
+          const firstUserMessage = latestMessages.find(msg => msg.role === 'user');
+          if (firstUserMessage) {
+            conversationTitle = generateConversationTitle(firstUserMessage.content);
+          }
+        }
         
-        if (saveResponse.ok) {
-          const savedConversation = await saveResponse.json();
-          console.log('Conversation saved successfully:', {
-            conversationId: savedConversation.id,
-            messageCount: savedConversation.messages?.length || 0
-          });
+        if (isTemporaryConversation) {
+          // This is the first message in a temporary conversation - create it in the database
+          console.log('Creating new conversation in database for first message');
           
-          const updatedConversation = {
-            id: savedConversation.id,
-            name: savedConversation.title,
-            messages: savedConversation.messages.map((msg: any) => ({
-              role: msg.role as MessageRole,
-              content: msg.content,
-              createdAt: new Date(msg.createdAt)
-            }))
+          const payload = {
+            title: conversationTitle,
+            messages: latestMessages,
+            userId: session.user.id
           };
           
-          // Update conversations list and set active conversation
-          setConversations(prev => {
-            const existingIndex = prev.findIndex(c => c.id === activeId);
-            if (existingIndex >= 0) {
-              // Update existing conversation
-              const updated = [...prev];
-              updated[existingIndex] = updatedConversation;
-              return updated;
-            } else {
-              // Add new conversation to the beginning
-              return [updatedConversation, ...prev];
-            }
+          const saveResponse = await fetch("/api/conversations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            credentials: 'include',
           });
           
-          // Update active ID if it changed (for new conversations)
-          if (savedConversation.id !== activeId) {
+          if (saveResponse.ok) {
+            const savedConversation = await saveResponse.json();
+            console.log('New conversation created in database:', {
+              conversationId: savedConversation.id,
+              messageCount: savedConversation.messages?.length || 0
+            });
+            
+            const updatedConversation = {
+              id: savedConversation.id,
+              name: savedConversation.title,
+              messages: savedConversation.messages.map((msg: any) => ({
+                role: msg.role as MessageRole,
+                content: msg.content,
+                createdAt: new Date(msg.createdAt)
+              }))
+            };
+            
+            // Replace the temporary conversation with the real one
+            setConversations(prev => {
+              const updated = [...prev];
+              const tempIndex = updated.findIndex(c => c.id === activeId);
+              if (tempIndex >= 0) {
+                updated[tempIndex] = updatedConversation;
+              }
+              return updated;
+            });
+            
+            // Update active ID to the real conversation ID
             setActiveId(savedConversation.id);
+            setMessages(updatedConversation.messages);
+          } else {
+            console.error('Failed to create conversation:', saveResponse.status, saveResponse.statusText);
+            const errorText = await saveResponse.text();
+            console.error('Error details:', errorText);
           }
-          
-          setMessages(updatedConversation.messages);
         } else {
-          console.error('Failed to save conversation:', saveResponse.status, saveResponse.statusText);
-          const errorText = await saveResponse.text();
-          console.error('Error details:', errorText);
+          // This is an existing conversation - update it
+          const payload = {
+            id: activeId,
+            title: conversationTitle,
+            messages: latestMessages,
+            userId: session.user.id
+          };
+          
+          console.log('Updating existing conversation:', {
+            activeId,
+            hasActiveConv: !!activeConv,
+            messageCount: latestMessages.length,
+            payload
+          });
+          
+          const saveResponse = await fetch("/api/conversations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            credentials: 'include',
+          });
+          
+          if (saveResponse.ok) {
+            const savedConversation = await saveResponse.json();
+            console.log('Conversation updated successfully:', {
+              conversationId: savedConversation.id,
+              messageCount: savedConversation.messages?.length || 0
+            });
+            
+            const updatedConversation = {
+              id: savedConversation.id,
+              name: savedConversation.title,
+              messages: savedConversation.messages.map((msg: any) => ({
+                role: msg.role as MessageRole,
+                content: msg.content,
+                createdAt: new Date(msg.createdAt)
+              }))
+            };
+            
+            // Update conversations list
+            setConversations(prev => {
+              const existingIndex = prev.findIndex(c => c.id === activeId);
+              if (existingIndex >= 0) {
+                const updated = [...prev];
+                updated[existingIndex] = updatedConversation;
+                return updated;
+              }
+              return prev;
+            });
+            
+            setMessages(updatedConversation.messages);
+          } else {
+            console.error('Failed to update conversation:', saveResponse.status, saveResponse.statusText);
+            const errorText = await saveResponse.text();
+            console.error('Error details:', errorText);
+          }
         }
       }
     } catch (error) {
@@ -819,15 +871,6 @@ export default function MainPage() {
     setRenameText("");
   }
 
-  // Add this useEffect to auto-create a conversation on mount:
-  React.useEffect(() => {
-    if (conversations.length === 0 && session?.user?.id) {
-      const id = Date.now().toString();
-      setConversations([{ id, name: 'New Conversation', messages: [] }]);
-      setActiveId(id);
-    }
-    // eslint-disable-next-line
-  }, [conversations.length, session?.user?.id]);
 
   // Add authentication check
   useEffect(() => {
@@ -841,15 +884,6 @@ export default function MainPage() {
     await signOut({ redirect: true, callbackUrl: "/" });
   };
 
-  // Add this function to delete the active conversation from the top nav bar
-  function handleDeleteActiveConv() {
-    if (!activeId) return;
-    const idx = conversations.findIndex(c => c.id === activeId);
-    if (idx !== -1) {
-      handleDeleteConv(idx);
-    }
-    setShowMenu(false); // Close the menu after deleting
-  }
 
   // Prevent background scroll when sidebar is open (mobile)
   useEffect(() => {
@@ -866,7 +900,7 @@ export default function MainPage() {
   // Don't render anything while checking authentication
   if (status === "loading") {
     return (
-      <div className="flex min-h-screen bg-black text-white items-center justify-center">
+      <div className="flex min-h-screen bg-white dark:bg-black text-gray-800 dark:text-white items-center justify-center">
         <div className="text-xl">Loading...</div>
       </div>
     );
@@ -878,39 +912,34 @@ export default function MainPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black text-white">
+    <div className="flex min-h-screen bg-white dark:bg-black text-gray-800 dark:text-white">
       {/* Sidebar */}
       {sidebarOpen && (
-        <aside className="w-[85vw] md:w-72 bg-gradient-to-b from-gray-900/95 to-gray-800/95 backdrop-blur-xl h-screen fixed left-0 top-0 z-50 flex flex-col border-r border-gray-700/50">
+        <aside className="w-[85vw] md:w-72 bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl h-screen fixed left-0 top-0 z-50 flex flex-col border-r border-gray-200/50 dark:border-gray-700/50">
           {/* Close button for mobile */}
           <button
-            className="absolute top-3 right-3 md:hidden text-gray-400 hover:text-white text-3xl z-50"
+            className="absolute top-3 right-3 md:hidden text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl z-50"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
           >
             &times;
           </button>
-          {/* Take a Quiz button at the top */}
-          <div className="pt-5 pb-2 flex-shrink-0">
-            <button
-              className="w-auto px-6 ml-4 text-left text-white bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-sm md:text-lg font-semibold rounded-xl py-3 transition-all duration-200 shadow-lg shadow-emerald-600/20"
-              onClick={() => {
-                if (userSubscription && (userSubscription.isActive || userSubscription.isTrial)) {
-                  window.location.href = '/quiz';
-                } else {
-                  window.location.href = '/plan';
-                }
-              }}
-              disabled={!userSubscription}
-            >
-              Take a Quiz
-            </button>
+          {/* Logo at the top */}
+          <div className="px-4 pt-4 pb-3 flex items-center justify-start">
+            <div className="w-32 h-32 md:w-36 md:h-36 relative">
+              <Image
+                src="/uploads/Logo 2.png"
+                alt="Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
           </div>
           {/* Chat history header with new chat icon */}
-          <div className="flex items-center justify-between px-4 mb-3 mt-2">
-            <div className="text-base md:text-lg font-semibold">Chat History</div>
+          <div className="flex items-center justify-between px-4 mb-3">
+            <div className="text-base md:text-lg font-semibold text-gray-800 dark:text-white">Chat History</div>
             <button
-              className="p-1 rounded hover:bg-gray-800 text-gray-300"
+              className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
               title="New Chat"
               onClick={handleNewChat}
             >
@@ -927,7 +956,7 @@ export default function MainPage() {
                 {conversations.map((conv, idx) => (
                   <li
                     key={conv.id}
-                    className={`px-3 py-2.5 md:px-4 md:py-3 rounded-xl cursor-pointer text-sm flex items-center justify-between transition-all duration-200 ${conv.id === activeId ? "bg-gradient-to-r from-emerald-600/20 to-emerald-700/20 text-white border border-emerald-500/30 shadow-lg" : "text-gray-300 hover:bg-gray-800/50 hover:text-white border border-transparent"}`}
+                    className={`px-3 py-2.5 md:px-4 md:py-3 rounded-xl cursor-pointer text-sm flex items-center justify-between transition-all duration-200 ${conv.id === activeId ? "bg-gradient-to-r from-emerald-600/20 to-emerald-700/20 text-emerald-700 dark:text-white border border-emerald-500/30" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-800 dark:hover:text-white border border-transparent"}`}
                     onClick={() => handleSelectConv(conv.id)}
                   >
                     {renamingIdx === idx ? (
@@ -936,21 +965,21 @@ export default function MainPage() {
                         className="flex-1 flex gap-2 items-center"
                       >
                         <input
-                          className="bg-gray-900 text-white rounded px-2 py-1 text-xs border border-gray-600 flex-1"
+                          className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 flex-1"
                           value={renameText || ""}
                           onChange={e => setRenameText(e.target.value)}
                           autoFocus
                         />
-                        <button type="submit" className="text-green-400 text-xs font-semibold">Save</button>
-                        <button type="button" className="text-gray-400 text-xs font-semibold" onClick={handleRenameCancel}>Cancel</button>
+                        <button type="submit" className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">Save</button>
+                        <button type="button" className="text-gray-500 dark:text-gray-400 text-xs font-semibold" onClick={handleRenameCancel}>Cancel</button>
                       </form>
                     ) : (
                       <>
                         <span className="truncate flex-1">{conv.name}</span>
                         {/* Three-dot menu (desktop only) */}
-                        <div className="relative">
+                        <div className="relative" ref={historyMenuRef}>
                           <button
-                            className="p-1 ml-2 rounded hover:bg-gray-800 text-gray-300"
+                            className="p-1 ml-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-300"
                             onClick={e => { e.stopPropagation(); setHistoryMenuIdx(idx === historyMenuIdx ? null : idx); }}
                           >
                             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -960,9 +989,9 @@ export default function MainPage() {
                             </svg>
                           </button>
                           {historyMenuIdx === idx && (
-                            <div className="absolute right-0 mt-2 w-32 bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl py-2 z-50 border border-gray-700/50">
-                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors" onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}>Rename</button>
-                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors" onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}>Delete conversation</button>
+                            <div className="absolute right-0 mt-2 w-32 bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/95 dark:to-gray-900/95 backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200/50 dark:border-gray-700/50">
+                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white" onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}>Rename</button>
+                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white" onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}>Delete conversation</button>
                             </div>
                           )}
                         </div>
@@ -973,28 +1002,17 @@ export default function MainPage() {
               </ul>
             </div>
           </div>
-          {/* Logo at the bottom */}
-          <div className="mt-6 mb-4 pl-4 flex items-end">
-            <div className="w-24 h-24 md:w-32 md:h-32 relative">
-              <Image
-                src="/uploads/Logo 2.png"
-                alt="Logo"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </div>
         </aside>
       )}
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-screen bg-black">
+      <div className={`flex-1 flex flex-col h-screen bg-white dark:bg-black transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}>
         {/* Top Bar - Fixed */}
-        <div className={`fixed top-0 right-0 z-40 bg-gradient-to-r from-gray-900/95 to-gray-800/95 backdrop-blur-xl border-b border-gray-700/50 flex items-center px-3 md:px-6 py-3 md:py-4 gap-2 md:gap-4 transition-all duration-300 ${
+        <div className={`fixed top-0 right-0 z-40 bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 flex items-center px-3 md:px-6 py-3 md:py-4 gap-2 md:gap-4 transition-all duration-300 ${
           sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'
         }`}>
           {/* Sidebar toggle button - moved here */}
           <button
-            className={`flex items-center justify-center rounded-full transition-all duration-200 bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-gray-600 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-400/20`}
+            className={`flex items-center justify-center rounded-full transition-all duration-200 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-300 dark:border-gray-600 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-400/20 text-gray-700 dark:text-white`}
             style={{ width: 36, height: 36, fontSize: 24 }}
             onClick={() => setSidebarOpen((open) => !open)}
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
@@ -1014,15 +1032,22 @@ export default function MainPage() {
           </button>
           {/* Left: empty for spacing on mobile, hidden on desktop */}
           <div className="w-8 md:hidden" />
-          {/* Center: Plan status - centered on mobile, right on desktop */}
-          <div className="flex-1 flex justify-center md:justify-end">
+          {/* Center: Take a Quiz button and theme toggle - centered on mobile, right on desktop */}
+          <div className="flex-1 flex justify-center md:justify-end items-center gap-3">
             <button
-              className="flex items-center gap-1.5 bg-gradient-to-r from-gray-800/80 to-gray-900/80 backdrop-blur-sm px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-medium hover:from-gray-700/80 hover:to-gray-800/80 transition-all duration-200 text-xs border border-gray-700/50 shadow-lg"
-              onClick={() => { window.location.href = '/plan'; }}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-semibold transition-all duration-200 text-xs shadow-lg shadow-emerald-600/20"
+              onClick={() => {
+                if (userSubscription && (userSubscription.isActive || userSubscription.isTrial)) {
+                  window.location.href = '/quiz';
+                } else {
+                  window.location.href = '/plan';
+                }
+              }}
               disabled={!userSubscription}
             >
-              {userSubscription?.isTrial ? 'Free Trial' : userSubscription?.planType === 'paid' ? 'Premium Plan' : 'No Active Plan'}
+              Take a Quiz
             </button>
+            <ThemeToggle />
           </div>
           {/* Right: User profile and menu */}
           <div className="flex items-center gap-2">
@@ -1037,24 +1062,30 @@ export default function MainPage() {
                 />
               </div>
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-40 md:w-48 bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl py-2 z-50 border border-gray-700/50">
+                <div className="absolute right-0 mt-2 w-40 md:w-48 bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/95 dark:to-gray-900/95 backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200/50 dark:border-gray-700/50">
                   <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors"
+                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
                     onClick={() => router.push('/profile')}
                   >
                     View Profile
                   </button>
-                  <button className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors"
+                  <button 
+                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
+                    onClick={() => router.push('/plan')}
+                  >
+                    View Plan
+                  </button>
+                  <button className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
                     onClick={() => router.push('/faq')}
                   >Help & FAQs</button>
                   <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors"
+                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
                     onClick={() => router.push('/feedback')}
                   >
                     Feedback
                   </button>
                   <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors" 
+                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white" 
                     onClick={handleLogout}
                   >
                     Logout
@@ -1062,29 +1093,10 @@ export default function MainPage() {
                 </div>
               )}
             </div>
-            {/* Three-dot vertical menu */}
-            <div className="relative" ref={menuRef}>
-              <button
-                className="text-white p-1.5 rounded-full hover:bg-gray-700"
-                onClick={() => setShowMenu((v) => !v)}
-                aria-label="Open menu"
-              >
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="5" r="2"/>
-                  <circle cx="12" cy="12" r="2"/>
-                  <circle cx="12" cy="19" r="2"/>
-                </svg>
-              </button>
-              {showMenu && (
-                <div className="absolute right-0 mt-2 w-32 bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-xl rounded-xl shadow-2xl py-2 z-50 border border-gray-700/50">
-                  <button className="block w-full text-left px-4 py-2 hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors" onClick={handleDeleteActiveConv}>Delete conversation</button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
         {/* Chat Area - Adjusted with top padding to account for fixed topbar */}
-        <div className={`flex-1 flex flex-col px-3 md:px-8 pt-20 md:pt-24 pb-28 md:pb-44 gap-6 md:gap-10 overflow-y-auto bg-gradient-to-br from-gray-900 via-black to-gray-900 transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}
+        <div className="flex-1 flex flex-col px-3 md:px-8 pt-20 md:pt-24 pb-28 md:pb-44 gap-6 md:gap-10 overflow-y-auto bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-900 dark:via-black dark:to-gray-900"
           style={{ position: 'relative' }}
         >
           {messages.length === 0 ? (
@@ -1093,7 +1105,7 @@ export default function MainPage() {
                 <span className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent">
                   Hello, Great PANSite
                 </span>
-                <p className="text-lg md:text-xl text-gray-300 font-light">
+                <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 font-light">
                   Ask me anything about your courses
                 </p>
               </div>

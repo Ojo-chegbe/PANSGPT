@@ -18,8 +18,8 @@ export default function WelcomePage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+        <div className="text-xl text-gray-800 dark:text-white">Loading...</div>
       </div>
     );
   }

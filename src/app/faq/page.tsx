@@ -2,6 +2,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const faqs = [
   {
@@ -90,6 +91,7 @@ const FaqPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const router = useRouter();
+  const { theme } = useTheme();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -121,17 +123,17 @@ const FaqPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white flex flex-col items-center py-10 px-4">
-      <div className="w-full max-w-3xl bg-[#181A1B] rounded-2xl shadow-xl p-8 flex flex-col gap-8">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-green-400 text-center mb-4 drop-shadow-lg">PansGPT FAQs</h1>
-        <p className="text-lg text-gray-300 text-center mb-8 max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-theme-primary flex flex-col items-center py-10 px-4">
+      <div className="w-full max-w-3xl bg-white dark:bg-[#181A1B] rounded-2xl p-8 flex flex-col gap-8 border border-gray-200 dark:border-gray-700">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-green-600 dark:text-green-400 text-center mb-4">PansGPT FAQs</h1>
+        <p className="text-lg text-theme-secondary text-center mb-8 max-w-2xl mx-auto">
           Find answers to common questions about using PansGPT for AI chat, quizzes, analytics, and more. If you have a question that’s not listed here, reach out via the Feedback page!
         </p>
         <div className="flex flex-col gap-4">
           {faqs.map((faq, idx) => (
-            <div key={faq.q} className="bg-gray-900/80 rounded-xl border border-green-600/30 shadow p-4">
+            <div key={faq.q} className="bg-gray-50 dark:bg-gray-900/80 rounded-xl border border-green-300/40 dark:border-green-600/30 p-4">
               <button
-                className="w-full flex justify-between items-center text-left text-lg font-semibold text-green-300 focus:outline-none"
+                className="w-full flex justify-between items-center text-left text-lg font-semibold text-green-700 dark:text-green-300 focus:outline-none"
                 onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
                 aria-expanded={openIdx === idx}
               >
@@ -139,7 +141,7 @@ const FaqPage = () => {
                 <span className={`ml-2 transition-transform ${openIdx === idx ? 'rotate-90' : ''}`}>▶</span>
               </button>
               {openIdx === idx && (
-                <div className="mt-3 text-base text-gray-200 leading-relaxed animate-fade-in">
+                <div className="mt-3 text-base text-theme-secondary leading-relaxed animate-fade-in">
                   {faq.a}
                 </div>
               )}
@@ -149,7 +151,7 @@ const FaqPage = () => {
         {/* Ask a New Question Button */}
         <div className="flex justify-center mt-8">
           <button
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg text-lg transition-all duration-200"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl text-lg transition-all duration-200"
             onClick={() => setShowDialog(true)}
           >
             Ask a New Question
@@ -159,25 +161,25 @@ const FaqPage = () => {
       {/* Dialog Overlay */}
       {showDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-          <div className="bg-[#181A1B] rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+          <div className="bg-white dark:bg-[#181A1B] rounded-2xl p-8 w-full max-w-md relative border border-gray-200 dark:border-gray-700">
             <button
-              className="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl"
+              className="absolute top-3 right-3 text-theme-muted hover:text-theme-primary text-2xl"
               onClick={() => setShowDialog(false)}
               aria-label="Close dialog"
             >
               ×
             </button>
-            <h2 className="text-2xl font-bold text-green-400 mb-4 text-center">Ask a New Question</h2>
+            <h2 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-4 text-center">Ask a New Question</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="level" className="block text-sm font-medium text-gray-300 mb-1">Level</label>
+                <label htmlFor="level" className="block text-sm font-medium text-theme-secondary mb-1">Level</label>
                 <select
                   id="level"
                   name="level"
                   value={formData.level}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-lg bg-[#232625] border border-gray-700 text-white px-4 py-2 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-colors"
+                  className="w-full rounded-lg bg-gray-100 dark:bg-[#232625] border border-theme text-theme-primary px-4 py-2 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-colors"
                 >
                   <option value="">Select your level</option>
                   {levels.map(level => (
@@ -186,7 +188,7 @@ const FaqPage = () => {
                 </select>
               </div>
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-1">Your Question</label>
+                <label htmlFor="message" className="block text-sm font-medium text-theme-secondary mb-1">Your Question</label>
                 <textarea
                   id="message"
                   name="message"
@@ -194,7 +196,7 @@ const FaqPage = () => {
                   onChange={handleChange}
                   required
                   rows={4}
-                  className="w-full rounded-lg bg-[#232625] border border-gray-700 text-white px-4 py-2 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-colors resize-none"
+                  className="w-full rounded-lg bg-gray-100 dark:bg-[#232625] border border-theme text-theme-primary px-4 py-2 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-colors resize-none"
                 />
               </div>
               <button

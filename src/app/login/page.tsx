@@ -71,15 +71,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white p-4">
-      <div className="w-full max-w-md p-4 md:p-8 rounded-lg bg-white">
-        <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8 text-center">Welcome back</h1>
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black p-4">
+      <div className="w-full max-w-md p-4 md:p-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8 text-center text-gray-800 dark:text-white">Welcome back</h1>
         <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="text-red-600 text-center font-medium mb-2 text-sm md:text-base">{error}</div>
           )}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-green-600 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
               Email address
             </label>
             <input
@@ -90,13 +90,13 @@ export default function LoginPage() {
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-sm md:text-base ${emailError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-green-400'}`}
+              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 text-sm md:text-base ${emailError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-emerald-400 dark:border-emerald-500'}`}
             />
             {emailError && <div className="text-red-500 text-xs md:text-sm mt-1">Please enter a valid email address.</div>}
           </div>
           
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-green-600 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
               Password
             </label>
             <input
@@ -107,7 +107,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-sm md:text-base ${passwordError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-green-400'}`}
+              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 text-sm md:text-base ${passwordError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-emerald-400 dark:border-emerald-500'}`}
             />
             <div className="flex items-center mt-2">
               <input
@@ -117,26 +117,26 @@ export default function LoginPage() {
                 onChange={() => setShowPassword(!showPassword)}
                 className="mr-2"
               />
-              <label htmlFor="showPassword" className="text-xs md:text-sm text-gray-600 select-none">
+              <label htmlFor="showPassword" className="text-xs md:text-sm text-gray-600 dark:text-gray-400 select-none">
                 Show password
               </label>
             </div>
             {passwordError && <div className="text-red-500 text-xs md:text-sm mt-1">Please enter your password.</div>}
             <div className="text-right mt-2">
-              <Link href="/forgot-password" className="text-green-500 hover:underline text-xs md:text-sm">Forgot password?</Link>
+              <Link href="/forgot-password" className="text-emerald-500 hover:underline text-xs md:text-sm">Forgot password?</Link>
             </div>
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 md:py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md transition-colors text-sm md:text-base"
+            className="w-full py-2.5 md:py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-md transition-colors text-sm md:text-base"
             disabled={isLoading}
           >
             {isLoading ? "Logging in..." : "Continue"}
           </button>
         </form>
-        <div className="text-center mt-4 text-xs md:text-sm text-gray-600">
+        <div className="text-center mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-green-500 hover:underline font-medium">Sign up</Link>
+          <Link href="/signup" className="text-emerald-500 hover:underline font-medium">Sign up</Link>
         </div>
         
         {/* Removed the OR divider and Google button */}

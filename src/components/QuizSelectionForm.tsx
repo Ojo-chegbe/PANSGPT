@@ -197,24 +197,24 @@ export default function QuizSelectionForm() {
 
   if (!session) {
     return (
-      <div className="p-4 bg-[#232625] border border-green-700/30 rounded-lg text-green-300">
+      <div className="p-4 bg-gray-100 dark:bg-[#232625] border border-emerald-300 dark:border-emerald-700/30 rounded-lg text-emerald-700 dark:text-emerald-300">
         Please sign in to create quizzes
       </div>
     );
   }
 
   return (
-    <div className="bg-[#181A1B] shadow rounded-lg p-6 border border-green-700/20">
-      <h2 className="text-2xl font-bold text-green-400 mb-6">Create New Quiz</h2>
+    <div className="bg-white dark:bg-[#181A1B] rounded-lg p-6 border border-gray-200 dark:border-emerald-700/20">
+      <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-6">Create New Quiz</h2>
       
       {info && (
-        <div className="p-4 mb-6 bg-green-900/60 border border-green-700/40 rounded-lg text-green-300">
+        <div className="p-4 mb-6 bg-emerald-50 dark:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-700/40 rounded-lg text-emerald-700 dark:text-emerald-300">
           {info}
         </div>
       )}
 
       {error && (
-        <div className="p-4 mb-6 bg-red-900/60 border border-red-700/40 rounded-lg text-red-400">
+        <div className="p-4 mb-6 bg-red-50 dark:bg-red-900/60 border border-red-200 dark:border-red-700/40 rounded-lg text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
@@ -222,7 +222,7 @@ export default function QuizSelectionForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Course Selection */}
         <div>
-          <label htmlFor="courseCode" className="block text-sm font-medium text-white mb-2">
+          <label htmlFor="courseCode" className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Select Course *
           </label>
           <select
@@ -231,11 +231,11 @@ export default function QuizSelectionForm() {
             required
             value={formData.courseCode}
             onChange={(e) => handleCourseSelect(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-700 bg-[#232625] text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-[#232625] text-gray-800 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
           >
             <option value="">Choose a course</option>
             {availableCourses.map((course) => (
-              <option key={course.courseCode} value={course.courseCode} className="text-black">
+              <option key={course.courseCode} value={course.courseCode} className="text-gray-800 dark:text-white">
                 {course.courseCode} - {course.courseTitle} (Level {course.level})
               </option>
             ))}
@@ -244,13 +244,13 @@ export default function QuizSelectionForm() {
 
         {/* Topic - Combobox */}
         <div>
-          <label htmlFor="topic" className="block text-sm font-medium text-white">
+          <label htmlFor="topic" className="block text-sm font-medium text-gray-700 dark:text-white">
             Topic (Optional)
           </label>
           <Combobox value={formData.topic} onChange={value => setFormData(prev => ({ ...prev, topic: value || "" }))}>
             <div className="relative mt-1">
               <Combobox.Input
-                className="block w-full rounded-md border-gray-700 bg-[#232625] text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-[#232625] text-gray-800 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                 displayValue={(topic: string) => topic}
                 onChange={e => setFormData(prev => ({ ...prev, topic: e.target.value || "" }))}
                 placeholder="e.g., Drug Metabolism, Titration, etc."
@@ -266,13 +266,13 @@ export default function QuizSelectionForm() {
                   </svg>
                 </div>
               ) : filteredTopics.length > 0 ? (
-                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-[#232625] py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-[#232625] py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                   {filteredTopics.map((topic) => (
                     <Combobox.Option
                       key={topic}
                       value={topic}
                       className={({ active }) =>
-                        `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-green-600 text-white' : 'text-gray-200'}`
+                        `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-emerald-600 text-white' : 'text-gray-800 dark:text-gray-200'}`
                       }
                     >
                       {topic}
@@ -280,13 +280,13 @@ export default function QuizSelectionForm() {
                   ))}
                 </Combobox.Options>
               ) : formData.courseCode && !isLoadingTopics ? (
-                <div className="absolute z-10 mt-1 w-full rounded-md bg-[#232625] py-2 px-3 text-sm text-gray-400">
+                <div className="absolute z-10 mt-1 w-full rounded-md bg-white dark:bg-[#232625] py-2 px-3 text-sm text-gray-500 dark:text-gray-400">
                   No topics found for this course
                 </div>
               ) : null}
             </div>
           </Combobox>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {formData.courseCode 
               ? `Topics available for ${formData.courseCode}. Leave blank for a general quiz on the course.`
               : 'Select a course first to see available topics. Leave blank for a general quiz on the course.'
@@ -296,7 +296,7 @@ export default function QuizSelectionForm() {
 
         {/* Level */}
         <div>
-          <label htmlFor="level" className="block text-sm font-medium text-white">
+          <label htmlFor="level" className="block text-sm font-medium text-gray-700 dark:text-white">
             Level *
           </label>
           <select
@@ -305,7 +305,7 @@ export default function QuizSelectionForm() {
             required
             value={formData.level}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-700 bg-[#232625] text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-[#232625] text-gray-800 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
           >
             <option value="">Select level</option>
             <option value="100">100</option>
@@ -319,7 +319,7 @@ export default function QuizSelectionForm() {
 
         {/* Number of Questions */}
         <div>
-          <label htmlFor="numQuestions" className="block text-sm font-medium text-white">
+          <label htmlFor="numQuestions" className="block text-sm font-medium text-gray-700 dark:text-white">
             Number of Questions *
           </label>
           <select
@@ -328,7 +328,7 @@ export default function QuizSelectionForm() {
             required
             value={formData.numQuestions}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-700 bg-[#232625] text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-[#232625] text-gray-800 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
           >
             <option value={5}>5 Questions</option>
             <option value={10}>10 Questions</option>
@@ -340,7 +340,7 @@ export default function QuizSelectionForm() {
 
         {/* Question Type */}
         <div>
-          <label htmlFor="questionType" className="block text-sm font-medium text-white">
+          <label htmlFor="questionType" className="block text-sm font-medium text-gray-700 dark:text-white">
             Question Type *
           </label>
           <select
@@ -349,7 +349,7 @@ export default function QuizSelectionForm() {
             required
             value={formData.questionType}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-700 bg-[#232625] text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-[#232625] text-gray-800 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
           >
             <option value="MCQ">Multiple Choice Questions</option>
             <option value="TRUE_FALSE">True/False</option>
@@ -360,7 +360,7 @@ export default function QuizSelectionForm() {
 
         {/* Difficulty */}
         <div>
-          <label htmlFor="difficulty" className="block text-sm font-medium text-white">
+          <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 dark:text-white">
             Difficulty Level *
           </label>
           <select
@@ -369,7 +369,7 @@ export default function QuizSelectionForm() {
             required
             value={formData.difficulty}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-700 bg-[#232625] text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-[#232625] text-gray-800 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
           >
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>
@@ -379,7 +379,7 @@ export default function QuizSelectionForm() {
 
         {/* Time Limit */}
         <div>
-          <label htmlFor="timeLimit" className="block text-sm font-medium text-white">
+          <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-700 dark:text-white">
             Time Limit (Optional)
           </label>
           <select
@@ -387,7 +387,7 @@ export default function QuizSelectionForm() {
             name="timeLimit"
             value={formData.timeLimit || ''}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-700 bg-[#232625] text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 bg-white dark:bg-[#232625] text-gray-800 dark:text-white shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
           >
             <option value="">No time limit</option>
             <option value={5}>5 minutes</option>
@@ -402,7 +402,7 @@ export default function QuizSelectionForm() {
 
         <button
           type="submit"
-          className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={isGenerating}
         >
           {isGenerating ? (

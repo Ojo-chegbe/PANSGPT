@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from './ThemeToggle';
 
 interface Question {
   id: string;
@@ -182,21 +183,21 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
       </div>
     );
   }
 
   if (error || !quiz) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-gray-600">{error || 'Quiz not found'}</p>
+          <p className="text-gray-600 dark:text-gray-400">{error || 'Quiz not found'}</p>
           <button
             onClick={() => router.push('/quiz')}
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
           >
             Back to Quiz Selection
           </button>
@@ -209,37 +210,42 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
   const currentAnswer = userAnswers.find(a => a.questionId === currentQuestion.id)?.answer || '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 text-gray-800 dark:text-white py-8">
       <div className="max-w-4xl mx-auto px-4">
+        {/* Theme Toggle */}
+        <div className="flex justify-end mb-4">
+          <ThemeToggle />
+        </div>
+        
         {/* Header */}
-        <div className="bg-[#181A1B] rounded-lg shadow-sm p-6 mb-6 border border-green-700/20">
+        <div className="bg-white dark:bg-[#181A1B] rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-emerald-700/20">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-green-400">{quiz.title}</h1>
-              <p className="text-white font-medium">{quiz.courseCode} - {quiz.courseTitle}</p>
-              {quiz.topic && <p className="text-gray-300">Topic: {quiz.topic}</p>}
+              <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{quiz.title}</h1>
+              <p className="text-gray-800 dark:text-white font-medium">{quiz.courseCode} - {quiz.courseTitle}</p>
+              {quiz.topic && <p className="text-gray-600 dark:text-gray-300">Topic: {quiz.topic}</p>}
             </div>
             <div className="text-right">
               {timeRemaining !== null && (
-                <div className={`text-lg font-semibold ${timeRemaining < 300 ? 'text-red-400' : 'text-gray-200'}`}> 
+                <div className={`text-lg font-semibold ${timeRemaining < 300 ? 'text-red-500 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}`}> 
                   {formatTime(timeRemaining)}
                 </div>
               )}
-              <div className="text-sm text-gray-400">
-                Level {quiz.level} 2 {quiz.difficulty}
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Level {quiz.level} • {quiz.difficulty}
               </div>
             </div>
           </div>
 
           {/* Progress Bar */}
           <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-200 mb-2">
+            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-200 mb-2">
               <span>Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
               <span>{getAnsweredCount()} answered</span>
             </div>
-            <div className="w-full bg-gray-700/40 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700/40 rounded-full h-2">
               <div 
-                className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${getProgressPercentage()}%` }}
               ></div>
             </div>
@@ -247,12 +253,12 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
         </div>
 
         {/* Question */}
-        <div className="bg-[#232625] rounded-lg shadow-sm p-6 mb-6 border border-green-700/20">
+        <div className="bg-white dark:bg-[#232625] rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-emerald-700/20">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Question {currentQuestion.order}
             </h2>
-            <p className="text-lg text-white mb-6">{currentQuestion.questionText}</p>
+            <p className="text-lg text-gray-800 dark:text-white mb-6">{currentQuestion.questionText}</p>
 
             {/* Answer Options */}
             {currentQuestion.questionType === 'MCQ' && currentQuestion.options && (
@@ -260,7 +266,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                 {currentQuestion.options.map((option, index) => {
                   const selected = Array.isArray(currentAnswer) ? currentAnswer.includes(option) : false;
                   return (
-                    <label key={index} className={`flex items-center p-3 border rounded-lg cursor-pointer ${selected ? 'bg-green-900/40 border-green-500' : 'border-gray-700 hover:bg-gray-800/40'}` }>
+                    <label key={index} className={`flex items-center p-3 border rounded-lg cursor-pointer ${selected ? 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-500' : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40'}` }>
                       <input
                         type="checkbox"
                         name={`question-${currentQuestion.id}`}
@@ -275,15 +281,15 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                           }
                           handleAnswerChange(currentQuestion.id, newAnswers);
                         }}
-                        className="h-4 w-4 text-green-500 focus:ring-green-500 border-gray-700 bg-[#181A1B]"
+                        className="h-4 w-4 text-emerald-500 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-[#181A1B] accent-emerald-500"
                         disabled={!selected && Array.isArray(currentAnswer) && currentAnswer.length >= 3}
                       />
-                      <span className="ml-3 text-white">{option}</span>
+                      <span className="ml-3 text-gray-800 dark:text-white">{option}</span>
                     </label>
                   );
                 })}
                 {Array.isArray(currentAnswer) && currentAnswer.length !== 3 && (
-                  <div className="text-red-400 text-sm mt-2">Select exactly 3 options.</div>
+                  <div className="text-red-500 dark:text-red-400 text-sm mt-2">Select exactly 3 options.</div>
                 )}
               </div>
             )}
@@ -291,16 +297,16 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
             {currentQuestion.questionType === 'TRUE_FALSE' && (
               <div className="space-y-3">
                 {['True', 'False'].map((option) => (
-                  <label key={option} className="flex items-center p-3 border rounded-lg cursor-pointer border-gray-700 hover:bg-gray-800/40">
+                  <label key={option} className="flex items-center p-3 border rounded-lg cursor-pointer border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40">
                     <input
                       type="radio"
                       name={`question-${currentQuestion.id}`}
                       value={option}
                       checked={currentAnswer === option}
                       onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                      className="h-4 w-4 text-green-500 focus:ring-green-500 border-gray-700 bg-[#181A1B]"
+                      className="h-4 w-4 text-emerald-500 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-[#181A1B] accent-emerald-500"
                     />
-                    <span className="ml-3 text-white">{option}</span>
+                    <span className="ml-3 text-gray-800 dark:text-white">{option}</span>
                   </label>
                 ))}
               </div>
@@ -309,16 +315,16 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
             {currentQuestion.questionType === 'OBJECTIVE' && currentQuestion.options && (
               <div className="space-y-3">
                 {currentQuestion.options.map((option, index) => (
-                  <label key={index} className="flex items-center p-3 border rounded-lg cursor-pointer border-gray-700 hover:bg-gray-800/40">
+                  <label key={index} className="flex items-center p-3 border rounded-lg cursor-pointer border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40">
                     <input
                       type="radio"
                       name={`question-${currentQuestion.id}`}
                       value={option}
                       checked={currentAnswer === option}
                       onChange={e => handleAnswerChange(currentQuestion.id, e.target.value)}
-                      className="h-4 w-4 text-green-500 focus:ring-green-500 border-gray-700 bg-[#181A1B]"
+                      className="h-4 w-4 text-emerald-500 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-[#181A1B] accent-emerald-500"
                     />
-                    <span className="ml-3 text-white">{option}</span>
+                    <span className="ml-3 text-gray-800 dark:text-white">{option}</span>
                   </label>
                 ))}
               </div>
@@ -330,7 +336,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                   value={currentAnswer}
                   onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
                   placeholder={'Write your answer...'}
-                  className="w-full p-3 border border-gray-700 rounded-lg focus:ring-green-500 focus:border-green-500 bg-[#181A1B] text-white"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-[#181A1B] text-gray-800 dark:text-white"
                   rows={4}
                 />
               </div>
@@ -345,8 +351,8 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
             disabled={currentQuestionIndex === 0}
             className={`px-6 py-2 border rounded-md ${
               currentQuestionIndex === 0
-                ? 'text-gray-700 border-gray-700 cursor-not-allowed'
-                : 'text-green-400 border-green-500 hover:bg-green-900/20'
+                ? 'text-gray-400 dark:text-gray-700 border-gray-300 dark:border-gray-700 cursor-not-allowed'
+                : 'text-emerald-600 dark:text-emerald-400 border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
             }`}
           >
             Previous
@@ -357,7 +363,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
               <button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className={`px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ${
+                className={`px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 ${
                   !canProceed() ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
@@ -367,7 +373,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
               <button
                 onClick={handleSubmit}
                 disabled={!canProceed() || isSubmitting}
-                className={`px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 ${
+                className={`px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 ${
                   !canProceed() ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
@@ -379,7 +385,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
 
         {/* Error Message */}
         {error && (
-          <div className="mt-4 p-4 bg-red-900/60 border border-red-700/40 rounded-lg text-red-400">
+          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/60 border border-red-200 dark:border-red-700/40 rounded-lg text-red-700 dark:text-red-400">
             {error}
           </div>
         )}

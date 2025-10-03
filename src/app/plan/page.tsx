@@ -5,6 +5,7 @@ import { CheckIcon } from '@heroicons/react/24/solid';
 import { useSession } from 'next-auth/react';
 import Script from 'next/script';
 import { Suspense } from "react";
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface SubscriptionStatus {
   isActive: boolean;
@@ -174,8 +175,8 @@ function PlanPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-white dark:bg-black text-gray-800 dark:text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
       </div>
     );
   }
@@ -183,19 +184,23 @@ function PlanPage() {
   return (
     <>
       <Script src="https://js.paystack.co/v1/inline.js" strategy="afterInteractive" />
-      <div className="min-h-screen bg-black text-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-white dark:bg-black text-gray-800 dark:text-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
+          {/* Theme Toggle */}
+          <div className="flex justify-end mb-4">
+            <ThemeToggle />
+          </div>
           {/* Payment Status Messages */}
           {paymentStatus === 'success' && (
-            <div className="mb-8 p-4 bg-green-900/30 border border-green-500 rounded-lg">
-              <p className="text-center text-green-300">
+            <div className="mb-8 p-4 bg-green-50 dark:bg-green-900/30 border border-green-500 rounded-lg">
+              <p className="text-center text-green-700 dark:text-green-300">
                 Payment successful! Your subscription is now active.
               </p>
             </div>
           )}
           {paymentStatus === 'error' && (
-            <div className="mb-8 p-4 bg-red-900/30 border border-red-500 rounded-lg">
-              <p className="text-center text-red-300">
+            <div className="mb-8 p-4 bg-red-50 dark:bg-red-900/30 border border-red-500 rounded-lg">
+              <p className="text-center text-red-700 dark:text-red-300">
                 Payment failed. Please try again or contact support.
               </p>
             </div>
@@ -203,14 +208,14 @@ function PlanPage() {
 
           {/* Header */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-4">Your Plan</h1>
-            <p className="text-gray-400 text-lg">
+            <h1 className="text-4xl font-bold mb-4 text-gray-800 dark:text-white">Your Plan</h1>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
               Manage your subscription and access premium features
             </p>
             {sessionStatus === "authenticated" && (
               <button
                 onClick={() => router.push('/main')}
-                className="mt-8 px-6 py-3 rounded-lg font-medium bg-gray-700 hover:bg-gray-600 transition-colors text-white"
+                className="mt-8 px-6 py-3 rounded-lg font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-gray-800 dark:text-white"
               >
                 Back to AI Chat Page
               </button>
@@ -218,78 +223,78 @@ function PlanPage() {
           </div>
 
           {/* Current Plan Status */}
-          <div className="bg-[#232625] rounded-lg p-8 mb-8">
+          <div className="bg-white dark:bg-[#232625] rounded-lg p-8 mb-8 border border-gray-200 dark:border-gray-700">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-4">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
                 {subscription?.isTrial ? `You're currently on a Free Trial` : 'Premium Plan'}
               </h2>
               <div className="flex items-center justify-center space-x-2">
                 {subscription?.isTrial ? (
                   <>
-                    <span className="text-4xl font-bold">₦2,130</span>
-                    <span className="text-gray-400">/month (Premium Plan)</span>
+                    <span className="text-4xl font-bold text-gray-800 dark:text-white">₦2,130</span>
+                    <span className="text-gray-600 dark:text-gray-400">/month (Premium Plan)</span>
                   </>
                 ) : (
                   <>
-                    <span className="text-4xl font-bold">₦2,130</span>
-                    <span className="text-gray-400">/month</span>
+                    <span className="text-4xl font-bold text-gray-800 dark:text-white">₦2,130</span>
+                    <span className="text-gray-600 dark:text-gray-400">/month</span>
                   </>
                 )}
               </div>
-              <p className="text-sm text-gray-400 mt-2">Includes Paystack processing fees</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Includes Paystack processing fees</p>
             </div>
 
             {subscription?.isTrial && subscription?.trialEndDate && new Date(subscription.trialEndDate) < new Date() ? (
-              <div className="bg-red-900/30 border border-red-500 rounded-lg p-4 mb-6">
-                <p className="text-center text-red-300">
+              <div className="bg-red-50 dark:bg-red-900/30 border border-red-500 rounded-lg p-4 mb-6">
+                <p className="text-center text-red-700 dark:text-red-300">
                   Your free trial is over, but PANSGPT is just getting started. Subscribe to continue.
                 </p>
               </div>
             ) : subscription?.isTrial && (
-              <div className="bg-green-900/30 border border-green-500 rounded-lg p-4 mb-6">
-                <p className="text-center text-green-300">
+              <div className="bg-green-50 dark:bg-green-900/30 border border-green-500 rounded-lg p-4 mb-6">
+                <p className="text-center text-green-700 dark:text-green-300">
                   Your free trial ends in {new Date(subscription.trialEndDate!).toLocaleDateString()}
                 </p>
               </div>
             )}
 
             <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-4">Plan Features:</h3>
+              <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Plan Features:</h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
-                  <CheckIcon className="h-6 w-6 text-green-400 mr-2 flex-shrink-0" />
-                  <span>Access to all study materials</span>
+                  <CheckIcon className="h-6 w-6 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">Access to all study materials</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckIcon className="h-6 w-6 text-green-400 mr-2 flex-shrink-0" />
-                  <span>Faster AI replies</span>
+                  <CheckIcon className="h-6 w-6 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">Faster AI replies</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckIcon className="h-6 w-6 text-green-400 mr-2 flex-shrink-0" />
-                  <span>Access to exclusive explanations</span>
+                  <CheckIcon className="h-6 w-6 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">Access to exclusive explanations</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckIcon className="h-6 w-6 text-green-400 mr-2 flex-shrink-0" />
-                  <span>Unlimited conversations</span>
+                  <CheckIcon className="h-6 w-6 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">Unlimited conversations</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckIcon className="h-6 w-6 text-green-400 mr-2 flex-shrink-0" />
-                  <span>Early access to new features</span>
+                  <CheckIcon className="h-6 w-6 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">Early access to new features</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckIcon className="h-6 w-6 text-green-400 mr-2 flex-shrink-0" />
-                  <span>Detailed explanations</span>
+                  <CheckIcon className="h-6 w-6 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">Detailed explanations</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckIcon className="h-6 w-6 text-green-400 mr-2 flex-shrink-0" />
-                  <span>Priority support</span>
+                  <CheckIcon className="h-6 w-6 text-green-500 dark:text-green-400 mr-2 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300">Priority support</span>
                 </li>
               </ul>
             </div>
 
             <div className="space-y-4">
               {subscription?.isTrial && (
-                <p className="text-center text-gray-400 mb-4 text-sm">
+                <p className="text-center text-gray-600 dark:text-gray-400 mb-4 text-sm">
                   Don't get left behind, learn like top students.
                 </p>
               )}
@@ -297,7 +302,7 @@ function PlanPage() {
                 <>
                   <button
                     onClick={handleStartTrial}
-                    className="w-full py-3 rounded-lg font-medium bg-green-600 hover:bg-green-700 transition-colors"
+                    className="w-full py-3 rounded-lg font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
                     disabled={isProcessingPayment}
                   >
                     Start Free Trial
@@ -308,7 +313,7 @@ function PlanPage() {
                   }}>
                     <button
                       type="submit"
-                      className="w-full py-3 rounded-lg font-medium bg-gray-700 hover:bg-gray-600 transition-colors"
+                      className="w-full py-3 rounded-lg font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white transition-colors"
                       disabled={isProcessingPayment}
                     >
                       {isProcessingPayment ? 'Processing...' : 'Subscribe Now'}
@@ -323,7 +328,7 @@ function PlanPage() {
                 }}>
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-lg font-medium bg-green-600 hover:bg-green-700 transition-colors"
+                    className="w-full py-3 rounded-lg font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
                     disabled={isProcessingPayment}
                   >
                     {isProcessingPayment ? 'Processing...' : 'Upgrade to Premium Now'}
@@ -335,29 +340,29 @@ function PlanPage() {
 
           {/* FAQ Section */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+            <h2 className="text-2xl font-bold text-center mb-8 text-gray-800 dark:text-white">Frequently Asked Questions</h2>
             <div className="space-y-6">
-              <div className="bg-[#232625] p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-3">How does the free trial work?</h3>
-                <p className="text-gray-400">
+              <div className="bg-white dark:bg-[#232625] p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-semibold mb-3 text-gray-800 dark:text-white">How does the free trial work?</h3>
+                <p className="text-gray-600 dark:text-gray-400">
                   You get full access to all premium features for 7 days. No credit card required to start the trial.
                 </p>
               </div>
-              <div className="bg-[#232625] p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-3">What happens after the trial?</h3>
-                <p className="text-gray-400">
+              <div className="bg-white dark:bg-[#232625] p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-semibold mb-3 text-gray-800 dark:text-white">What happens after the trial?</h3>
+                <p className="text-gray-600 dark:text-gray-400">
                   After your 7-day trial, you'll need to subscribe to continue accessing premium features. You can cancel anytime.
                 </p>
               </div>
-              <div className="bg-[#232625] p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-3">Can I subscribe before my trial ends?</h3>
-                <p className="text-gray-400">
+              <div className="bg-white dark:bg-[#232625] p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-semibold mb-3 text-gray-800 dark:text-white">Can I subscribe before my trial ends?</h3>
+                <p className="text-gray-600 dark:text-gray-400">
                   Yes! You can upgrade to a premium subscription at any time, even before your trial ends. Your subscription will start immediately.
                 </p>
               </div>
-              <div className="bg-[#232625] p-6 rounded-lg">
-                <h3 className="text-xl font-semibold mb-3">How do I cancel my subscription?</h3>
-                <p className="text-gray-400">
+              <div className="bg-white dark:bg-[#232625] p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-semibold mb-3 text-gray-800 dark:text-white">How do I cancel my subscription?</h3>
+                <p className="text-gray-600 dark:text-gray-400">
                   You can cancel your subscription at any time from your account settings. Your access will continue until the end of your current billing period.
                 </p>
               </div>
@@ -368,7 +373,7 @@ function PlanPage() {
             <div className="text-center mt-12">
               <button
                 onClick={() => router.push('/main')}
-                className="px-6 py-3 rounded-lg font-medium bg-gray-700 hover:bg-gray-600 transition-colors text-white"
+                className="px-6 py-3 rounded-lg font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-gray-800 dark:text-white"
               >
                 Back to AI Chat Page
               </button>

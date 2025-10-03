@@ -1,9 +1,11 @@
 "use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function FeedbackPage() {
   const router = useRouter();
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     level: '',
@@ -64,14 +66,14 @@ export default function FeedbackPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#232625] rounded-lg p-8 shadow-xl">
-        <h1 className="text-2xl font-bold mb-6 text-center">Send Feedback</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-black text-theme-primary flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white dark:bg-[#232625] rounded-lg p-8 border border-gray-200 dark:border-gray-700">
+        <h1 className="text-2xl font-bold mb-6 text-center text-theme-primary">Send Feedback</h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-theme-secondary">
                 Name
               </label>
               <input
@@ -81,12 +83,12 @@ export default function FeedbackPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-lg bg-[#181A1B] border border-gray-700 text-white px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
+                className="mt-1 block w-full rounded-lg bg-gray-100 dark:bg-[#181A1B] border border-theme text-theme-primary px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
               />
             </div>
 
             <div>
-              <label htmlFor="level" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="level" className="block text-sm font-medium text-theme-secondary">
                 Level
               </label>
               <select
@@ -95,7 +97,7 @@ export default function FeedbackPage() {
                 value={formData.level}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-lg bg-[#181A1B] border border-gray-700 text-white px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
+                className="mt-1 block w-full rounded-lg bg-gray-100 dark:bg-[#181A1B] border border-theme text-theme-primary px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
               >
                 <option value="">Select your level</option>
                 {levels.map((level) => (
@@ -107,7 +109,7 @@ export default function FeedbackPage() {
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="message" className="block text-sm font-medium text-theme-secondary">
                 Message
               </label>
               <textarea
@@ -117,7 +119,7 @@ export default function FeedbackPage() {
                 onChange={handleChange}
                 required
                 rows={4}
-                className="mt-1 block w-full rounded-lg bg-[#181A1B] border border-gray-700 text-white px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors resize-none"
+                className="mt-1 block w-full rounded-lg bg-gray-100 dark:bg-[#181A1B] border border-theme text-theme-primary px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors resize-none"
               />
             </div>
           </div>
@@ -125,7 +127,7 @@ export default function FeedbackPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-3 rounded-lg font-medium transition-colors ${isSubmitting
+            className={`w-full py-3 rounded-lg font-medium transition-colors text-white ${isSubmitting
               ? 'bg-gray-500 cursor-not-allowed'
               : 'bg-green-600 hover:bg-green-700'
             }`}
