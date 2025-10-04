@@ -2,6 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import QuizSelectionForm from '@/components/QuizSelectionForm';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { 
+  SparklesIcon, 
+  AcademicCapIcon,
+  XMarkIcon
+} from '@heroicons/react/24/outline';
 
 export default function QuizPage() {
   const [userSubscription, setUserSubscription] = useState<any>(null);
@@ -14,37 +19,51 @@ export default function QuizPage() {
 
   if (!userSubscription?.isActive && !userSubscription?.isTrial) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 text-center px-4">
-        <div className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4">Sorry, this feature is reserved for active members only.</div>
-        <div className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-6 max-w-xl">
-          Don't miss out on smarter revision, AI-powered grading, and the edge your classmates already have.<br />
-          <span className="inline-block mt-2 text-emerald-600 dark:text-emerald-400 text-xl">👉 Unlock full access now and stay ahead.</span>
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center max-w-2xl mx-auto px-6">
+          <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-8 mb-8">
+            <XMarkIcon className="h-16 w-16 text-red-400 mx-auto mb-6" />
+            <h1 className="text-3xl font-bold text-red-400 mb-4">Access Restricted</h1>
+            <p className="text-lg text-red-300 mb-6">
+              This feature is reserved for active members only.
+            </p>
+            <p className="text-gray-300 mb-8">
+              Don't miss out on smarter revision, AI-powered grading, and the edge your classmates already have.
+            </p>
+            <button
+              onClick={() => window.location.href = '/plan'}
+              className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg"
+            >
+              Unlock Full Access
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => window.location.href = '/plan'}
-          className="mt-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-semibold rounded-full shadow transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
-        >
-          View Plans
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 text-gray-800 dark:text-white py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header with theme toggle */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex-1"></div>
-          <ThemeToggle />
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <div className="bg-green-600 p-4 rounded-2xl">
+                <SparklesIcon className="h-12 w-12 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Quiz Platform</h1>
+                <p className="mt-2 text-lg text-gray-300">
+                  Test your knowledge with AI-generated quizzes
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-4 drop-shadow-lg">Quiz Platform</h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Test your knowledge with AI-generated quizzes based on your course materials. Choose your course, topic, and difficulty level to get started.
-          </p>
-        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <QuizSelectionForm />
       </div>
     </div>
