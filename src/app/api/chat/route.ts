@@ -39,6 +39,10 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: "Message is required" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
+    // Extract source filters from the query
+    const extractedFilters = extractSourceFilters(message);
+    console.log('Extracted filters from message:', extractedFilters);
+    
     // Search for relevant document chunks using fast chat search
     const searchResponse = await fetch(`${BASE_URL}/api/chat-search`, {
       method: "POST",
@@ -47,8 +51,7 @@ export async function POST(req: Request) {
         query: message,
         filters: {
           max_chunks: 8,
-          // Extract potential source filters from the query
-          source_filters: extractSourceFilters(message)
+          ...extractedFilters  // Spread the extracted filters directly
         }
       }),
     });
@@ -213,7 +216,9 @@ export async function POST(req: Request) {
                          query.match(/from (?:dr\.? )?(\w+)/i) ||
                          query.match(/by (?:professor|prof\.? )?(\w+)/i) ||
                          query.match(/prof\.? (\w+)/i) ||
-                         query.match(/dr\.? (\w+)/i);
+                         query.match(/dr\.? (\w+)/i) ||
+                         query.match(/professor (\w+)/i) ||
+                         query.match(/(\w+) (?:teach|teaches|course|notes|lecture)/i);
       if (authorMatch) {
         filters.author = authorMatch[1];
       }

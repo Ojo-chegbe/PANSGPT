@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const filterConditions: any = {};
     
     if (filters.courseCode) {
-      filterConditions["metadata.course_info.code"] = filters.courseCode;
+      filterConditions["metadata.courseCode"] = filters.courseCode;
     }
     
     if (filters.topic) {
@@ -28,6 +28,16 @@ export async function POST(request: Request) {
     
     if (filters.level) {
       filterConditions["metadata.level"] = filters.level;
+    }
+    
+    if (filters.author) {
+      // Try exact match first, then partial match
+      filterConditions["metadata.professorName"] = { $in: [
+        filters.author,
+        `Prof. ${filters.author}`,
+        `Professor ${filters.author}`,
+        `Dr. ${filters.author}`
+      ]};
     }
 
     console.log('Fast chat search filter conditions:', filterConditions);
