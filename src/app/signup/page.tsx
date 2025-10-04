@@ -3,6 +3,17 @@ import React, { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { getDeviceId } from "../../lib/device-id";
+import { 
+  UserIcon, 
+  EnvelopeIcon, 
+  LockClosedIcon, 
+  AcademicCapIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline';
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -111,119 +122,202 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white p-4">
-      <div className="w-full max-w-md p-4 md:p-8 rounded-lg bg-white">
-        <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8 text-center">Sign Up</h1>
-        <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="text-red-600 text-center font-medium mb-2 text-sm md:text-base">{error}</div>
-          )}
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-              Full name
-            </label>
-            <input
-              id="fullName"
-              name="fullName"
-              type="text"
-              required
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              className="appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border border-green-400 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-sm md:text-base"
-            />
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <div className="bg-green-600 p-4 rounded-2xl">
+                <UserIcon className="h-12 w-12 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Create Account</h1>
+                <p className="mt-2 text-lg text-gray-300">
+                  Join PANSGPT and start your AI-powered learning journey
+                </p>
+              </div>
+            </div>
           </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-sm md:text-base ${emailError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-green-400'}`}
-            />
-            {emailError && <div className="text-red-500 text-xs md:text-sm mt-1">{emailError}</div>}
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-6 py-8">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
+                <XMarkIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
+                <p className="text-red-300 font-medium">{error}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <label htmlFor="fullName" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                  <UserIcon className="h-4 w-4" />
+                  <span>Full Name *</span>
+                </label>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                  <EnvelopeIcon className="h-4 w-4" />
+                  <span>Email Address *</span>
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                  placeholder="Enter your email"
+                />
+                {emailError && (
+                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                    <ExclamationTriangleIcon className="h-4 w-4" />
+                    <span>{emailError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                  <LockClosedIcon className="h-4 w-4" />
+                  <span>Password *</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    required
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                    placeholder="Create a password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+                {passwordError && (
+                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                    <ExclamationTriangleIcon className="h-4 w-4" />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                  <LockClosedIcon className="h-4 w-4" />
+                  <span>Confirm Password *</span>
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${confirmPasswordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                  placeholder="Confirm your password"
+                />
+                {confirmPasswordError && (
+                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                    <ExclamationTriangleIcon className="h-4 w-4" />
+                    <span>{confirmPasswordError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Level */}
+              <div className="space-y-2 md:col-span-2">
+                <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                  <AcademicCapIcon className="h-4 w-4" />
+                  <span>Academic Level *</span>
+                </label>
+                <select
+                  id="level"
+                  name="level"
+                  required
+                  value={level}
+                  onChange={e => setLevel(e.target.value)}
+                  className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                >
+                  <option value="" className="bg-gray-800">Select your academic level</option>
+                  <option value="100" className="bg-gray-800">100 Level</option>
+                  <option value="200" className="bg-gray-800">200 Level</option>
+                  <option value="300" className="bg-gray-800">300 Level</option>
+                  <option value="400" className="bg-gray-800">400 Level</option>
+                  <option value="500" className="bg-gray-800">500 Level</option>
+                  <option value="600" className="bg-gray-800">600 Level</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6 border-t border-gray-700">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Creating Account...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="h-5 w-5" />
+                    <span>Create Account</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Login Link */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-400">
+              Already have an account?{' '}
+              <Link 
+                href="/login" 
+                className="text-green-400 hover:text-green-300 font-semibold transition-colors duration-200"
+              >
+                Sign in here
+              </Link>
+            </p>
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-sm md:text-base ${passwordError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-green-400'}`}
-            />
-            {passwordError && <div className="text-red-500 text-xs md:text-sm mt-1">{passwordError}</div>}
-          </div>
-          <div className="flex items-center mt-2 mb-2">
-            <input
-              id="showPassword"
-              type="checkbox"
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-              className="mr-2"
-            />
-            <label htmlFor="showPassword" className="text-xs md:text-sm text-gray-600 select-none">
-              Show password
-            </label>
-          </div>
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              required
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-sm md:text-base ${confirmPasswordError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-green-400'}`}
-            />
-            {confirmPasswordError && <div className="text-red-500 text-xs md:text-sm mt-1">{confirmPasswordError}</div>}
-          </div>
-          <div>
-            <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-1">
-              Level
-            </label>
-            <select
-              id="level"
-              name="level"
-              required
-              value={level}
-              onChange={e => setLevel(e.target.value)}
-              className="block w-full px-3 md:px-4 py-2.5 md:py-3 border border-green-400 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-sm md:text-base"
-            >
-              <option value="">Select level</option>
-              <option value="100">100 level</option>
-              <option value="200">200 level</option>
-              <option value="300">300 level</option>
-              <option value="400">400 level</option>
-              <option value="500">500 level</option>
-              <option value="600">600 level</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2.5 md:py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md transition-colors text-sm md:text-base"
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing Up..." : "Sign Up"}
-          </button>
-        </form>
-        <div className="text-center mt-4 text-xs md:text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link href="/login" className="text-green-500 hover:underline font-medium">Login</Link>
         </div>
       </div>
     </div>

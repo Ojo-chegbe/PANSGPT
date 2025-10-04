@@ -13,8 +13,35 @@ const montserrat = Montserrat({
 export const metadata = {
   title: 'PansGPT - AI Academic Assistant',
   description: 'AI-powered academic assistant for students',
+  manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'PansGPT',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'PansGPT',
+    title: 'PansGPT - AI Academic Assistant',
+    description: 'AI-powered academic assistant for students',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'PansGPT - AI Academic Assistant',
+    description: 'AI-powered academic assistant for students',
   },
 }
 

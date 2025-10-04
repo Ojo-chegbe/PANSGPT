@@ -60,6 +60,7 @@ export default function QuizSelectionForm() {
   const [topicOptions, setTopicOptions] = useState<string[]>([]);
   const [filteredTopics, setFilteredTopics] = useState<string[]>([]);
   const [isLoadingTopics, setIsLoadingTopics] = useState(false);
+  const [showAllTopics, setShowAllTopics] = useState(false);
 
   useEffect(() => {
     async function fetchUserLevel() {
@@ -117,14 +118,14 @@ export default function QuizSelectionForm() {
 
   // Filter topics as user types
   useEffect(() => {
-    if (!formData.topic) {
+    if (!formData.topic || showAllTopics) {
       setFilteredTopics(topicOptions);
     } else {
       setFilteredTopics(
         topicOptions.filter(t => t.toLowerCase().includes(formData.topic.toLowerCase()))
       );
     }
-  }, [formData.topic, topicOptions]);
+  }, [formData.topic, topicOptions, showAllTopics]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -243,7 +244,7 @@ export default function QuizSelectionForm() {
   }
 
   return (
-    <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8 shadow-2xl">
+    <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8">
       <div className="flex items-center space-x-3 mb-8">
         <div className="bg-green-600 p-2 rounded-lg">
           <SparklesIcon className="h-6 w-6 text-white" />
@@ -299,12 +300,19 @@ export default function QuizSelectionForm() {
               <TagIcon className="h-4 w-4" />
               <span>Topic (Optional)</span>
             </label>
-            <Combobox value={formData.topic} onChange={value => setFormData(prev => ({ ...prev, topic: value || "" }))}>
+            <Combobox value={formData.topic} onChange={value => {
+              setFormData(prev => ({ ...prev, topic: value || "" }));
+              setShowAllTopics(false);
+            }}>
               <div className="relative">
                 <Combobox.Input
                   className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                   displayValue={(topic: string) => topic}
-                  onChange={e => setFormData(prev => ({ ...prev, topic: e.target.value || "" }))}
+                  onChange={e => {
+                    setFormData(prev => ({ ...prev, topic: e.target.value || "" }));
+                    setShowAllTopics(false);
+                  }}
+                  onFocus={() => setShowAllTopics(true)}
                   placeholder="e.g., Drug Metabolism, Titration, etc."
                   id="topic"
                   name="topic"
@@ -317,7 +325,7 @@ export default function QuizSelectionForm() {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   </div>
-                ) : filteredTopics.length > 0 ? (
+                ) : (showAllTopics || filteredTopics.length > 0) ? (
                   <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 py-1 text-base shadow-lg focus:outline-none sm:text-sm">
                     {filteredTopics.map((topic) => (
                       <Combobox.Option

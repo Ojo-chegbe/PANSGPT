@@ -3,6 +3,16 @@ import React, { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { getDeviceId } from "../../lib/device-id";
+import { 
+  EnvelopeIcon, 
+  LockClosedIcon, 
+  EyeIcon,
+  EyeSlashIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  ExclamationTriangleIcon,
+  UserCircleIcon
+} from '@heroicons/react/24/outline';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -71,75 +81,144 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black p-4">
-      <div className="w-full max-w-md p-4 md:p-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl">
-        <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8 text-center text-gray-800 dark:text-white">Welcome back</h1>
-        <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="text-red-600 text-center font-medium mb-2 text-sm md:text-base">{error}</div>
-          )}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 text-sm md:text-base ${emailError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-emerald-400 dark:border-emerald-500'}`}
-            />
-            {emailError && <div className="text-red-500 text-xs md:text-sm mt-1">Please enter a valid email address.</div>}
-          </div>
-          
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className={`appearance-none block w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 text-sm md:text-base ${passwordError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-emerald-400 dark:border-emerald-500'}`}
-            />
-            <div className="flex items-center mt-2">
-              <input
-                id="showPassword"
-                type="checkbox"
-                checked={showPassword}
-                onChange={() => setShowPassword(!showPassword)}
-                className="mr-2"
-              />
-              <label htmlFor="showPassword" className="text-xs md:text-sm text-gray-600 dark:text-gray-400 select-none">
-                Show password
-              </label>
-            </div>
-            {passwordError && <div className="text-red-500 text-xs md:text-sm mt-1">Please enter your password.</div>}
-            <div className="text-right mt-2">
-              <Link href="/forgot-password" className="text-emerald-500 hover:underline text-xs md:text-sm">Forgot password?</Link>
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <div className="bg-emerald-600 p-4 rounded-2xl">
+                <UserCircleIcon className="h-12 w-12 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-white">Welcome Back</h1>
+                <p className="mt-2 text-lg text-gray-300">
+                  Sign in to continue your AI-powered learning journey
+                </p>
+              </div>
             </div>
           </div>
-          <button
-            type="submit"
-            className="w-full py-2.5 md:py-3 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-md transition-colors text-sm md:text-base"
-            disabled={isLoading}
-          >
-            {isLoading ? "Logging in..." : "Continue"}
-          </button>
-        </form>
-        <div className="text-center mt-4 text-xs md:text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{' '}
-          <Link href="/signup" className="text-emerald-500 hover:underline font-medium">Sign up</Link>
         </div>
-        
-        {/* Removed the OR divider and Google button */}
+      </div>
+
+      <div className="max-w-md mx-auto px-6 py-8">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
+                <XMarkIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
+                <p className="text-red-300 font-medium">{error}</p>
+              </div>
+            )}
+
+            {/* Email */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                <EnvelopeIcon className="h-4 w-4" />
+                <span>Email Address *</span>
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                placeholder="Enter your email"
+              />
+              {emailError && (
+                <div className="flex items-center space-x-2 text-red-400 text-sm">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  <span>Please enter a valid email address</span>
+                </div>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                <LockClosedIcon className="h-4 w-4" />
+                <span>Password *</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {passwordError && (
+                <div className="flex items-center space-x-2 text-red-400 text-sm">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  <span>Please enter your password</span>
+                </div>
+              )}
+              
+              {/* Forgot Password Link */}
+              <div className="text-right">
+                <Link 
+                  href="/forgot-password" 
+                  className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors duration-200"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-6 border-t border-gray-700">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Signing In...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="h-5 w-5" />
+                    <span>Sign In</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* Signup Link */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-400">
+              Don't have an account?{' '}
+              <Link 
+                href="/signup" 
+                className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors duration-200"
+              >
+                Create one here
+              </Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator for PansGPT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .upload-area {
+            border: 2px dashed #10b981;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background: #f0fdf4;
+        }
+        .icon-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .icon-item {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .icon-item canvas {
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .download-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .download-btn:hover {
+            background: #059669;
+        }
+        .instructions {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #1e40af;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 PansGPT Icon Generator</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Upload your favicon.png file below</li>
+                <li>The tool will generate all required PWA icon sizes</li>
+                <li>Download each icon and save them to your <code>public/</code> folder</li>
+                <li>Icons needed: 192x192, 512x512, and 180x180 (Apple touch icon)</li>
+            </ol>
+        </div>
+
+        <div class="upload-area">
+            <h3>📁 Upload Your Favicon</h3>
+            <input type="file" id="fileInput" accept="image/*" />
+            <p>Supported formats: PNG, JPG, SVG</p>
+        </div>
+
+        <div class="icon-preview" id="iconPreview" style="display: none;">
+            <div class="icon-item">
+                <h4>192x192 (Android)</h4>
+                <canvas id="canvas192" width="192" height="192"></canvas>
+                <br>
+                <button class="download-btn" onclick="downloadIcon('canvas192', 'icon-192x192.png')">Download</button>
+            </div>
+            
+            <div class="icon-item">
+                <h4>512x512 (Android)</h4>
+                <canvas id="canvas512" width="512" height="512"></canvas>
+                <br>
+                <button class="download-btn" onclick="downloadIcon('canvas512', 'icon-512x512.png')">Download</button>
+            </div>
+            
+            <div class="icon-item">
+                <h4>180x180 (Apple)</h4>
+                <canvas id="canvas180" width="180" height="180"></canvas>
+                <br>
+                <button class="download-btn" onclick="downloadIcon('canvas180', 'apple-touch-icon.png')">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const iconPreview = document.getElementById('iconPreview');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        generateIcons(img);
+                        iconPreview.style.display = 'grid';
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function generateIcons(img) {
+            const sizes = [
+                { canvas: 'canvas192', size: 192 },
+                { canvas: 'canvas512', size: 512 },
+                { canvas: 'canvas180', size: 180 }
+            ];
+
+            sizes.forEach(({ canvas, size }) => {
+                const canvasElement = document.getElementById(canvas);
+                const ctx = canvasElement.getContext('2d');
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, size, size);
+                
+                // Draw image centered and scaled to fit
+                const scale = Math.min(size / img.width, size / img.height);
+                const scaledWidth = img.width * scale;
+                const scaledHeight = img.height * scale;
+                const x = (size - scaledWidth) / 2;
+                const y = (size - scaledHeight) / 2;
+                
+                ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+            });
+        }
+
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
