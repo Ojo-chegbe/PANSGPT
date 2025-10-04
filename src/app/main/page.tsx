@@ -802,19 +802,21 @@ export default function MainPage() {
     if (!convToDelete || !session?.user?.id) return;
 
     try {
-      const response = await fetch(`/api/conversations?id=${convToDelete.id}`, {
+      const response = await fetch(`/api/conversations/${convToDelete.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
 
       if (!response.ok) {
-        console.error('Failed to delete conversation');
+        const errorData = await response.json();
+        console.error('Failed to delete conversation:', errorData.error);
+        alert(`Failed to delete conversation: ${errorData.error}`);
         return;
       }
 
       // Update local state after successful deletion
-    setConversations(prev => prev.filter((_, i) => i !== idx));
-    if (conversations[idx]?.id === activeId) {
+      setConversations(prev => prev.filter((_, i) => i !== idx));
+      if (conversations[idx]?.id === activeId) {
         // If deleting active, switch to another or create new one
         if (conversations.length > 1) {
           setActiveId(conversations[(idx === 0 ? 1 : 0)].id);
@@ -826,10 +828,11 @@ export default function MainPage() {
           setActiveId(newId);
           setMessages([]);
         }
-    }
-    setHistoryMenuIdx(null);
+      }
+      setHistoryMenuIdx(null);
     } catch (err) {
       console.error('Error deleting conversation:', err);
+      alert('Failed to delete conversation. Please try again.');
     }
   }
   function handleRenameConv(idx: number) {
@@ -845,25 +848,42 @@ export default function MainPage() {
       setRenameText("");
       return;
     }
+    
     // Update UI immediately
     setConversations(prev => prev.map((c, i) => i === idx ? { ...c, name: updatedName } : c));
     setRenamingIdx(null);
     setRenameText("");
-    // Persist to backend
+    
+    // Persist to backend using the new PATCH endpoint
     try {
-      await fetch("/api/conversations", {
-        method: "POST",
+      const response = await fetch(`/api/conversations/${conv.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: conv.id,
-          title: updatedName,
-          messages: conv.messages,
-          userId: session?.user?.id
+          title: updatedName
         }),
         credentials: 'include',
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to rename conversation:', errorData.error);
+        
+        // Revert UI change on failure
+        setConversations(prev => prev.map((c, i) => i === idx ? { ...c, name: conv.name } : c));
+        alert(`Failed to rename conversation: ${errorData.error}`);
+        return;
+      }
+
+      const result = await response.json();
+      console.log('Conversation renamed successfully:', result);
+      
     } catch (err) {
       console.error('Error renaming conversation:', err);
+      
+      // Revert UI change on failure
+      setConversations(prev => prev.map((c, i) => i === idx ? { ...c, name: conv.name } : c));
+      alert('Failed to rename conversation. Please try again.');
     }
   }
   function handleRenameCancel() {
