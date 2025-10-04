@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClient } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
@@ -43,11 +44,24 @@ export async function DELETE(req: NextRequest) {
     const documentsCollection = client.collection('documents');
     const chunksCollection = client.collection('document_chunks');
 
-    // Delete the main document
+    // Delete from Neon database (PostgreSQL) first
+    try {
+      await prisma.document.delete({
+        where: { id: document_id }
+      });
+      console.log(`Document ${document_id} deleted from Neon database`);
+    } catch (prismaError) {
+      console.warn(`Document ${document_id} not found in Neon database:`, prismaError);
+      // Continue with Astra DB deletion even if not found in Neon
+    }
+
+    // Delete from Astra DB (vector database)
     await documentsCollection.deleteOne({ _id: document_id });
+    console.log(`Document ${document_id} deleted from Astra DB`);
     
-    // Delete all associated chunks
+    // Delete all associated chunks from Astra DB
     await chunksCollection.deleteMany({ document_id: document_id });
+    console.log(`Chunks for document ${document_id} deleted from Astra DB`);
     
     return NextResponse.json({ success: true });
   } catch (err) {
