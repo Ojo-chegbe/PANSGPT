@@ -3,6 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { 
+  DocumentArrowUpIcon, 
+  DocumentTextIcon, 
+  AcademicCapIcon,
+  BookOpenIcon,
+  UserIcon,
+  TagIcon,
+  CheckCircleIcon,
+  XMarkIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline';
 
 interface UploadFormData {
   title: string;
@@ -181,166 +192,217 @@ export default function DocumentUploadForm() {
 
   if (!session) {
     return (
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        Please sign in to upload documents
+      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+        <div className="text-center">
+          <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-6 max-w-md mx-auto">
+            <ExclamationTriangleIcon className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-yellow-400 mb-2">Authentication Required</h2>
+            <p className="text-yellow-300">Please sign in to upload documents</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6">
-      {error && (
-        <div className="p-4 mb-6 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
+    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+      <div className="flex items-center space-x-3 mb-8">
+        <div className="bg-blue-600 p-2 rounded-lg">
+          <DocumentArrowUpIcon className="h-6 w-6 text-white" />
         </div>
-      )}
-
-      <div className="space-y-4">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Document Title *
+          <h2 className="text-2xl font-bold text-white">Upload Document</h2>
+          <p className="text-gray-300">Upload a document to be processed by our AI system</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
+            <XMarkIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
+            <p className="text-red-300 font-medium">{error}</p>
+          </div>
+        )}
+
+          {/* Document Title */}
+          <div className="space-y-2">
+            <label htmlFor="title" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <DocumentTextIcon className="h-4 w-4" />
+              <span>Document Title *</span>
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              value={formData.title}
+              onChange={handleInputChange}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Enter document title"
+            />
+          </div>
+
+          {/* Course Code */}
+          <div className="space-y-2">
+            <label htmlFor="courseCode" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <BookOpenIcon className="h-4 w-4" />
+              <span>Course Code *</span>
+            </label>
+            <input
+              type="text"
+              id="courseCode"
+              name="courseCode"
+              required
+              value={formData.courseCode}
+              onChange={handleInputChange}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="e.g., CHM 101"
+            />
+          </div>
+
+          {/* Course Title */}
+          <div className="space-y-2">
+            <label htmlFor="courseTitle" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <BookOpenIcon className="h-4 w-4" />
+              <span>Course Title *</span>
+            </label>
+            <input
+              type="text"
+              id="courseTitle"
+              name="courseTitle"
+              required
+              value={formData.courseTitle}
+              onChange={handleInputChange}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="e.g., Introduction to Chemistry"
+            />
+          </div>
+
+          {/* Professor Name */}
+          <div className="space-y-2">
+            <label htmlFor="professorName" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <UserIcon className="h-4 w-4" />
+              <span>Professor Name *</span>
+            </label>
+            <input
+              type="text"
+              id="professorName"
+              name="professorName"
+              required
+              value={formData.professorName}
+              onChange={handleInputChange}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="e.g., Prof. Odumosu"
+            />
+          </div>
+
+          {/* Topic */}
+          <div className="space-y-2">
+            <label htmlFor="topic" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <TagIcon className="h-4 w-4" />
+              <span>Topic *</span>
+            </label>
+            <input
+              type="text"
+              id="topic"
+              name="topic"
+              required
+              value={formData.topic}
+              onChange={handleInputChange}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="e.g., Titration"
+            />
+          </div>
+
+          {/* Level */}
+          <div className="space-y-2">
+            <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <AcademicCapIcon className="h-4 w-4" />
+              <span>Level *</span>
+            </label>
+            <select
+              id="level"
+              name="level"
+              required
+              value={formData.level}
+              onChange={handleInputChange}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            >
+              <option value="" className="bg-gray-800">Select level</option>
+              <option value="100" className="bg-gray-800">100</option>
+              <option value="200" className="bg-gray-800">200</option>
+              <option value="300" className="bg-gray-800">300</option>
+              <option value="400" className="bg-gray-800">400</option>
+              <option value="500" className="bg-gray-800">500</option>
+              <option value="600" className="bg-gray-800">600</option>
+            </select>
+          </div>
+        </div>
+
+        {/* File Upload */}
+        <div className="space-y-2">
+          <label htmlFor="file" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+            <DocumentArrowUpIcon className="h-4 w-4" />
+            <span>Document File *</span>
           </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            required
-            value={formData.title}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
-            placeholder="Enter document title"
-          />
+          <p className="text-sm text-gray-400">Upload a TXT file</p>
+          <div className="relative">
+            <input
+              type="file"
+              id="file"
+              name="file"
+              required
+              accept=".txt"
+              onChange={handleFileChange}
+              className="w-full text-sm text-gray-300
+                file:mr-4 file:py-3 file:px-4
+                file:rounded-xl
+                file:text-sm file:font-semibold
+                file:bg-blue-600/20 file:text-blue-400
+                file:border file:border-blue-500/30
+                hover:file:bg-blue-600/30
+                bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3
+                focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="courseCode" className="block text-sm font-medium text-gray-700">
-            Course Code *
-          </label>
-          <input
-            type="text"
-            id="courseCode"
-            name="courseCode"
-            required
-            value={formData.courseCode}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
-            placeholder="e.g., CHM 101"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="courseTitle" className="block text-sm font-medium text-gray-700">
-            Course Title *
-          </label>
-          <input
-            type="text"
-            id="courseTitle"
-            name="courseTitle"
-            required
-            value={formData.courseTitle}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
-            placeholder="e.g., Introduction to Chemistry"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="professorName" className="block text-sm font-medium text-gray-700">
-            Professor Name *
-          </label>
-          <input
-            type="text"
-            id="professorName"
-            name="professorName"
-            required
-            value={formData.professorName}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
-            placeholder="e.g., Prof. Odumosu"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="topic" className="block text-sm font-medium text-gray-700">
-            Topic *
-          </label>
-          <input
-            type="text"
-            id="topic"
-            name="topic"
-            required
-            value={formData.topic}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
-            placeholder="e.g., Titration"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="level" className="block text-sm font-medium text-gray-700">
-            Level *
-          </label>
-          <select
-            id="level"
-            name="level"
-            required
-            value={formData.level}
-            onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black bg-white"
-          >
-            <option value="" className="text-black">Select level</option>
-            <option value="100" className="text-black">100</option>
-            <option value="200" className="text-black">200</option>
-            <option value="300" className="text-black">300</option>
-            <option value="400" className="text-black">400</option>
-            <option value="500" className="text-black">500</option>
-            <option value="600" className="text-black">600</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="file" className="block text-sm font-medium text-gray-700">
-            Document File *
-          </label>
-          <p className="mt-1 text-sm text-gray-500">Upload a TXT file</p>
-          <input
-            type="file"
-            id="file"
-            name="file"
-            required
-            accept=".txt"
-            onChange={handleFileChange}
-            className="mt-2 block w-full text-sm text-black
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-semibold
-              file:bg-green-50 file:text-green-700
-              hover:file:bg-green-100"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="aiTrainingEnabled" className="flex items-center text-sm font-medium text-gray-700">
+        {/* AI Training Checkbox */}
+        <div className="space-y-2">
+          <label htmlFor="aiTrainingEnabled" className="flex items-center space-x-3 text-sm font-semibold text-gray-300">
             <input
               type="checkbox"
               id="aiTrainingEnabled"
               name="aiTrainingEnabled"
               checked={formData.aiTrainingEnabled}
               onChange={handleInputChange}
-              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700/50"
             />
-            <span className="ml-2">Enable AI Training (process document for chat)</span>
+            <span>Enable AI Training (process document for chat)</span>
           </label>
         </div>
-      </div>
 
-      <button
-        type="submit"
-        className={`mt-6 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        disabled={isUploading}
-      >
-        {isUploading ? 'Uploading...' : 'Upload Document'}
-      </button>
-    </form>
+        {/* Submit Button */}
+        <div className="pt-6 border-t border-gray-700">
+          <button
+            type="submit"
+            disabled={isUploading}
+            className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+          >
+            {isUploading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span>Uploading...</span>
+              </>
+            ) : (
+              <>
+                <CheckCircleIcon className="h-5 w-5" />
+                <span>Upload Document</span>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 } 
