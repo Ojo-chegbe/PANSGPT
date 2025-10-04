@@ -82,6 +82,7 @@ export async function POST(request: Request) {
 
     } catch (embeddingError) {
       console.error('Embedding service failed for chat search:', embeddingError);
+      console.log('Falling back to text-based search...');
       
       // Fallback to text search
       console.log('Falling back to text search for chat...');

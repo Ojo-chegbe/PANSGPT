@@ -177,7 +177,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
   };
 
   const confirmCancel = () => {
-    router.push('/quiz');
+    router.replace('/quiz');
   };
 
   const cancelCancel = () => {

@@ -131,14 +131,24 @@ export default function DocumentUploadForm() {
       }
 
       const responseData = await uploadResponse.json();
-      const { fileKey, documentId } = responseData;
+      const { fileKey, documentId, chunks, message } = responseData;
 
       if (!fileKey) {
         throw new Error('File upload failed - no file key returned');
       }
 
+      console.log('Upload successful:', {
+        documentId,
+        fileKey,
+        chunks,
+        message
+      });
+
       // Document processing is already handled by the upload endpoint
       // No need to call process-document separately
+      
+      // Show success message
+      alert(`Document uploaded successfully! ${chunks} chunks created. ${message}`);
       
       // Refresh the current page instead of navigation
       router.refresh();
@@ -197,7 +207,7 @@ export default function DocumentUploadForm() {
             required
             value={formData.title}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
             placeholder="Enter document title"
           />
         </div>
@@ -213,7 +223,7 @@ export default function DocumentUploadForm() {
             required
             value={formData.courseCode}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
             placeholder="e.g., CHM 101"
           />
         </div>
@@ -229,7 +239,7 @@ export default function DocumentUploadForm() {
             required
             value={formData.courseTitle}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
             placeholder="e.g., Introduction to Chemistry"
           />
         </div>
@@ -245,7 +255,7 @@ export default function DocumentUploadForm() {
             required
             value={formData.professorName}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
             placeholder="e.g., Prof. Odumosu"
           />
         </div>
@@ -261,7 +271,7 @@ export default function DocumentUploadForm() {
             required
             value={formData.topic}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black"
             placeholder="e.g., Titration"
           />
         </div>
@@ -276,15 +286,15 @@ export default function DocumentUploadForm() {
             required
             value={formData.level}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-black bg-white"
           >
-            <option value="">Select level</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-            <option value="300">300</option>
-            <option value="400">400</option>
-            <option value="500">500</option>
-            <option value="600">600</option>
+            <option value="" className="text-black">Select level</option>
+            <option value="100" className="text-black">100</option>
+            <option value="200" className="text-black">200</option>
+            <option value="300" className="text-black">300</option>
+            <option value="400" className="text-black">400</option>
+            <option value="500" className="text-black">500</option>
+            <option value="600" className="text-black">600</option>
           </select>
         </div>
 
@@ -300,7 +310,7 @@ export default function DocumentUploadForm() {
             required
             accept=".txt"
             onChange={handleFileChange}
-            className="mt-2 block w-full text-sm text-gray-900
+            className="mt-2 block w-full text-sm text-black
               file:mr-4 file:py-2 file:px-4
               file:rounded-md file:border-0
               file:text-sm file:font-semibold

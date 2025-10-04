@@ -151,58 +151,60 @@ export async function POST(request: Request) {
         level: metadata.level
       });
 
-      // Store document chunks
+      // Store document chunks with proper error handling
+      console.log(`Creating ${chunks.length} chunks for document ${documentId}...`);
+      
       const chunkPromises = chunks.map(async (chunk, index) => {
         const chunkId = `${documentId}_chunk_${index}`;
         const chunkMetadata = {
-          ...metadata,
+          courseCode: metadata.courseCode,
+          courseTitle: metadata.courseTitle,
+          professorName: metadata.professorName,
+          topic: metadata.topic,
+          level: metadata.level || '',
           author: metadata.professorName,
+          source: `${metadata.professorName}'s notes`,
+          fullSource: `${metadata.professorName}'s notes on ${metadata.topic} (${metadata.courseCode})`,
           chunkIndex: index,
           totalChunks: chunks.length
         };
 
-        // Generate embedding for the chunk using Qwen API
-        const embeddings = await generateEmbeddings([chunk.pageContent]);
-        const embedding = embeddings[0];
+        try {
+          // Generate embedding for the chunk using Qwen API
+          console.log(`Generating embedding for chunk ${index + 1}/${chunks.length}...`);
+          const embeddings = await generateEmbeddings([chunk.pageContent]);
+          const embedding = embeddings[0];
+          
+          if (!embedding || !Array.isArray(embedding) || embedding.length === 0) {
+            throw new Error(`Invalid embedding generated for chunk ${index}`);
+          }
 
-        return chunksCollection.insertOne({
-          _id: chunkId,
-          document_id: documentId,
-          chunk_text: chunk.pageContent,
-          $vector: embedding,
-          metadata: chunkMetadata
-        });
+          const chunkDoc = {
+            _id: chunkId,
+            document_id: documentId,
+            chunk_index: index,
+            chunk_text: chunk.pageContent,
+            $vector: embedding,
+            created_at: new Date().toISOString(),
+            metadata: chunkMetadata
+          };
+
+          const result = await chunksCollection.insertOne(chunkDoc);
+          console.log(`✅ Created chunk ${index + 1}/${chunks.length}: ${chunkId}`);
+          return result;
+        } catch (error) {
+          console.error(`❌ Failed to create chunk ${index + 1}:`, error);
+          throw error;
+        }
       });
 
       await Promise.all(chunkPromises);
+      console.log(`✅ Successfully created all ${chunks.length} chunks for document ${documentId}`);
 
     } catch (dbError) {
       console.error('Astra DB error:', dbError);
       return NextResponse.json({ error: 'Failed to store document data' }, { status: 500 });
     }
-
-    // Start background indexing
-    console.log('Starting background indexing for document:', documentId);
-    indexDocument({
-      documentId,
-      fileName: originalName,
-      content: text,
-      metadata: {
-        courseCode: metadata.courseCode,
-        courseTitle: metadata.courseTitle,
-        professorName: metadata.professorName,
-        topic: metadata.topic,
-        level: metadata.level || ''
-      }
-    }).then(result => {
-      if (result.success) {
-        console.log(`✅ Document ${documentId} indexed successfully with ${result.chunksCreated} chunks`);
-      } else {
-        console.error(`❌ Document ${documentId} indexing failed:`, result.error);
-      }
-    }).catch(error => {
-      console.error(`❌ Document ${documentId} indexing error:`, error);
-    });
 
     // Return success response
     return NextResponse.json({
