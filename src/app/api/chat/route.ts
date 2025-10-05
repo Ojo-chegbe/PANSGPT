@@ -1,4 +1,6 @@
 import { ChatMessage, streamChatResponse } from "@/lib/google-ai";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const GOOGLE_API_KEY = process.env.GOOGLE_AI_API_KEY!;
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pansgpt.vercel.app';
@@ -33,11 +35,18 @@ interface DocumentChunk {
 
 export async function POST(req: Request) {
   try {
-    const { message, conversationHistory = [], userLevel } = await req.json();
+    const { message, conversationHistory = [] } = await req.json();
 
     if (!message) {
       return new Response(JSON.stringify({ error: "Message is required" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
+
+    // Get user session to access level
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+    }
+    const userLevel = session.user.level;
 
     // Extract source filters from the query
     const extractedFilters = extractSourceFilters(message);
@@ -51,6 +60,7 @@ export async function POST(req: Request) {
         query: message,
         filters: {
           max_chunks: 8,
+          level: userLevel,  // Filter by user's level
           ...extractedFilters  // Spread the extracted filters directly
         }
       }),
@@ -270,6 +280,62 @@ export async function POST(req: Request) {
     // Always use document context if we have relevant content and user is asking for specific sources
     const shouldUseDocs = (userWantsDocs && hasRelevantContent) || 
                          (hasRelevantContent && (messageLower.includes('according to') || messageLower.includes('dr.') || messageLower.includes('professor')));
+    
+    // If user is asking for specific documents/sources but no level-appropriate content is found, 
+    // set up a friendly response about level restrictions
+    if (userWantsDocs && !hasRelevantContent) {
+      // Create a friendly system message for level restrictions
+      systemMessage = `You are an advanced academic assistant. The user is asking about specific documents or sources, but you don't have access to those materials because they are from a different academic level than the user's current level.
+
+The user is at the ${userLevel} academic level. The documents they're asking about are from a different level.
+
+Respond in a friendly, helpful way that:
+1. Acknowledges their question
+2. Explains that the materials they're asking about are from a different academic level
+3. Suggests they ask about materials available for their current level (${userLevel})
+4. Offers to help them find appropriate materials for their level
+
+Be encouraging and helpful, not restrictive.`;
+      
+      // Set up the AI response to be friendly about level restrictions
+      const messagesForAI: ChatMessage[] = [
+        { role: "system", content: systemMessage },
+        { role: "user", content: message }
+      ];
+      
+      // Generate a friendly response about level restrictions
+      const encoder = new TextEncoder();
+      let firstChunk = true;
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            await streamChatResponse(GOOGLE_API_KEY, messagesForAI, {
+              maxOutputTokens: 1024,
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+            }, (chunk) => {
+              const data = JSON.stringify({ chunk });
+              if (!firstChunk) controller.enqueue(encoder.encode("\n"));
+              controller.enqueue(encoder.encode(data));
+              firstChunk = false;
+            });
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        }
+      });
+      
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'Transfer-Encoding': 'chunked',
+        },
+      });
+    }
     
     if (shouldUseDocs) {
       systemMessage = `You are an advanced academic assistant. You have access to a curated database of course materials and documents.

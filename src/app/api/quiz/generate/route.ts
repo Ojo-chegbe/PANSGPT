@@ -136,7 +136,6 @@ interface QuizGenerationRequest {
   courseCode: string;
   courseTitle: string;
   topic?: string;
-  level: string;
   numQuestions: number;
   questionType: 'MCQ' | 'TRUE_FALSE' | 'OBJECTIVE' | 'SHORT_ANSWER';
   difficulty?: 'easy' | 'medium' | 'hard';
@@ -164,12 +163,22 @@ export async function POST(req: Request) {
       courseCode,
       courseTitle,
       topic,
-      level,
       numQuestions,
       questionType,
       difficulty = 'medium',
       timeLimit
     }: QuizGenerationRequest = await req.json();
+
+    // Get user's level from session instead of request
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const level = user.level;
 
     if (!courseCode || !courseTitle || !level || !numQuestions) {
       return NextResponse.json(
@@ -387,14 +396,7 @@ export async function POST(req: Request) {
       }, { status: 500 });
     }
 
-    // Get user ID
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    // User already retrieved above
 
     // Parse timeLimit to number or null
     const parsedTimeLimit = timeLimit ? Number(timeLimit) : null;

@@ -15,9 +15,15 @@ export async function POST(request: Request) {
     const client = await getClient();
     const collection = client.collection(ASTRA_DB_COLLECTION);
 
-    // Build filter conditions
+    // Build filter conditions - LEVEL FILTER IS MANDATORY for security
     const filterConditions: any = {};
     
+    // ALWAYS apply level filter first for security
+    if (filters.level) {
+      filterConditions["metadata.level"] = filters.level;
+    }
+    
+    // Then apply other filters within the level-appropriate documents
     if (filters.courseCode) {
       filterConditions["metadata.courseCode"] = filters.courseCode;
     }
@@ -26,12 +32,8 @@ export async function POST(request: Request) {
       filterConditions["metadata.topic"] = filters.topic.trim();
     }
     
-    if (filters.level) {
-      filterConditions["metadata.level"] = filters.level;
-    }
-    
     if (filters.author) {
-      // Try exact match first, then partial match
+      // Search for professor within level-appropriate documents only
       filterConditions["metadata.professorName"] = { $in: [
         filters.author,
         `Prof. ${filters.author}`,
@@ -72,19 +74,11 @@ export async function POST(request: Request) {
         }
       ).toArray();
 
-      // If no results with filters, try without filters
+      // If no results with filters, don't fall back to unfiltered search for security
+      // This ensures level-based restrictions are enforced
       if (queryResults.length === 0 && Object.keys(filterConditions).length > 0) {
-        console.log('No results with filters, trying without filters...');
-        queryResults = await collection.find(
-          {},
-          {
-            sort: {
-              $vector: queryEmbedding
-            },
-            limit: filters.max_chunks || 5,
-            includeSimilarity: true
-          }
-        ).toArray();
+        console.log('No results found with level filters - this is expected for level-based restrictions');
+        queryResults = [];
       }
 
       allResults = queryResults;

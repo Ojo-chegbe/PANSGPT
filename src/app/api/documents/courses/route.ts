@@ -1,13 +1,36 @@
 import { NextResponse } from "next/server";
 import { getClient } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
+    // Get user session to filter by level
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get user's level
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { level: true }
+    });
+
+    if (!user?.level) {
+      return NextResponse.json({ error: "User level not found" }, { status: 404 });
+    }
+
     const client = await getClient();
     const documentsCollection = await client.createCollection('documents');
-    const docs = await documentsCollection.find({}).toArray();
+    
+    // Filter documents by user's level
+    const docs = await documentsCollection.find({ 
+      level: user.level 
+    }).toArray();
 
-    // Get unique courses
+    // Get unique courses for the user's level
     const courseMap = new Map();
     docs.forEach(doc => {
       if (doc.course_code && doc.course_title && doc.level) {

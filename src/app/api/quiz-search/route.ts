@@ -82,9 +82,15 @@ export async function POST(request: Request) {
     // Build filter conditions - handle both metadata structures
     const filterConditions: any = {};
     
-    // Don't apply strict filters initially - let the search find relevant content
+    // Apply level filter if provided
+    if (filters.level) {
+      filterConditions["metadata.level"] = filters.level;
+      console.log('Applying level filter:', filters.level);
+    }
+    
+    // Don't apply other strict filters initially - let the search find relevant content
     // and then filter in memory to handle different metadata structures
-    console.log('Using broad search without strict filters to find more content');
+    console.log('Using broad search with level filter to find more content');
     
     // Debug: Check what's actually in the database
     const totalDocs = await collection.find({}).toArray();
@@ -208,38 +214,10 @@ export async function POST(request: Request) {
       console.log(`Total unique results after deduplication: ${uniqueResults.length}`);
       console.log(`Total raw results collected: ${allResults.length} (from 2 queries)`);
 
-      // If we don't have enough results, try a broader search without filters
+      // Don't fall back to unfiltered search for security - enforce level restrictions
       if (uniqueResults.length < 10) {
-        console.log('Not enough results with filters, trying broader search...');
-        
-        // Try a broader search with just the first query - cast an even wider net
-        const broadResults = await collection.find(
-          {},
-          {
-            sort: {
-              $vector: embeddings[0]
-            },
-            limit: 100, // Get even more results for broader search
-            includeSimilarity: true
-          }
-        ).toArray();
-        
-        console.log(`Broad search found ${broadResults.length} results`);
-        
-        // Add broad results to our collection
-        allResults.push(...broadResults);
-        
-        // Re-deduplicate
-        const newUniqueResults = allResults.filter((result, index, self) => 
-          index === self.findIndex(r => r.chunk_text === result.chunk_text)
-        );
-        
-        console.log(`After broad search: ${newUniqueResults.length} total unique results`);
-        
-        // Use the broader results if we have more
-        if (newUniqueResults.length > uniqueResults.length) {
-          uniqueResults.splice(0, uniqueResults.length, ...newUniqueResults);
-        }
+        console.log('Not enough results with level filters - this is expected for level-based restrictions');
+        console.log(`Found ${uniqueResults.length} results matching user's level restrictions`);
       }
 
       // Apply MMR diversification on the entire pool for true diversity

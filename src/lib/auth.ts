@@ -107,6 +107,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             name: user.name,
             image: user.image,
+            level: user.level,
             clientDeviceId: clientDeviceId,
             userAgent: userAgent,
           };
@@ -134,6 +135,7 @@ export const authOptions: NextAuthOptions = {
 
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        session.user.level = token.level as string;
         session.user.clientDeviceId = token.clientDeviceId as string;
         session.user.userAgent = token.userAgent as string;
       }
@@ -143,6 +145,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         // Initial sign in - set user data in token
         token.sub = user.id;
+        token.level = user.level;
         token.clientDeviceId = user.clientDeviceId;
         token.userAgent = user.userAgent;
         return token;
@@ -153,7 +156,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.sub },
-            select: { id: true, email: true, name: true }
+            select: { id: true, email: true, name: true, level: true }
           });
 
           if (!dbUser) {
@@ -165,6 +168,7 @@ export const authOptions: NextAuthOptions = {
           // User exists, update token with current data
           token.email = dbUser.email;
           token.name = dbUser.name;
+          token.level = dbUser.level;
         } catch (error) {
           console.error('Error validating user in JWT callback:', error);
           // On database error, allow the token to continue (fail gracefully)

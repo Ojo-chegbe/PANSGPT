@@ -157,7 +157,7 @@ export default function QuizSelectionForm() {
       return;
     }
 
-    if (!formData.courseCode || !formData.courseTitle || !formData.level) {
+    if (!formData.courseCode || !formData.courseTitle) {
       setError('Please select a course');
       return;
     }
@@ -178,7 +178,15 @@ export default function QuizSelectionForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          courseCode: formData.courseCode,
+          courseTitle: formData.courseTitle,
+          topic: formData.topic,
+          numQuestions: formData.numQuestions,
+          questionType: formData.questionType,
+          difficulty: formData.difficulty,
+          timeLimit: formData.timeLimit
+        }),
         signal: controller.signal,
       });
 
