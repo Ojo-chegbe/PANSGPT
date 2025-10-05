@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import Script from 'next/script';
 import { Suspense } from "react";
 import { ThemeToggle } from '@/components/ThemeToggle';
+import BackButton from '@/components/BackButton';
 
 interface SubscriptionStatus {
   isActive: boolean;
@@ -186,8 +187,9 @@ function PlanPage() {
       <Script src="https://js.paystack.co/v1/inline.js" strategy="afterInteractive" />
       <div className="min-h-screen bg-white dark:bg-black text-gray-800 dark:text-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          {/* Theme Toggle */}
-          <div className="flex justify-end mb-4">
+          {/* Back Button and Theme Toggle */}
+          <div className="flex justify-between items-center mb-4">
+            <BackButton href="/main" label="Back to Chat" />
             <ThemeToggle />
           </div>
           {/* Payment Status Messages */}

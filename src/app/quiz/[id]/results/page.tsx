@@ -1,5 +1,6 @@
 import React from 'react';
 import QuizResults from '@/components/QuizResults';
+import BackButton from '@/components/BackButton';
 
 interface QuizResultsPageProps {
   params: Promise<{
@@ -12,6 +13,11 @@ export default async function QuizResultsPage({ params }: QuizResultsPageProps) 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-theme-primary py-8">
       <div className="max-w-4xl mx-auto px-4">
+        {/* Back Button */}
+        <div className="mb-6">
+          <BackButton href="/quiz" label="Back to Quiz Creation" />
+        </div>
+        
         <QuizResults quizId={id} />
       </div>
     </div>

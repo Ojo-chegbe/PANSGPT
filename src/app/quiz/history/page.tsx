@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import QuizHistory from '@/components/QuizHistory';
+import BackButton from '@/components/BackButton';
  
 export default function QuizHistoryPage() {
   const [userSubscription, setUserSubscription] = useState<any>(null);
@@ -32,6 +33,11 @@ export default function QuizHistoryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-theme-primary py-8">
       <div className="max-w-4xl mx-auto px-4">
+        {/* Back Button */}
+        <div className="mb-6">
+          <BackButton href="/quiz" label="Back to Quiz Creation" />
+        </div>
+        
         <h1 className="text-3xl font-bold text-green-600 dark:text-green-400 mb-8 text-center">Quiz History</h1>
         <QuizHistory />
       </div>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../contexts/ThemeContext';
+import BackButton from '../../components/BackButton';
 
 const faqs = [
   {
@@ -124,6 +125,11 @@ const FaqPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-theme-primary flex flex-col items-center py-10 px-4">
+      {/* Back Button */}
+      <div className="w-full max-w-3xl mb-4">
+        <BackButton href="/main" label="Back to Chat" />
+      </div>
+      
       <div className="w-full max-w-3xl bg-white dark:bg-[#181A1B] rounded-2xl p-8 flex flex-col gap-8 border border-gray-200 dark:border-gray-700">
         <h1 className="text-4xl md:text-5xl font-extrabold text-green-600 dark:text-green-400 text-center mb-4">PansGPT FAQs</h1>
         <p className="text-lg text-theme-secondary text-center mb-8 max-w-2xl mx-auto">

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import QuizSelectionForm from '@/components/QuizSelectionForm';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import BackButton from '@/components/BackButton';
 import { 
   SparklesIcon, 
   AcademicCapIcon,
@@ -47,6 +48,10 @@ export default function QuizPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-6 py-12">
+          {/* Back Button */}
+          <div className="mb-6">
+            <BackButton href="/main" label="Back to Chat" />
+          </div>
           <div className="text-center">
             <div className="flex items-center justify-center space-x-4 mb-6">
               <div className="bg-green-600 p-4 rounded-2xl">

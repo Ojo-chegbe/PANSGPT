@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import QuizSummaryCards from '../../components/QuizSummaryCards';
 import { clearDeviceId } from '../../lib/device-id';
 import { useTheme } from '../../contexts/ThemeContext';
+import BackButton from '../../components/BackButton';
 
 interface TimetableEntry {
   id: string;
@@ -180,6 +181,11 @@ export default function ProfilePage() {
   // Use user object for all profile fields, and data.stats/achievements for stats
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-theme-primary flex flex-col items-center py-10 px-4">
+      {/* Back Button */}
+      <div className="w-full max-w-3xl mb-4">
+        <BackButton href="/main" label="Back to Chat" />
+      </div>
+      
       <div className="w-full max-w-3xl bg-white dark:bg-[#181A1B] rounded-2xl dark:shadow-xl p-8 flex flex-col gap-8 border border-gray-200 dark:border-gray-700">
         {/* Personal Info - Modern Revamp */}
         <div className="flex flex-col items-center gap-6 border-b border-theme pb-10">

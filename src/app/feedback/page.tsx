@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '../../contexts/ThemeContext';
+import BackButton from '../../components/BackButton';
 
 export default function FeedbackPage() {
   const router = useRouter();
@@ -66,8 +67,16 @@ export default function FeedbackPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:bg-black text-theme-primary flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white dark:bg-[#232625] rounded-lg p-8 border border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-black dark:to-gray-800 text-theme-primary flex items-center justify-center p-4 relative">
+      {/* Background pattern overlay */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] dark:bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.03"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+      
+      {/* Back Button */}
+      <div className="absolute top-4 left-4 z-20">
+        <BackButton href="/main" label="Back to Chat" />
+      </div>
+      
+      <div className="w-full max-w-md bg-white/90 dark:bg-[#232625]/90 backdrop-blur-sm rounded-lg p-8 border border-gray-200 dark:border-gray-700 shadow-xl dark:shadow-2xl relative z-10">
         <h1 className="text-2xl font-bold mb-6 text-center text-theme-primary">Send Feedback</h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -22,7 +22,6 @@ interface UploadFormData {
   professorName: string;
   topic: string;
   file: File | null;
-  aiTrainingEnabled: boolean;
   level?: string;
 }
 
@@ -39,7 +38,6 @@ export default function DocumentUploadForm() {
     professorName: '',
     topic: '',
     file: null,
-    aiTrainingEnabled: true,
     level: ''
   });
 
@@ -172,7 +170,6 @@ export default function DocumentUploadForm() {
         professorName: '',
         topic: '',
         file: null,
-        aiTrainingEnabled: true,
         level: ''
       });
 
@@ -368,20 +365,6 @@ export default function DocumentUploadForm() {
           </div>
         </div>
 
-        {/* AI Training Checkbox */}
-        <div className="space-y-2">
-          <label htmlFor="aiTrainingEnabled" className="flex items-center space-x-3 text-sm font-semibold text-gray-300">
-            <input
-              type="checkbox"
-              id="aiTrainingEnabled"
-              name="aiTrainingEnabled"
-              checked={formData.aiTrainingEnabled}
-              onChange={handleInputChange}
-              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700/50"
-            />
-            <span>Enable AI Training (process document for chat)</span>
-          </label>
-        </div>
 
         {/* Submit Button */}
         <div className="pt-6 border-t border-gray-700">
