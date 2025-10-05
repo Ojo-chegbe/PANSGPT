@@ -193,10 +193,10 @@ export async function POST(req: Request) {
           documentTypesCount: documentTypes.size
         });
         
-        // Fallback: if no context was built but we have chunks, build a simple context
-        if (context.length === 0 && chunks.length > 0) {
+        // Fallback: if no context was built but we have results, build a simple context
+        if (context.length === 0 && results.length > 0) {
           console.log('No context built from source groups, building fallback context');
-          const fallbackContext = chunks
+          const fallbackContext = results
             .map((chunk: DocumentChunk) => chunk.chunk_text)
             .filter((text: string) => text && text.trim().length > 0)
             .join("\n\n---\n\n");
