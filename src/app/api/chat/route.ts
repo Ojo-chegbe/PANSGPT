@@ -284,18 +284,27 @@ export async function POST(req: Request) {
     // If user is asking for specific documents/sources but no level-appropriate content is found, 
     // set up a friendly response about level restrictions
     if (userWantsDocs && !hasRelevantContent) {
+      // Get available materials for their level
+      const availableTopics = Array.from(topicAreas).length > 0 ? Array.from(topicAreas).join(', ') : 'various topics';
+      const availableTypes = Array.from(documentTypes).length > 0 ? Array.from(documentTypes).join(', ') : 'lecture notes, readings, and other materials';
+      
       // Create a friendly system message for level restrictions
       systemMessage = `You are an advanced academic assistant. The user is asking about specific documents or sources, but you don't have access to those materials because they are from a different academic level than the user's current level.
 
 The user is at the ${userLevel} academic level. The documents they're asking about are from a different level.
 
+However, you DO have access to materials appropriate for their ${userLevel} level, including:
+- Topics: ${availableTopics}
+- Document types: ${availableTypes}
+
 Respond in a friendly, helpful way that:
 1. Acknowledges their question
 2. Explains that the materials they're asking about are from a different academic level
-3. Suggests they ask about materials available for their current level (${userLevel})
-4. Offers to help them find appropriate materials for their level
+3. Tells them what materials ARE available for their current level (${userLevel})
+4. Suggests they ask about the available topics or materials
+5. Offers to help them find appropriate materials for their level
 
-Be encouraging and helpful, not restrictive.`;
+Be encouraging and helpful, not restrictive. Show them what they CAN access rather than what they can't.`;
       
       // Set up the AI response to be friendly about level restrictions
       const messagesForAI: ChatMessage[] = [
