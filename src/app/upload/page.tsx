@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DocumentUploadForm from '../../components/DocumentUploadForm';
+import PasswordAuth from '../../components/PasswordAuth';
 import { logDocumentAccess } from '../../lib/document-utils';
 import { 
   DocumentArrowUpIcon, 
@@ -18,6 +19,22 @@ import {
 // Create a separate layout.tsx or loading.tsx for metadata
 
 export default function UploadPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const handleAuthSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <PasswordAuth 
+        onSuccess={handleAuthSuccess}
+        title="Document Upload Access"
+        description="Please enter the password to access the document upload page"
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}

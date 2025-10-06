@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import PasswordAuth from '../../../components/PasswordAuth';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -23,7 +23,7 @@ interface TimetableEntry {
 }
 
 export default function AdminTimetablePage() {
-  const { data: session, status } = useSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [timetables, setTimetables] = useState<TimetableEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -40,9 +40,13 @@ export default function AdminTimetablePage() {
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   const levels = ["100", "200", "300", "400", "500", "600"];
 
+  const handleAuthSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
   useEffect(() => {
-    if (session) fetchTimetables();
-  }, [session, selectedLevel]);
+    if (isAuthenticated) fetchTimetables();
+  }, [isAuthenticated, selectedLevel]);
 
   async function fetchTimetables() {
     setLoading(true);
@@ -133,26 +137,15 @@ export default function AdminTimetablePage() {
     }));
   };
 
-  if (status === "loading") return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <p className="text-gray-300 text-lg">Loading...</p>
-      </div>
-    </div>
-  );
-  
-  if (!session) return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-8 max-w-md">
-          <XMarkIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-red-400 mb-2">Access Denied</h2>
-          <p className="text-red-300">Please sign in to access this page</p>
-        </div>
-      </div>
-    </div>
-  );
+  if (!isAuthenticated) {
+    return (
+      <PasswordAuth 
+        onSuccess={handleAuthSuccess}
+        title="Timetable Management Access"
+        description="Please enter the password to access the timetable management page"
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
