@@ -25,6 +25,12 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+/* Improve mobile viewport height behavior */
+@supports (height: 100dvh) {
+  .min-h-\[100dvh\] { min-height: 100dvh; }
+  .h-\[100dvh\] { height: 100dvh; }
+}
+
 /* Enhanced Markdown Styling */
 .markdown-math {
   @apply max-w-none text-base md:text-lg;

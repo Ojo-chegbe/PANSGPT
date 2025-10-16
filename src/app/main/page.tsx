@@ -253,6 +253,8 @@ export default function MainPage() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const [messages, setMessages] = useState<ExtendedChatMessage[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -622,12 +624,33 @@ export default function MainPage() {
     setMessages(sortedMessages);
   }, [sortedMessages]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change, but only if user is near bottom or not streaming
   useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      const chatContainer = chatEndRef.current.parentElement;
+      if (chatContainer) {
+        const isNearBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 100;
+        // Only auto-scroll if user is near bottom OR if we're not currently streaming
+        if (isNearBottom || !isStreaming) {
+          chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
     }
-  }, [messages]);
+  }, [messages, isStreaming]);
+
+  // Handle scroll events to show/hide scroll to bottom button
+  useEffect(() => {
+    const chatContainer = document.querySelector('.overflow-y-auto');
+    if (!chatContainer) return;
+
+    const handleScroll = () => {
+      const isNearBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 100;
+      setShowScrollButton(!isNearBottom && isStreaming);
+    };
+
+    chatContainer.addEventListener('scroll', handleScroll);
+    return () => chatContainer.removeEventListener('scroll', handleScroll);
+  }, [isStreaming]);
 
   // Update messagesRef whenever messages change
   useEffect(() => {
@@ -678,6 +701,7 @@ export default function MainPage() {
         : c
     ));
     setInput('');
+    setIsStreaming(true);
     try {
       await streamChatApi(
         userMessage.content,
@@ -832,6 +856,7 @@ export default function MainPage() {
       }]);
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
     }
   }, [input, isLoading, activeConv, activeId, session?.user?.id, messages, userLevel]);
 
@@ -1002,10 +1027,10 @@ export default function MainPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-black text-gray-800 dark:text-white">
+    <div className="flex min-h-[100dvh] bg-white dark:bg-black text-gray-800 dark:text-white">
       {/* Sidebar */}
       {sidebarOpen && (
-        <aside className="w-[85vw] md:w-72 bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl h-screen fixed left-0 top-0 z-50 flex flex-col border-r border-gray-200/50 dark:border-gray-700/50">
+        <aside className="w-[85vw] md:w-72 bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl h-[100dvh] fixed left-0 top-0 z-50 flex flex-col border-r border-gray-200/50 dark:border-gray-700/50">
           {/* Close button for mobile */}
           <button
             className="absolute top-3 right-3 md:hidden text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl z-50"
@@ -1095,7 +1120,7 @@ export default function MainPage() {
         </aside>
       )}
       {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col h-screen bg-white dark:bg-black transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}>
+      <div className={`flex-1 flex flex-col h-[100dvh] bg-white dark:bg-black transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}>
         {/* Top Bar - Fixed */}
         <div className={`fixed top-0 right-0 z-40 bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 flex items-center px-3 md:px-6 py-3 md:py-4 gap-2 md:gap-4 transition-all duration-300 ${
           sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'
@@ -1215,6 +1240,23 @@ export default function MainPage() {
                 isLoading={isLoading}
               />
               <div ref={chatEndRef} />
+              
+              {/* Scroll to bottom button - only show when streaming and user has scrolled up */}
+              {showScrollButton && (
+                <button
+                  onClick={() => {
+                    if (chatEndRef.current) {
+                      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="fixed bottom-20 right-4 md:right-8 z-30 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
+                  title="Scroll to latest message"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </button>
+              )}
             </>
           )}
         </div>
