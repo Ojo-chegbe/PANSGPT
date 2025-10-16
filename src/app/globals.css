@@ -27,7 +27,7 @@ body {
 
 /* Enhanced Markdown Styling */
 .markdown-math {
-  @apply max-w-none;
+  @apply max-w-none text-base md:text-lg;
 }
 
 .markdown-math.ai-response {
@@ -95,7 +95,7 @@ body {
 }
 
 .markdown-math li {
-  @apply leading-relaxed;
+  @apply leading-relaxed text-base md:text-lg;
 }
 
 /* Fix spacing for numbered lists - tight spacing between number and description */
@@ -115,7 +115,7 @@ body {
 
 /* Enhanced Paragraph Spacing */
 .markdown-math p {
-  @apply mb-4 leading-relaxed;
+  @apply mb-4 leading-relaxed text-base md:text-lg;
 }
 
 .markdown-math p:last-child {
@@ -128,7 +128,7 @@ body {
 }
 
 .katex {
-  @apply text-base;
+  @apply text-base md:text-lg;
 }
 
 /* Code Block Improvements */
@@ -137,7 +137,7 @@ body {
 }
 
 .markdown-math code {
-  @apply font-mono text-sm;
+  @apply font-mono text-sm md:text-base;
 }
 
 /* Enhanced Table Styling */

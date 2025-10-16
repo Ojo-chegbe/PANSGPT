@@ -29,11 +29,19 @@ const MarkdownWithMath: React.FC<MarkdownWithMathProps> = React.memo(({ content 
   processedContent = processedContent.replace(/<br\s*\/?>/gi, '\n');
 
   return (
-    <div className="markdown-math" ref={containerRef}>
+    <div className="markdown-math text-base md:text-lg" ref={containerRef}>
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
         skipHtml={false}
+        // Ensure tables are wrapped for horizontal scroll on mobile
+        components={{
+          table: ({ children }) => (
+            <div className="table-wrapper">
+              <table className="w-full">{children}</table>
+            </div>
+          ),
+        }}
       >
         {processedContent}
       </ReactMarkdown>
