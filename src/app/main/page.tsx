@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
 import React from "react";
 import { type ChatMessage } from '@/lib/google-ai';
 import { useSession } from "next-auth/react";
@@ -253,7 +253,7 @@ const InputArea = React.memo(({
   </form>
 ));
 
-export default function MainPage() {
+function MainPageContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1392,5 +1392,17 @@ export default function MainPage() {
           />
       </div>
     </div>
+  );
+}
+
+export default function MainPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen bg-white dark:bg-black text-gray-800 dark:text-white items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    }>
+      <MainPageContent />
+    </Suspense>
   );
 } 
