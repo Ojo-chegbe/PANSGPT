@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DID_YOU_KNOW_FACTS, DidYouKnowFact } from '@/lib/did-you-know-facts';
 
@@ -61,23 +61,50 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
   const [currentStage, setCurrentStage] = useState(0);
   const [progress, setProgress] = useState(0);
   const [currentFact, setCurrentFact] = useState<DidYouKnowFact | null>(null);
-  const [factIndex, setFactIndex] = useState(0);
-  const [shuffledFacts, setShuffledFacts] = useState<DidYouKnowFact[]>([]);
+  const [availableFacts, setAvailableFacts] = useState<DidYouKnowFact[]>([]);
+  
+  // Use ref to track used facts to avoid infinite re-renders
+  const usedFactsRef = useRef<Set<string>>(new Set());
+
+  // Function to get a random fact that hasn't been used recently
+  const getRandomFact = (currentAvailableFacts: DidYouKnowFact[]) => {
+    // If we've used all facts, reset the used facts set
+    if (usedFactsRef.current.size >= currentAvailableFacts.length) {
+      usedFactsRef.current.clear();
+    }
+    
+    // Get facts that haven't been used recently
+    const unusedFacts = currentAvailableFacts.filter(fact => !usedFactsRef.current.has(fact.id));
+    
+    // If all facts have been used, use any fact
+    const factsToChooseFrom = unusedFacts.length > 0 ? unusedFacts : currentAvailableFacts;
+    
+    // Get a random fact
+    const randomIndex = Math.floor(Math.random() * factsToChooseFrom.length);
+    const selectedFact = factsToChooseFrom[randomIndex];
+    
+    // Mark this fact as used
+    usedFactsRef.current.add(selectedFact.id);
+    
+    return selectedFact;
+  };
 
   useEffect(() => {
     if (!isOpen) {
       // Reset when modal closes
       setCurrentStage(0);
       setProgress(0);
-      setShuffledFacts([]);
+      usedFactsRef.current.clear();
+      setAvailableFacts([]);
+      setCurrentFact(null);
       return;
     }
 
-    // Initialize shuffled facts only once when modal opens
-    const shuffled = [...DID_YOU_KNOW_FACTS].sort(() => Math.random() - 0.5);
-    setShuffledFacts(shuffled);
-    setCurrentFact(shuffled[0]);
-    setFactIndex(0);
+    // Initialize available facts and get first random fact
+    const facts = [...DID_YOU_KNOW_FACTS];
+    setAvailableFacts(facts);
+    const firstFact = getRandomFact(facts);
+    setCurrentFact(firstFact);
 
     let stageIndex = 0;
     const totalStages = PROGRESS_STAGES.length;
@@ -115,12 +142,11 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
       }
     }, 100);
 
-    // Change fact every 6 seconds
+    // Change fact every 6 seconds with truly random selection
     const factInterval = setInterval(() => {
-      setFactIndex(prev => {
-        const nextIndex = (prev + 1) % shuffled.length;
-        setCurrentFact(shuffled[nextIndex]);
-        return nextIndex;
+      setCurrentFact(prevFact => {
+        const randomFact = getRandomFact(facts);
+        return randomFact;
       });
     }, 6000);
 
@@ -236,12 +262,11 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
                 </AnimatePresence>
                 <div className="mt-4 flex justify-center">
                   <div className="flex space-x-1">
-                    {shuffledFacts.slice(0, 5).map((_, index) => (
+                    {Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
-                        className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                          index === factIndex ? 'bg-blue-500 dark:bg-blue-400' : 'bg-blue-300 dark:bg-blue-400/30'
-                        }`}
+                        className="w-2 h-2 rounded-full bg-blue-300 dark:bg-blue-400/30 animate-pulse"
+                        style={{ animationDelay: `${index * 0.2}s` }}
                       />
                     ))}
                   </div>

@@ -45,6 +45,14 @@ export const metadata = {
   },
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -52,6 +60,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full dark">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      </head>
       <body className={`${montserrat.variable} font-sans h-full`}>
         <Providers>
           <main className="min-h-screen">

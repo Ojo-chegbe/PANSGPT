@@ -95,8 +95,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ apiKey }) => {
   };
 
   return (
-    <div className="flex flex-col h-[600px] w-full max-w-2xl mx-auto bg-white rounded-lg shadow-lg">
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+    <div className="flex flex-col w-full mx-auto bg-white rounded-lg shadow-lg h-[calc(100dvh-140px)] max-h-[900px] max-w-full px-2 sm:max-w-2xl sm:h-[700px] sm:max-h-[80vh] sm:px-0">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -104,9 +104,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ apiKey }) => {
               message.role === 'user' ? 'justify-end' : 'justify-start'
             }`}
           >
-            <div className="relative group max-w-[80%]">
+            <div className="relative group max-w-[85%] sm:max-w-[80%]">
               <div
-                className={`rounded-xl p-4 shadow-sm ${
+                className={`rounded-xl p-3 sm:p-4 shadow-sm ${
                   message.role === 'user'
                     ? 'bg-gradient-to-br from-green-500 to-green-600 text-white'
                     : 'bg-black/20 backdrop-blur-md text-white border border-white/10 shadow-lg'
@@ -136,14 +136,14 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ apiKey }) => {
                     </div>
                   </div>
                 ) : (
-                  <div className={message.role === 'user' ? 'text-white' : 'text-gray-800'}>
+                  <div className={message.role === 'user' ? 'text-white text-sm sm:text-base' : 'text-gray-800 text-sm sm:text-base'}>
                     <MarkdownWithMath content={message.content} />
                   </div>
                 )}
               </div>
               
               {/* Action buttons */}
-              <div className={`absolute bottom-0 ${message.role === 'user' ? 'right-0' : 'left-0'} transform translate-y-full opacity-0 group-hover:opacity-100 flex gap-2 mt-1`}>
+              <div className={`absolute bottom-0 ${message.role === 'user' ? 'right-0' : 'left-0'} transform translate-y-full opacity-0 group-hover:opacity-100 hidden sm:flex gap-2 mt-1`}>
                 <button
                   onClick={() => handleCopy(message.content)}
                   className="p-1 text-gray-500 hover:text-gray-700"

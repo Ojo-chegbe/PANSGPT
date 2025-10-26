@@ -4,12 +4,13 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import React from "react";
 import { type ChatMessage } from '@/lib/google-ai';
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { ClipboardIcon, PencilIcon } from '@heroicons/react/24/outline';
 import MarkdownWithMath from '@/components/MarkdownWithMath';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { generateConversationTitle, isDefaultTitle } from '@/lib/conversation-title-generator';
+import { MicrophoneButton } from '@/components/MicrophoneButton';
 
 type MessageRole = 'user' | 'system' | 'model';
 
@@ -194,37 +195,49 @@ const MessageList = React.memo(({
 // Memoize the input area component
 const InputArea = React.memo(({ 
   input, 
-  handleInputChange, 
+  handleInputChange,
+  setInput,
   handleSend, 
   isLoading, 
   sidebarOpen 
 }: {
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  setInput: (value: string) => void;
   handleSend: (e: React.FormEvent) => void;
   isLoading: boolean;
   sidebarOpen: boolean;
 }) => (
   <form
     onSubmit={handleSend}
-    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'} px-3 md:px-24 pb-3 md:pb-8`}
+    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'} px-4 md:px-24 pb-4 md:pb-8 bg-transparent`}
   >
-    <div className={`bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl rounded-2xl flex items-center px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 ${
+    <div className={`bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl rounded-2xl flex items-center gap-2 px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 relative ${
       isLoading 
         ? 'border-emerald-400' 
         : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/50 dark:hover:border-gray-600/50'
     }`}>
+      {/* Microphone button - left side, always visible */}
+      <MicrophoneButton 
+        onTranscript={(text) => setInput(text)} 
+        disabled={isLoading} 
+        className="flex-shrink-0" 
+      />
+      
+      {/* Input field */}
       <input
         type="text"
         placeholder={isLoading ? "PANSGPT is processing your message..." : "Ask a question from any course."}
-        className="flex-1 bg-transparent outline-none text-sm md:text-base text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+        className="flex-1 bg-transparent outline-none text-sm md:text-base text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 pr-20 lg:pr-4"
         value={input}
         onChange={handleInputChange}
         disabled={isLoading}
       />
+      
+      {/* Send button */}
       <button
         type="submit"
-        className="ml-3 md:ml-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200"
+        className="absolute right-2 lg:relative lg:right-auto lg:ml-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-3 lg:px-8 py-2 lg:py-3 rounded-xl font-semibold text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 z-10"
         disabled={isLoading || !input.trim()}
       >
         {isLoading ? (
@@ -243,6 +256,7 @@ const InputArea = React.memo(({
 export default function MainPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef(null);
@@ -499,6 +513,9 @@ export default function MainPage() {
       setEditingIdx(null);
       setEditingText("");
       
+      // Navigate to clean URL without conversation ID
+      router.push('/main');
+      
       console.log('Created temporary conversation for new chat:', {
         tempConversationId: tempId
       });
@@ -535,9 +552,18 @@ export default function MainPage() {
             } : null
           });
           
-          // Always create a new conversation when user opens the site
-          console.log('Creating new conversation for user session');
-          await createNewConversation();
+          // Check if there's a conversation ID in the URL
+          const conversationIdFromUrl = searchParams.get('conversation');
+          
+          if (conversationIdFromUrl) {
+            // Try to load the specific conversation from URL
+            console.log('Loading conversation from URL:', conversationIdFromUrl);
+            await loadConversationFromUrl(conversationIdFromUrl, data.conversations || []);
+          } else {
+            // No conversation ID in URL - create a new conversation
+            console.log('No conversation ID in URL, creating new conversation');
+            await createNewConversation();
+          }
         } catch (err) {
           console.error("Error loading user data:", err);
           // Create a new conversation if there's an error
@@ -546,7 +572,92 @@ export default function MainPage() {
       }
     }
     loadData();
-  }, [session?.user?.id]);
+  }, [session?.user?.id, searchParams]);
+
+  // Function to load a specific conversation from URL
+  const loadConversationFromUrl = async (conversationId: string, existingConversations: any[]) => {
+    if (!session?.user?.id) return;
+    
+    try {
+      // First check if the conversation is already in our loaded conversations
+      const existingConv = existingConversations.find(conv => conv.id === conversationId);
+      
+      if (existingConv) {
+        // Convert to our format and set as active
+        const formattedConversations = existingConversations.map((conv: any) => ({
+          id: conv.id,
+          name: conv.title,
+          messages: conv.messages.map((msg: any) => ({
+            role: msg.role as MessageRole,
+            content: msg.content,
+            createdAt: new Date(msg.createdAt)
+          }))
+        }));
+        
+        setConversations(formattedConversations);
+        setActiveId(conversationId);
+        setMessages(existingConv.messages.map((msg: any) => ({
+          role: msg.role as MessageRole,
+          content: msg.content,
+          createdAt: new Date(msg.createdAt)
+        })));
+        
+        console.log('Loaded existing conversation from URL:', {
+          conversationId,
+          messageCount: existingConv.messages.length
+        });
+        return;
+      }
+      
+      // If not found in loaded conversations, try to fetch it directly
+      console.log('Conversation not in loaded list, fetching directly:', conversationId);
+      const response = await fetch(`/api/conversations/${conversationId}`, {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const conversation = data.conversation;
+        
+        // Convert to our format
+        const formattedConversation = {
+          id: conversation.id,
+          name: conversation.title,
+          messages: conversation.messages.map((msg: any) => ({
+            role: msg.role as MessageRole,
+            content: msg.content,
+            createdAt: new Date(msg.createdAt)
+          }))
+        };
+        
+        // Add this conversation to the list and set as active
+        const allConversations = [formattedConversation, ...existingConversations.map((conv: any) => ({
+          id: conv.id,
+          name: conv.title,
+          messages: conv.messages.map((msg: any) => ({
+            role: msg.role as MessageRole,
+            content: msg.content,
+            createdAt: new Date(msg.createdAt)
+          }))
+        }))];
+        
+        setConversations(allConversations);
+        setActiveId(conversationId);
+        setMessages(formattedConversation.messages);
+        
+        console.log('Loaded conversation directly from API:', {
+          conversationId,
+          messageCount: conversation.messages.length
+        });
+      } else {
+        console.log('Conversation not found, creating new one instead');
+        await createNewConversation();
+      }
+    } catch (err) {
+      console.error("Error loading conversation from URL:", err);
+      await createNewConversation();
+    }
+  };
 
   // Function to create a new conversation (UI-only, not saved to database until first message)
   const createNewConversation = async () => {
@@ -785,6 +896,9 @@ export default function MainPage() {
             // Update active ID to the real conversation ID
             setActiveId(savedConversation.id);
             setMessages(updatedConversation.messages);
+            
+            // Update URL with the real conversation ID
+            router.push(`/main?conversation=${savedConversation.id}`);
           } else {
             console.error('Failed to create conversation:', saveResponse.status, saveResponse.statusText);
             const errorText = await saveResponse.text();
@@ -865,6 +979,13 @@ export default function MainPage() {
     setActiveId(id);
     setEditingIdx(null);
     setEditingText("");
+    
+    // Update URL with conversation ID (only for real conversations, not temp ones)
+    if (!id.startsWith('temp_')) {
+      router.push(`/main?conversation=${id}`);
+    } else {
+      router.push('/main');
+    }
     
     // Close sidebar on mobile when conversation is selected
     // Use a more reliable method to check if we're on mobile
@@ -1120,7 +1241,7 @@ export default function MainPage() {
         </aside>
       )}
       {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col h-[100dvh] bg-white dark:bg-black transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}>
+      <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}>
         {/* Top Bar - Fixed */}
         <div className={`fixed top-0 right-0 z-40 bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 flex items-center px-3 md:px-6 py-3 md:py-4 gap-2 md:gap-4 transition-all duration-300 ${
           sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'
@@ -1211,8 +1332,8 @@ export default function MainPage() {
           </div>
         </div>
         {/* Chat Area - Adjusted with top padding to account for fixed topbar */}
-        <div className="flex-1 flex flex-col px-3 md:px-8 pt-20 md:pt-24 pb-28 md:pb-44 gap-6 md:gap-10 overflow-y-auto bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-gray-900 dark:via-black dark:to-gray-900"
-          style={{ position: 'relative' }}
+        <div className="flex-1 flex flex-col px-3 md:px-8 pt-20 md:pt-24 gap-6 md:gap-10 overflow-y-auto bg-transparent"
+          style={{ position: 'relative', paddingBottom: '0px' }}
         >
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
@@ -1264,6 +1385,7 @@ export default function MainPage() {
           <InputArea
             input={input}
             handleInputChange={handleInputChange}
+            setInput={setInput}
             handleSend={handleSend}
             isLoading={isLoading}
             sidebarOpen={sidebarOpen}

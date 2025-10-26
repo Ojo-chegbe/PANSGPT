@@ -197,7 +197,6 @@ RESPONSE FORMAT (JSON):
       "correctAnswers": ["...", ...], // for MCQ (array of 3 true options)
       "explanation": "...",
       "points": 1,
-      "sourceUsed": "SOURCE X" // REQUIRED: Specify which source this question uses
     }
   ]
 }
@@ -205,7 +204,7 @@ RESPONSE FORMAT (JSON):
 CRITICAL INSTRUCTIONS:
 1. Each question MUST use a different source (SOURCE 1, SOURCE 2, SOURCE 3, etc.)
 2. Do NOT use the same source for multiple questions
-3. The sourceUsed field is REQUIRED for each question
+3. DO NOT mention sources in question text (no "according to source X" or similar references)
 4. Return ONLY valid JSON, no extra text, no comments, and no trailing commas.
 
 EXAMPLE:
@@ -224,26 +223,30 @@ function getQuestionTypeRequirements(questionType: string): string {
 - TRUE options: Use EXACT phrases from the material (6 words or less)
 - FALSE options: Create believable but incorrect statements
 - Each option should be a complete, clear statement
-- Vary the position of correct answers across questions`;
+- Vary the position of correct answers across questions
+- DO NOT mention sources in question text or options`;
     case 'OBJECTIVE':
       return `OBJECTIVE QUESTIONS:
 - Generate exactly 4 options per question
 - 1 correct answer, 3 plausible distractors
 - Use clear, concise language
 - Make distractors believable but incorrect
-- Vary the position of correct answers`;
+- Vary the position of correct answers
+- DO NOT mention sources in question text or options`;
     case 'TRUE_FALSE':
       return `TRUE/FALSE QUESTIONS:
 - Provide clear, unambiguous statements
 - Avoid absolute terms when possible
 - Make statements specific and testable
-- Balance true and false statements across the set`;
+- Balance true and false statements across the set
+- DO NOT mention sources in question text`;
     case 'SHORT_ANSWER':
       return `SHORT ANSWER QUESTIONS:
 - Ask for specific, concise responses
 - Provide clear answer expectations
 - Test understanding, not just memorization
-- Include key points in explanations`;
+- Include key points in explanations
+- DO NOT mention sources in question text`;
     default:
       return '';
   }

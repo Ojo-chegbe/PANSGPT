@@ -31,9 +31,224 @@ body {
   .h-\[100dvh\] { height: 100dvh; }
 }
 
+/* Mobile viewport fixes */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Ensure all containers respect viewport width */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal overflow */
+.container, .max-w-full, .w-full {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Prevent zoom on input focus for iOS */
+input, textarea, select {
+  font-size: 16px;
+}
+
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+  
+  /* Force mobile containers to respect viewport */
+  .max-w-2xl {
+    max-width: calc(100vw - 1rem) !important;
+  }
+  
+  /* Ensure chat bubbles don't overflow */
+  .max-w-\[85\%\] {
+    max-width: 85% !important;
+  }
+  
+  .max-w-\[90\%\] {
+    max-width: 90% !important;
+  }
+  
+  /* Force all containers to respect viewport width */
+  .max-w-6xl {
+    max-width: calc(100vw - 1rem) !important;
+  }
+  
+  /* Ensure main chat area doesn't overflow */
+  .flex-1 {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  
+  /* Fix input area spacing - provide adequate padding */
+  .px-3 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  .px-8 {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+  
+  /* Ensure input form has proper spacing */
+  form {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Fix input container spacing */
+  .px-4 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .px-8 {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+}
+
+/* Input area responsive fixes */
+@media screen and (max-width: 480px) {
+  /* Extra small screens - ensure adequate spacing */
+  .px-3 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  form {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Ensure input container has proper spacing */
+  .px-4 {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+  }
+  
+  /* Ensure input form container has adequate spacing */
+  .fixed.bottom-0 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  /* Small to medium screens - balanced spacing */
+  .px-3 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  form {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .px-4 {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+  
+  /* Ensure input form container has adequate spacing */
+  .fixed.bottom-0 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Additional input area fixes for consistency */
+@media screen and (max-width: 768px) {
+  /* Ensure input area has consistent spacing */
+  .fixed.bottom-0.z-40 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Ensure input container doesn't get too cramped */
+  .max-w-6xl {
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+  }
+}
+
+/* Specific fix for 850px width with sidebar open */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  /* When sidebar is open and screen is around 850px */
+  .fixed.bottom-0.z-40 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Ensure input container has proper spacing */
+  .max-w-6xl {
+    margin-left: 0.5rem !important;
+    margin-right: 0.5rem !important;
+  }
+  
+  /* Layered input and button styling for medium screens */
+  .relative.flex.items-center {
+    position: relative;
+  }
+  
+  /* Ensure input text is layered under button */
+  input[type="text"] {
+    padding-right: 5rem !important; /* Space for button */
+    z-index: 1;
+  }
+  
+  /* Position Send button absolutely on medium screens */
+  button[type="submit"] {
+    position: absolute !important;
+    right: 0.5rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10 !important;
+    min-width: auto !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* Ensure button doesn't interfere with input */
+  button[type="submit"]:hover {
+    z-index: 15 !important;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  /* Desktop: normal flex layout */
+  input[type="text"] {
+    padding-right: 1rem !important;
+  }
+  
+  button[type="submit"] {
+    position: relative !important;
+    transform: none !important;
+  }
+}
+
 /* Enhanced Markdown Styling */
 .markdown-math {
-  @apply max-w-none text-base md:text-lg;
+  @apply max-w-none text-sm sm:text-base md:text-lg;
 }
 
 .markdown-math.ai-response {

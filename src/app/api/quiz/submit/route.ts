@@ -24,6 +24,8 @@ interface GradedQuestion {
   points: number;
   earnedPoints: number;
   partiallyCorrect?: boolean;
+  // For MCQ: per-option breakdown
+  optionDetails?: Array<{ option: string; isCorrect: boolean; userSelected: boolean; score: number }>;
 }
 
 export async function POST(req: Request) {
@@ -77,6 +79,7 @@ export async function POST(req: Request) {
       let earnedPoints = 0;
       let userAns = userAnswer?.answer ?? '';
       let correctAns = question.correctAnswer;
+      let perOptionDetails: Array<{ option: string; isCorrect: boolean; userSelected: boolean; score: number }> | undefined = undefined;
 
       if (question.questionType === 'MCQ') {
         // Parse correctAns if it's a stringified array
@@ -104,12 +107,50 @@ export async function POST(req: Request) {
           answer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
         );
         
-        // Must select exactly 3, all must match, no extras
-        isCorrect = cleanedUserArr.length === 3 &&
-          correctArr.length === 3 &&
-          cleanedUserArr.every(ans => correctArr.includes(ans)) &&
-          correctArr.every(ans => cleanedUserArr.includes(ans));
-        earnedPoints = isCorrect ? question.points : 0;
+        // New MCQ scoring logic: per-option scoring with negative marking
+        // Each question has 5 options (3 true, 2 false)
+        // +1 for each correct choice, -1 for each incorrect choice
+        // Checked = user thinks it's true, Unchecked = user thinks it's false
+        
+        // Get all options for this question
+        const allOptions = question.options || [];
+        
+        // Calculate per-option score
+        let optionScore = 0;
+        const optionDetails: Array<{option: string, isCorrect: boolean, userSelected: boolean, score: number}> = [];
+        
+        for (const option of allOptions) {
+          const isCorrectOption = correctArr.includes(option);
+          const userSelected = cleanedUserArr.includes(option);
+          
+          let optionPoints = 0;
+          if (isCorrectOption && userSelected) {
+            // Correct: user selected a true option (+1)
+            optionPoints = 1;
+          } else if (!isCorrectOption && !userSelected) {
+            // Correct: user didn't select a false option (+1)
+            optionPoints = 1;
+          } else if (isCorrectOption && !userSelected) {
+            // Incorrect: user didn't select a true option (-1)
+            optionPoints = -1;
+          } else if (!isCorrectOption && userSelected) {
+            // Incorrect: user selected a false option (-1)
+            optionPoints = -1;
+          }
+          
+          optionScore += optionPoints;
+          optionDetails.push({
+            option,
+            isCorrect: isCorrectOption,
+            userSelected,
+            score: optionPoints
+          });
+        }
+        perOptionDetails = optionDetails;
+        
+        // No question-level logic - use raw option scores directly
+        isCorrect = optionScore > 0; // Keep for display purposes only
+        earnedPoints = optionScore; // Allow negative points per question
         userAns = cleanedUserArr;
         correctAns = correctArr;
       } else if (question.questionType === 'OBJECTIVE' || question.questionType === 'TRUE_FALSE') {
@@ -130,7 +171,14 @@ export async function POST(req: Request) {
       }
 
       totalScore += earnedPoints;
+      
+      // For MCQ questions, max score is 5 points (one per option)
+      // For other question types, use the original points
+      if (question.questionType === 'MCQ') {
+        maxScore += 5; // 5 options per MCQ question
+      } else {
       maxScore += question.points;
+      }
 
       gradedQuestions.push({
         questionId: question.id,
@@ -139,7 +187,8 @@ export async function POST(req: Request) {
         isCorrect,
         explanation: question.explanation || '',
         points: question.points,
-        earnedPoints
+        earnedPoints,
+        optionDetails: perOptionDetails
       });
     }
 

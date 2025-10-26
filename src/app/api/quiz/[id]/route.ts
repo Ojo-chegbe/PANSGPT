@@ -41,6 +41,19 @@ export async function GET(
       }
     });
 
+    // Debug logging for MCQ questions
+    if (quiz && quiz.questions) {
+      quiz.questions.forEach((q: any, index: number) => {
+        if (q.questionType === 'MCQ') {
+          console.log(`Fetching MCQ Question ${index + 1}:`, {
+            questionText: q.questionText,
+            options: q.options,
+            optionsLength: q.options?.length || 0
+          });
+        }
+      });
+    }
+
     if (!quiz) {
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }

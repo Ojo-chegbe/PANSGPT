@@ -29,7 +29,7 @@ const MarkdownWithMath: React.FC<MarkdownWithMathProps> = React.memo(({ content 
   processedContent = processedContent.replace(/<br\s*\/?>/gi, '\n');
 
   return (
-    <div className="markdown-math text-base md:text-lg" ref={containerRef}>
+    <div className="markdown-math text-sm sm:text-base" ref={containerRef}>
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}

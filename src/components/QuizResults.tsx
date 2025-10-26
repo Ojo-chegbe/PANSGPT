@@ -12,6 +12,7 @@ interface QuestionResult {
   userAnswer: string;
   correctAnswer: string;
   isCorrect: boolean;
+  optionDetails?: Array<{ option: string; isCorrect: boolean; userSelected: boolean; score: number }>;
   partiallyCorrect?: boolean;
   explanation: string;
   points: number;
@@ -144,7 +145,7 @@ export default function QuizResults({ quizId }: { quizId: string }) {
         <div className="bg-white dark:bg-[#181A1B] rounded-lg p-8 mb-6 text-center border border-green-300/40 dark:border-green-700/20">
           <h1 className="text-3xl font-bold text-green-600 dark:text-green-400 mb-4">Quiz Results</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="text-center">
               <div className={`text-4xl font-bold ${getScoreColor(result.percentage)}`.replace('text-gray-900', 'text-green-400')}>
                 {result.percentage.toFixed(1)}%
@@ -157,13 +158,6 @@ export default function QuizResults({ quizId }: { quizId: string }) {
                 {result.score}/{result.maxScore}
               </div>
               <div className="text-theme-secondary">Points</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-600 dark:text-green-400">
-                {getCorrectCount()}/{result.questions.length}
-              </div>
-              <div className="text-theme-secondary">Correct</div>
             </div>
           </div>
 
@@ -272,31 +266,57 @@ export default function QuizResults({ quizId }: { quizId: string }) {
 
                 <p className="text-theme-secondary mb-4">{question.questionText}</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <label className="block text-sm font-medium text-theme-secondary mb-1">
-                      Your Answer:
-                    </label>
-                    <div className={`p-3 rounded-lg border ${
-                      question.isCorrect 
-                        ? 'bg-green-100 dark:bg-green-900/40 border-green-500 text-green-700 dark:text-green-400' 
-                        : 'bg-red-100 dark:bg-red-900/40 border-red-400 text-red-700 dark:text-red-400'
-                    }`}>
-                      {question.userAnswer || 'No answer provided'}
-                    </div>
+                {/* Per-option breakdown for MCQ */}
+                {Array.isArray(question.optionDetails) && question.optionDetails.length > 0 ? (
+                  <div className="space-y-2 mb-3">
+                    <label className="block text-sm font-medium text-theme-secondary mb-1">Option Breakdown:</label>
+                    <ul className="space-y-2">
+                      {question.optionDetails.map((opt, i) => (
+                        <li key={i} className={`flex items-start justify-between p-3 rounded-lg border ${
+                          opt.score === 1
+                            ? 'bg-green-100 dark:bg-green-900/40 border-green-500'
+                            : 'bg-red-100 dark:bg-red-900/40 border-red-400'
+                        }`}>
+                          <div className="flex-1 pr-3">
+                            <div className="text-sm text-theme-primary">{opt.option}</div>
+                            <div className="text-xs text-theme-secondary mt-1">
+                              {opt.userSelected ? 'You selected this' : 'You did not select this'} · {opt.isCorrect ? 'True option' : 'False option'}
+                            </div>
+                          </div>
+                          <div className={`ml-3 text-sm font-semibold ${opt.score === 1 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                            {opt.score === 1 ? '+1' : '-1'}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-
-                  {!question.isCorrect && (
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                     <div>
                       <label className="block text-sm font-medium text-theme-secondary mb-1">
-                        Correct Answer:
+                        Your Answer:
                       </label>
-                      <div className="p-3 rounded-lg border bg-green-100 dark:bg-green-900/40 border-green-500 text-green-700 dark:text-green-400">
-                        {question.correctAnswer}
+                      <div className={`p-3 rounded-lg border ${
+                        question.isCorrect 
+                          ? 'bg-green-100 dark:bg-green-900/40 border-green-500 text-green-700 dark:text-green-400' 
+                          : 'bg-red-100 dark:bg-red-900/40 border-red-400 text-red-700 dark:text-red-400'
+                      }`}>
+                        {question.userAnswer || 'No answer provided'}
                       </div>
                     </div>
-                  )}
-                </div>
+
+                    {!question.isCorrect && (
+                      <div>
+                        <label className="block text-sm font-medium text-theme-secondary mb-1">
+                          Correct Answer:
+                        </label>
+                        <div className="p-3 rounded-lg border bg-green-100 dark:bg-green-900/40 border-green-500 text-green-700 dark:text-green-400">
+                          {question.correctAnswer}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Show AI feedback only when explanations are toggled */}
                 {showExplanations && question.explanation && (
@@ -309,7 +329,7 @@ export default function QuizResults({ quizId }: { quizId: string }) {
                 )}
 
                 <div className="mt-3 text-sm text-green-600 dark:text-green-500">
-                  Points: {question.earnedPoints}/{question.points}
+                  Points: {question.earnedPoints}/5
                 </div>
               </div>
             ))}

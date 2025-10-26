@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
@@ -29,6 +29,135 @@ interface Quiz {
 interface UserAnswer {
   questionId: string;
   answer: string | string[];
+}
+
+interface VoiceInputButtonProps {
+  onTranscript: (text: string) => void;
+  disabled?: boolean;
+}
+
+function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonProps) {
+  const [isRecording, setIsRecording] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const startRecording = async () => {
+    try {
+      console.log('🎤 Starting microphone...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('✅ Microphone access granted');
+      
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm'
+      });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+          console.log(`📊 Audio chunk received: ${(event.data.size / 1024).toFixed(2)} KB`);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        console.log('⏹️ Recording stopped. Preparing to transcribe...');
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioSize = (audioBlob.size / 1024).toFixed(2);
+        console.log(`📦 Audio blob created: ${audioSize} KB total`);
+        
+        setIsLoading(true);
+        console.log('🔄 Starting transcription...');
+        
+        const startTime = Date.now();
+        
+        try {
+          const { transcribeAudio } = await import('../lib/whisper-api');
+          console.log('📡 Sending audio to Whisper API...');
+          const text = await transcribeAudio(audioBlob);
+          const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+          console.log(`✅ Transcription complete! (${duration}s)`);
+          console.log(`📝 Transcribed text: "${text}"`);
+          onTranscript(text);
+        } catch (error) {
+          console.error('❌ Transcription error:', error);
+          alert('Failed to transcribe audio. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
+        
+        stream.getTracks().forEach(track => track.stop());
+        console.log('🔇 Microphone released');
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      console.log('🎙️ Recording started...');
+    } catch (error) {
+      console.error('❌ Error starting recording:', error);
+      alert('Failed to access microphone. Please check permissions.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleClick = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={disabled || isLoading}
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+        isRecording
+          ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+          : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+      }`}
+      title={isRecording ? 'Stop recording' : isLoading ? 'Transcribing...' : 'Start voice recording'}
+    >
+      {isLoading ? (
+        <>
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm">Transcribing...</span>
+        </>
+      ) : (
+        <>
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+            />
+          </svg>
+          <span className="text-sm font-medium">
+            {isRecording ? 'Stop Recording' : 'Voice Input'}
+          </span>
+          {isRecording && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-pulse"></span>
+          )}
+        </>
+      )}
+    </button>
+  );
 }
 
 export default function QuizTaking({ quizId }: { quizId: string }) {
@@ -186,7 +315,8 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
 
   const canProceed = () => {
     if (currentQuestion.questionType === 'MCQ') {
-      return Array.isArray(currentAnswer) && currentAnswer.length === 3;
+      // Allow proceeding with any number of selections (including 0)
+      return true;
     }
     if (currentQuestion.questionType === 'SHORT_ANSWER' || currentQuestion.questionType === 'OBJECTIVE') {
       return typeof currentAnswer === 'string' && currentAnswer.trim().length > 0;
@@ -298,22 +428,18 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                         onChange={e => {
                           let newAnswers = Array.isArray(currentAnswer) ? [...currentAnswer] : [];
                           if (e.target.checked) {
-                            if (newAnswers.length < 3) newAnswers.push(option);
+                            newAnswers.push(option);
                           } else {
                             newAnswers = newAnswers.filter(ans => ans !== option);
                           }
                           handleAnswerChange(currentQuestion.id, newAnswers);
                         }}
                         className="h-4 w-4 text-emerald-500 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-[#181A1B] accent-emerald-500"
-                        disabled={!selected && Array.isArray(currentAnswer) && currentAnswer.length >= 3}
                       />
                       <span className="ml-3 text-gray-800 dark:text-white">{option}</span>
                     </label>
                   );
                 })}
-                {Array.isArray(currentAnswer) && currentAnswer.length !== 3 && (
-                  <div className="text-red-500 dark:text-red-400 text-sm mt-2">Select exactly 3 options.</div>
-                )}
               </div>
             )}
 
@@ -354,14 +480,28 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
             )}
 
             {currentQuestion.questionType === 'SHORT_ANSWER' && (
-              <div>
-                <textarea
-                  value={currentAnswer}
-                  onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                  placeholder={'Write your answer...'}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-[#181A1B] text-gray-800 dark:text-white"
-                  rows={4}
-                />
+              <div className="space-y-3">
+                <div className="flex items-start gap-2">
+                  <textarea
+                    value={currentAnswer}
+                    onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                    placeholder={'Write your answer...'}
+                    className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-[#181A1B] text-gray-800 dark:text-white resize-none"
+                    rows={4}
+                  />
+                  <div className="flex flex-col justify-center">
+                    <VoiceInputButton 
+                      onTranscript={(text) => handleAnswerChange(currentQuestion.id, text)} 
+                      disabled={false}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Tip: Click the microphone icon to answer by voice
+                </p>
               </div>
             )}
           </div>

@@ -71,6 +71,7 @@ export async function GET(
           userAnswer: feedbackItem.userAnswer,
           correctAnswer: feedbackItem.correctAnswer,
           isCorrect: feedbackItem.isCorrect,
+          optionDetails: feedbackItem.optionDetails || undefined,
           explanation: feedbackItem.explanation,
           points: feedbackItem.points,
           earnedPoints: feedbackItem.earnedPoints

@@ -125,7 +125,127 @@ export const DID_YOU_KNOW_FACTS: DidYouKnowFact[] = [
   { id: '97', category: 'Math', fact: 'The number 9 is magical - multiply any number by 9, add the digits, and you\'ll always get 9', emoji: '9️⃣' },
   { id: '98', category: 'Math', fact: 'There are more possible arrangements of a deck of cards than atoms on Earth', emoji: '🃏' },
   { id: '99', category: 'Math', fact: 'The word "hundred" comes from the Old Norse "hundrath" meaning 120', emoji: '💯' },
-  { id: '100', category: 'Math', fact: 'The number 7 is considered lucky in many cultures around the world', emoji: '7️⃣' }
+  { id: '100', category: 'Math', fact: 'The number 7 is considered lucky in many cultures around the world', emoji: '7️⃣' },
+  
+  // Medicine & Health
+  { id: '101', category: 'Medicine', fact: 'The human body has enough iron to make a 3-inch nail', emoji: '🔩' },
+  { id: '102', category: 'Medicine', fact: 'Your body produces 1.5 liters of saliva every day', emoji: '💧' },
+  { id: '103', category: 'Medicine', fact: 'The human body contains enough carbon to fill 9,000 pencils', emoji: '✏️' },
+  { id: '104', category: 'Medicine', fact: 'Your blood travels 12,000 miles through your body every day', emoji: '🩸' },
+  { id: '105', category: 'Medicine', fact: 'The human body has enough phosphorus to make 2,200 match heads', emoji: '🔥' },
+  { id: '106', category: 'Medicine', fact: 'Your body produces 25 million new cells every second', emoji: '🔬' },
+  { id: '107', category: 'Medicine', fact: 'The human brain uses 20% of the body\'s total energy', emoji: '🧠' },
+  { id: '108', category: 'Medicine', fact: 'Your body has enough sulfur to kill all fleas on an average dog', emoji: '🐕' },
+  { id: '109', category: 'Medicine', fact: 'The human body contains enough water to fill a 10-gallon tank', emoji: '💧' },
+  { id: '110', category: 'Medicine', fact: 'Your body produces enough heat in 30 minutes to boil half a gallon of water', emoji: '🌡️' },
+  
+  // Art & Culture
+  { id: '111', category: 'Art', fact: 'The Mona Lisa has no eyebrows because it was fashionable to shave them off in Renaissance Florence', emoji: '🎨' },
+  { id: '112', category: 'Art', fact: 'Vincent van Gogh only sold one painting during his lifetime', emoji: '🌻' },
+  { id: '113', category: 'Art', fact: 'The Great Pyramid of Giza was originally covered in polished white limestone', emoji: '🏺' },
+  { id: '114', category: 'Art', fact: 'The Sistine Chapel ceiling took Michelangelo 4 years to paint', emoji: '⛪' },
+  { id: '115', category: 'Art', fact: 'The Statue of Liberty was originally brown, but turned green due to oxidation', emoji: '🗽' },
+  { id: '116', category: 'Art', fact: 'The world\'s oldest known musical instrument is a 40,000-year-old flute made from bone', emoji: '🎵' },
+  { id: '117', category: 'Art', fact: 'The color orange was named after the fruit, not the other way around', emoji: '🧡' },
+  { id: '118', category: 'Art', fact: 'The world\'s largest painting is 1,200 feet long and weighs 22,000 pounds', emoji: '🖼️' },
+  { id: '119', category: 'Art', fact: 'The first photograph ever taken required an 8-hour exposure time', emoji: '📸' },
+  { id: '120', category: 'Art', fact: 'The world\'s most expensive painting sold for $450.3 million', emoji: '💰' },
+  
+  // Sports & Recreation
+  { id: '121', category: 'Sports', fact: 'A golf ball has 336 dimples on its surface', emoji: '⛳' },
+  { id: '122', category: 'Sports', fact: 'The fastest recorded tennis serve was 163.7 mph', emoji: '🎾' },
+  { id: '123', category: 'Sports', fact: 'A basketball player can jump up to 48 inches high', emoji: '🏀' },
+  { id: '124', category: 'Sports', fact: 'The longest recorded baseball game lasted 8 hours and 25 minutes', emoji: '⚾' },
+  { id: '125', category: 'Sports', fact: 'A soccer ball travels at speeds up to 70 mph when kicked', emoji: '⚽' },
+  { id: '126', category: 'Sports', fact: 'The Olympic torch has been to space three times', emoji: '🔥' },
+  { id: '127', category: 'Sports', fact: 'A hockey puck can reach speeds of 100 mph', emoji: '🏒' },
+  { id: '128', category: 'Sports', fact: 'The first Olympic Games were held in 776 BC', emoji: '🏛️' },
+  { id: '129', category: 'Sports', fact: 'A marathon runner burns about 2,600 calories during a race', emoji: '🏃' },
+  { id: '130', category: 'Sports', fact: 'The world\'s fastest human can run 100 meters in 9.58 seconds', emoji: '🏃‍♂️' },
+  
+  // Music & Entertainment
+  { id: '131', category: 'Music', fact: 'The world\'s longest song is 1,380 hours long', emoji: '🎵' },
+  { id: '132', category: 'Music', fact: 'The Beatles\' "Hey Jude" is 7 minutes and 11 seconds long', emoji: '🎸' },
+  { id: '133', category: 'Music', fact: 'A piano has 88 keys and over 12,000 parts', emoji: '🎹' },
+  { id: '134', category: 'Music', fact: 'The world\'s most expensive guitar sold for $2.7 million', emoji: '🎸' },
+  { id: '135', category: 'Music', fact: 'The human voice can produce over 1,000 different sounds', emoji: '🎤' },
+  { id: '136', category: 'Music', fact: 'The world\'s largest drum is 12 feet in diameter', emoji: '🥁' },
+  { id: '137', category: 'Music', fact: 'A violin has over 70 different parts', emoji: '🎻' },
+  { id: '138', category: 'Music', fact: 'The world\'s longest concert lasted 639 hours', emoji: '🎼' },
+  { id: '139', category: 'Music', fact: 'The human ear can distinguish between 1,400 different pitches', emoji: '👂' },
+  { id: '140', category: 'Music', fact: 'The world\'s most expensive violin sold for $16 million', emoji: '🎻' },
+  
+  // Language & Communication
+  { id: '141', category: 'Language', fact: 'The word "set" has 464 different meanings in English', emoji: '📖' },
+  { id: '142', category: 'Language', fact: 'The shortest complete sentence in English is "I am"', emoji: '💬' },
+  { id: '143', category: 'Language', fact: 'The word "queue" is pronounced the same way even if you remove the last 4 letters', emoji: '📝' },
+  { id: '144', category: 'Language', fact: 'The longest word in English has 189,819 letters', emoji: '🔤' },
+  { id: '145', category: 'Language', fact: 'The word "hello" was first used as a greeting in 1827', emoji: '👋' },
+  { id: '146', category: 'Language', fact: 'The word "goodbye" comes from "God be with you"', emoji: '👋' },
+  { id: '147', category: 'Language', fact: 'The word "girl" originally meant "young person of either sex"', emoji: '👧' },
+  { id: '148', category: 'Language', fact: 'The word "nice" originally meant "foolish" or "silly"', emoji: '😊' },
+  { id: '149', category: 'Language', fact: 'The word "awful" originally meant "full of awe"', emoji: '😨' },
+  { id: '150', category: 'Language', fact: 'The word "silly" originally meant "blessed" or "happy"', emoji: '😄' },
+  
+  // Weather & Climate
+  { id: '151', category: 'Weather', fact: 'Lightning strikes the Earth 100 times every second', emoji: '⚡' },
+  { id: '152', category: 'Weather', fact: 'A single lightning bolt can heat the air to 50,000°F', emoji: '🔥' },
+  { id: '153', category: 'Weather', fact: 'The coldest temperature ever recorded was -128.6°F in Antarctica', emoji: '❄️' },
+  { id: '154', category: 'Weather', fact: 'The hottest temperature ever recorded was 134°F in Death Valley', emoji: '🌡️' },
+  { id: '155', category: 'Weather', fact: 'A single raindrop can contain up to 1 million water molecules', emoji: '💧' },
+  { id: '156', category: 'Weather', fact: 'The world\'s largest hailstone weighed 1.93 pounds', emoji: '🧊' },
+  { id: '157', category: 'Weather', fact: 'A tornado can reach speeds of 300 mph', emoji: '🌪️' },
+  { id: '158', category: 'Weather', fact: 'The world\'s largest snowflake was 15 inches wide', emoji: '❄️' },
+  { id: '159', category: 'Weather', fact: 'A single cloud can weigh more than a million pounds', emoji: '☁️' },
+  { id: '160', category: 'Weather', fact: 'The world\'s driest place gets less than 0.03 inches of rain per year', emoji: '🏜️' },
+  
+  // Transportation & Travel
+  { id: '161', category: 'Transport', fact: 'The world\'s fastest train can reach 375 mph', emoji: '🚄' },
+  { id: '162', category: 'Transport', fact: 'A commercial airplane can fly at altitudes up to 45,000 feet', emoji: '✈️' },
+  { id: '163', category: 'Transport', fact: 'The world\'s longest bridge is 102.4 miles long', emoji: '🌉' },
+  { id: '164', category: 'Transport', fact: 'A car has over 30,000 parts', emoji: '🚗' },
+  { id: '165', category: 'Transport', fact: 'The world\'s largest ship can carry 20,000 containers', emoji: '🚢' },
+  { id: '166', category: 'Transport', fact: 'A bicycle is the most efficient form of transportation', emoji: '🚲' },
+  { id: '167', category: 'Transport', fact: 'The world\'s fastest car can reach 304 mph', emoji: '🏎️' },
+  { id: '168', category: 'Transport', fact: 'A helicopter can fly backwards', emoji: '🚁' },
+  { id: '169', category: 'Transport', fact: 'The world\'s longest tunnel is 35.4 miles long', emoji: '🚇' },
+  { id: '170', category: 'Transport', fact: 'A hot air balloon can reach altitudes of 68,000 feet', emoji: '🎈' },
+  
+  // Time & Calendars
+  { id: '171', category: 'Time', fact: 'A day on Mercury lasts 176 Earth days', emoji: '☿️' },
+  { id: '172', category: 'Time', fact: 'A year on Pluto lasts 248 Earth years', emoji: '🪐' },
+  { id: '173', category: 'Time', fact: 'The world\'s most accurate clock loses only 1 second every 15 billion years', emoji: '⏰' },
+  { id: '174', category: 'Time', fact: 'A leap year occurs every 4 years, except for years divisible by 100', emoji: '📅' },
+  { id: '175', category: 'Time', fact: 'The world\'s oldest known calendar is 10,000 years old', emoji: '🗓️' },
+  { id: '176', category: 'Time', fact: 'A second is defined as 9,192,631,770 oscillations of a cesium atom', emoji: '⏱️' },
+  { id: '177', category: 'Time', fact: 'The world\'s most accurate sundial can tell time within 15 seconds', emoji: '☀️' },
+  { id: '178', category: 'Time', fact: 'A day on Venus lasts 243 Earth days', emoji: '♀️' },
+  { id: '179', category: 'Time', fact: 'The world\'s longest day of the year is the summer solstice', emoji: '🌞' },
+  { id: '180', category: 'Time', fact: 'A year on Jupiter lasts 12 Earth years', emoji: '♃' },
+  
+  // Colors & Light
+  { id: '181', category: 'Colors', fact: 'The human eye can see 10 million different colors', emoji: '👁️' },
+  { id: '182', category: 'Colors', fact: 'The color red increases heart rate and blood pressure', emoji: '❤️' },
+  { id: '183', category: 'Colors', fact: 'The color blue is the most popular color in the world', emoji: '💙' },
+  { id: '184', category: 'Colors', fact: 'The color yellow is the most visible color in daylight', emoji: '💛' },
+  { id: '185', category: 'Colors', fact: 'The color green is the most restful color for the human eye', emoji: '💚' },
+  { id: '186', category: 'Colors', fact: 'The color purple was once so expensive only royalty could afford it', emoji: '💜' },
+  { id: '187', category: 'Colors', fact: 'The color orange was named after the fruit', emoji: '🧡' },
+  { id: '188', category: 'Colors', fact: 'The color pink is actually a tint of red', emoji: '💗' },
+  { id: '189', category: 'Colors', fact: 'The color black absorbs all light wavelengths', emoji: '🖤' },
+  { id: '190', category: 'Colors', fact: 'The color white reflects all light wavelengths', emoji: '🤍' },
+  
+  // Emotions & Psychology
+  { id: '191', category: 'Psychology', fact: 'Laughter reduces stress hormones and increases immune cells', emoji: '😄' },
+  { id: '192', category: 'Psychology', fact: 'Crying releases endorphins that make you feel better', emoji: '😢' },
+  { id: '193', category: 'Psychology', fact: 'Smiling can actually make you feel happier', emoji: '😊' },
+  { id: '194', category: 'Psychology', fact: 'The human brain processes emotions 200 times faster than thoughts', emoji: '🧠' },
+  { id: '195', category: 'Psychology', fact: 'Hugging releases oxytocin, the "love hormone"', emoji: '🤗' },
+  { id: '196', category: 'Psychology', fact: 'The human brain can only focus on one thing at a time', emoji: '🎯' },
+  { id: '197', category: 'Psychology', fact: 'The human brain uses 20% of the body\'s total energy', emoji: '⚡' },
+  { id: '198', category: 'Psychology', fact: 'The human brain contains 100 billion neurons', emoji: '🧠' },
+  { id: '199', category: 'Psychology', fact: 'The human brain can process information at 120 bits per second', emoji: '💭' },
+  { id: '200', category: 'Psychology', fact: 'The human brain is 75% water', emoji: '💧' }
 ];
 
 // How to add more facts:

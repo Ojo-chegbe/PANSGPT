@@ -82,8 +82,15 @@ function validateQuestionsLeniently(questions: GeneratedQuestion[], questionType
     
     // Type-specific validation (more lenient)
     if (questionType === 'MCQ') {
-      if (!q.options || q.options.length < 3) return false; // Accept 3+ options instead of exactly 5
-      if (!q.correctAnswers || q.correctAnswers.length < 1) return false; // Accept 1+ correct answers
+      // Normalize AI output fields
+      if (!q.correctAnswers && (q as any).correctAnswer) {
+        try {
+          const parsed = JSON.parse((q as any).correctAnswer as any);
+          if (Array.isArray(parsed)) q.correctAnswers = parsed as any;
+        } catch {}
+      }
+      if (!q.options || q.options.length !== 5) return false; // Require exactly 5 options
+      if (!q.correctAnswers || q.correctAnswers.length !== 3) return false; // Require exactly 3 correct answers
       
       // Clean up options
       q.options = q.options.map(option => 
@@ -95,13 +102,17 @@ function validateQuestionsLeniently(questions: GeneratedQuestion[], questionType
         answer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
       );
       
+      // Ensure correct answers are a subset of options
+      q.correctAnswers = q.correctAnswers.filter(ans => q.options!.includes(ans));
+      if (q.correctAnswers.length !== 3) return false;
+
       q.questionType = 'MCQ';
       return true;
     }
     
     if (questionType === 'OBJECTIVE') {
-      if (!q.options || q.options.length < 2) return false; // Accept 2+ options instead of exactly 4
-      if (!q.correctAnswer) return false;
+      if (!q.options || q.options.length !== 4) return false; // Require exactly 4 options
+      if (!q.correctAnswer) return false; // Single correct answer
       
       // Clean up options
       q.options = q.options.map(option => 
@@ -414,18 +425,30 @@ export async function POST(req: Request) {
         timeLimit: parsedTimeLimit,
         userId: user.id,
         questions: {
-          create: generatedQuestions.map((q, index) => ({
-            questionText: q.questionText,
-            questionType: q.questionType,
-            options: q.options ? q.options : null,
-            correctAnswer:
-              q.questionType === 'MCQ'
-                ? JSON.stringify(q.correctAnswers || [])
-                : q.correctAnswer || '',
-            explanation: q.explanation,
-            points: q.points,
-            order: index + 1
-          }))
+          create: generatedQuestions.map((q, index) => {
+            // Debug logging for MCQ questions
+            if (q.questionType === 'MCQ') {
+              console.log(`MCQ Question ${index + 1}:`, {
+                questionText: q.questionText,
+                options: q.options,
+                correctAnswers: q.correctAnswers,
+                optionsLength: q.options?.length || 0
+              });
+            }
+            
+            return {
+              questionText: q.questionText,
+              questionType: q.questionType,
+              options: q.options ? q.options : null,
+              correctAnswer:
+                q.questionType === 'MCQ'
+                  ? JSON.stringify(q.correctAnswers || [])
+                  : q.correctAnswer || '',
+              explanation: q.explanation,
+              points: q.points,
+              order: index + 1
+            };
+          })
         }
       },
       include: {
