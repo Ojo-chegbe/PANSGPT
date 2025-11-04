@@ -66,12 +66,12 @@ export default function FeedbackPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C] flex flex-col items-center py-10 px-4">
-      {/* Back Button */}
-      <div className="mb-4">
-        <BackButton href="/main" label="Back to Chat" />
-      </div>
-      
-      <div className="max-w-md w-full mx-auto rounded-lg p-8 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+      <div className="w-full max-w-3xl mx-auto px-4">
+        <div className="rounded-2xl p-8 flex flex-col gap-8 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10 max-w-2xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-4">
+          <BackButton href="/main" label="Back to Chat" />
+        </div>
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Send Feedback</h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -145,6 +145,7 @@ export default function FeedbackPage() {
             <p className="text-center" style={{ color: '#dc2626' }}>Failed to send feedback. Please try again.</p>
           )}
         </form>
+        </div>
       </div>
     </div>
   );

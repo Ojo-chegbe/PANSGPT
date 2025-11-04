@@ -2,7 +2,7 @@ import { MessageSquare, Send } from "lucide-react";
 
 export function ChatMockup() {
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-2xl">
+    <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
       {/* Chat Messages */}
       <div className="space-y-4">
         {/* User Message */}

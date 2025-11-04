@@ -36,10 +36,7 @@ export default function ProfilePage() {
     name: '', 
     bio: '', 
     level: '', 
-    image: '',
-    university: '',
-    department: '',
-    faculty: ''
+    image: ''
   });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -72,9 +69,6 @@ export default function ProfilePage() {
             bio: userData.bio || '',
             level: userData.level || '',
             image: userData.image || '',
-            university: userData.university || '',
-            department: userData.department || '',
-            faculty: userData.faculty || '',
           });
         }
 
@@ -148,9 +142,6 @@ export default function ProfilePage() {
       bio: user?.bio || '',
       level: user?.level || '',
       image: user?.image || '',
-      university: user?.university || '',
-      department: user?.department || '',
-      faculty: user?.faculty || '',
     });
   };
   
@@ -213,7 +204,7 @@ export default function ProfilePage() {
       {saveMessage && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top duration-300">
           <div
-            className={`px-6 py-4 rounded-xl shadow-lg flex items-center gap-3 ${
+            className={`px-6 py-4 rounded-xl flex items-center gap-3 ${
               saveMessage.type === 'success' ? 'bg-green-600 dark:bg-green-600' : 'bg-red-600 dark:bg-red-600'
             }`}
           >
@@ -248,7 +239,7 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-6">
             {/* User Profile Card */}
             <div 
-              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                 <div className="flex-1 min-w-0 w-full">
@@ -282,113 +273,58 @@ export default function ProfilePage() {
                       </button>
                     )}
                   </div>
-                  {editMode && (
-                    <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top duration-200">
-                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                        <button
-                          onClick={handleSave}
-                          disabled={saving || !form.name.trim()}
-                          className="flex-1 px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bg-green-600 dark:bg-[#00A400] text-white dark:text-[#0C120C] hover:bg-green-700 dark:hover:bg-[#008300]"
-                        >
-                          {saving ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                              <span>Saving...</span>
-                            </>
-                          ) : (
-                            'Save Changes'
-                          )}
-                        </button>
-                        <button
-                          onClick={handleCancel}
-                          disabled={saving}
-                          className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 bg-transparent text-green-600 dark:text-[#00A400] border border-green-300 dark:border-green-600/50"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
       </div>
       
             {/* Academic Details Card */}
             <div 
-              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-green-200 dark:border-green-600/10"
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-green-200 dark:border-green-600/10"
             >
               <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Academic Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                 <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
                     University
                   </label>
-                  {editMode ? (
-                    <input
-                      type="text"
-                      name="university"
-                      value={form.university}
-                      onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
-                      placeholder="University name"
-                    />
-                  ) : (
                     <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
-                      {form.university || user.university || 'University of Jos'}
+                    University of Jos
                     </div>
-                  )}
                 </div>
                 <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
                     Department
                   </label>
-                  {editMode ? (
-                    <input
-                      type="text"
-                      name="department"
-                      value={form.department}
-                      onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
-                      placeholder="Department name"
-                    />
-                  ) : (
                     <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
-                      {form.department || user.department || 'Pharmacy'}
+                    Pharmacy
                     </div>
-                  )}
                 </div>
                 <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
                     Faculty
                   </label>
-                  {editMode ? (
-                    <input
-                      type="text"
-                      name="faculty"
-                      value={form.faculty}
-                      onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
-                      placeholder="Faculty name"
-                    />
-                  ) : (
                     <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
-                      {form.faculty || user.faculty || 'Pharmaceutical Sciences'}
+                    Pharmaceutical Sciences
                     </div>
-                  )}
                 </div>
                 <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10 sm:border-b-0">
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
                     Current Level
                   </label>
                   {editMode ? (
-                    <input
-                      type="text"
+                    <select
                       name="level"
                       value={form.level}
                       onChange={handleChange}
-                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
-                      placeholder="e.g., 300"
-                    />
+                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
+                    >
+                      <option value="100 Level" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">100 Level</option>
+                      <option value="200 Level" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">200 Level</option>
+                      <option value="300 Level" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">300 Level</option>
+                      <option value="400 Level" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">400 Level</option>
+                      <option value="500 Level" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">500 Level</option>
+                      <option value="600 Level" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">600 Level</option>
+                    </select>
                   ) : (
                     <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
                       {user.level || form.level || 'N/A'} Level
@@ -396,11 +332,36 @@ export default function ProfilePage() {
             )}
                 </div>
           </div>
+              {editMode && (
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-white/10">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || !form.name.trim() || !form.level.trim()}
+                    className="flex-1 px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bg-green-600 dark:bg-[#00A400] text-white dark:text-[#0C120C] hover:bg-green-700 dark:hover:bg-[#008300]"
+                  >
+                    {saving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    disabled={saving}
+                    className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 bg-transparent text-green-600 dark:text-[#00A400] border border-green-300 dark:border-green-600/50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
         </div>
 
             {/* Class Timetable Card */}
             <div 
-              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Class Timetable</h3>
@@ -455,7 +416,7 @@ export default function ProfilePage() {
 
             {/* Current Plan / Logout Card */}
             <div 
-              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
@@ -470,7 +431,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleLogout}
                   disabled={loggingOut}
-                  className="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-red-600 dark:bg-red-600 text-white"
+                  className="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-red-600 dark:bg-red-600 text-white"
                 >
                   {loggingOut ? (
                     <>
@@ -496,7 +457,7 @@ export default function ProfilePage() {
             <div className="flex flex-col gap-4">
               {/* Quizzes Taken */}
               <div 
-                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
+                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
               >
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
                   <svg className="w-7 h-7 text-green-600 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -511,7 +472,7 @@ export default function ProfilePage() {
 
               {/* Total Points */}
               <div 
-                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
+                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
               >
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
                   <svg className="w-7 h-7 text-green-600 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -526,7 +487,7 @@ export default function ProfilePage() {
 
               {/* Recent Trend */}
               <div 
-                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
+                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
               >
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
                   <svg className="w-7 h-7 text-green-600 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -542,7 +503,7 @@ export default function ProfilePage() {
 
             {/* Average Score Card */}
             <div 
-              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <h3 className="text-xl font-bold mb-6 text-center text-gray-900 dark:text-white">Average Score</h3>
               <div className="flex flex-col items-center">

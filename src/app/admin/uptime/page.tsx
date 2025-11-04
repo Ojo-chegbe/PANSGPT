@@ -71,7 +71,7 @@ export default function UptimeAdminPage() {
         Uptime Monitoring
       </h1>
       
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-white rounded-lg p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Gradio App Monitoring
         </h2>

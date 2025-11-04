@@ -83,11 +83,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C]">
       {/* Header */}
-      <div className="border-b bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div>
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="p-4 rounded-2xl bg-green-600 dark:[background-color:#00A400]">
+      <div className="border-b bg-white dark:bg-transparent border-gray-200 dark:border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-4">
+              <div className="p-4 rounded-2xl bg-gray-400 dark:bg-[#7D8B6F]">
                 <UserCircleIcon className="h-12 w-12 text-white" />
               </div>
               <div>
@@ -102,7 +102,7 @@ export default function LoginPage() {
       </div>
 
       <div className="max-w-md mx-auto px-6 py-8">
-        <div className="backdrop-blur-sm border rounded-2xl p-8 shadow-2xl bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+        <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
@@ -189,7 +189,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isLoading ? (
                   <>

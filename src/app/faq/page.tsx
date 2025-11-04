@@ -123,13 +123,12 @@ const FaqPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C] flex flex-col items-center py-10 px-4">
-      <div className="max-w-2xl w-full mx-auto">
+      <div className="w-full max-w-3xl mx-auto px-4">
+        <div className="rounded-2xl p-8 flex flex-col gap-8 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10 max-w-2xl mx-auto">
         {/* Back Button */}
         <div className="mb-4">
           <BackButton href="/main" label="Back to Chat" />
         </div>
-        
-        <div className="rounded-2xl p-8 flex flex-col gap-8 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
         <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white text-center mb-4">PansGPT FAQs</h1>
         <p className="text-lg text-gray-600 dark:text-white/70 text-center mb-8 max-w-2xl mx-auto">
           Find answers to common questions about using PansGPT for AI chat, quizzes, analytics, and more. If you have a question that's not listed here, reach out via the Feedback page!

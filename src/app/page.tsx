@@ -105,7 +105,7 @@ export default function LandingPage() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-card border border-border rounded-xl p-4 shadow-xl max-w-sm">
+              <div className="absolute -bottom-6 -left-6 bg-card border border-border rounded-xl p-4 max-w-sm">
                 <p className="text-sm text-muted-foreground mb-2">Student asks:</p>
                 <p className="text-foreground mb-3">"Explain Dr. Audu's one-compartment model in simple terms"</p>
                 <div className="flex items-center gap-2 text-primary">

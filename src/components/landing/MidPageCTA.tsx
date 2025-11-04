@@ -11,7 +11,7 @@ export function MidPageCTA() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(34,197,94,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(34,197,94,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
       
       <div className="container mx-auto max-w-5xl relative z-10">
-        <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 shadow-2xl shadow-primary/10 overflow-hidden relative">
+        <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 overflow-hidden relative">
           {/* Accent corners */}
           <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
@@ -34,7 +34,7 @@ export function MidPageCTA() {
               <Link href="/signup">
                 <Button 
                   size="lg" 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 h-auto group shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 h-auto group transition-all"
                 >
                   Start Acing Your Courses (100% Free)
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

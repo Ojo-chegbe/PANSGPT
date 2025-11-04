@@ -27,7 +27,7 @@ function QuizPageClient({ id }: { id: string }) {
         </div>
         <button
           onClick={() => window.location.href = '/plan'}
-          className="mt-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-semibold rounded-full shadow transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="mt-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-semibold rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400"
         >
           View Plans
         </button>

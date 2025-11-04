@@ -57,11 +57,11 @@ const MessageList = React.memo(({
   handleCopy: (idx: number, content: string) => void;
   isLoading: boolean;
 }) => (
-  <div className="max-w-6xl mx-auto px-4 md:px-8 flex flex-col gap-6 md:gap-8">
+  <div className="max-w-6xl mx-auto px-2 md:px-8 flex flex-col gap-6 md:gap-8">
     {messages.map((message, idx) => (
       <div key={idx} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-        <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className={`p-5 md:p-6 transition-all duration-200 text-gray-900 dark:text-white ${message.role === 'user' ? 'bg-green-100 dark:[background-color:#2D3A2D] rounded-[18px_18px_0px_18px]' : 'bg-white dark:bg-transparent border border-gray-200 dark:border-transparent rounded-2xl shadow-sm dark:shadow-none'}`}
+        <div className="relative group max-w-[95%] md:max-w-[80%]">
+          <div className={`p-3 md:p-6 transition-all duration-200 text-gray-900 dark:text-white ${message.role === 'user' ? 'bg-green-100 dark:[background-color:#2D3A2D] rounded-[18px_18px_0px_18px]' : 'bg-white dark:bg-transparent border border-gray-200 dark:border-transparent rounded-2xl'}`}
           >
             {editingIdx === idx ? (
               <div className="space-y-3">
@@ -176,9 +176,9 @@ const InputArea = React.memo(({
 }) => (
   <form
     onSubmit={handleSend}
-    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-24 pb-4 md:pb-8 bg-transparent`}
+    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-2 md:px-24 pb-4 md:pb-8 bg-transparent`}
   >
-    <div className="rounded-2xl flex flex-col gap-3 px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D] shadow-lg dark:shadow-none"
+    <div className="rounded-2xl flex flex-col gap-3 px-3 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D]"
       >
       {/* Input field */}
       <input
@@ -1209,7 +1209,7 @@ function MainPageContent() {
                             </svg>
                           </button>
                           {historyMenuIdx === idx && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#2D3A2D] backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200 dark:border-white/10 shadow-xl overflow-hidden">
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#2D3A2D] backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200 dark:border-white/10 overflow-hidden">
                               <button 
                                 className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-700 dark:text-white group"
                                 onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}
@@ -1293,7 +1293,7 @@ function MainPageContent() {
           </div>
         </div>
         {/* Chat Area - Adjusted with top padding to account for fixed topbar */}
-        <div className="flex-1 flex flex-col px-4 md:px-24 pt-20 md:pt-24 pb-32 md:pb-40 gap-6 md:gap-10 overflow-y-auto bg-transparent"
+        <div className="flex-1 flex flex-col px-2 md:px-24 pt-20 md:pt-24 pb-32 md:pb-40 gap-6 md:gap-10 overflow-y-auto bg-transparent"
           style={{ position: 'relative' }}
         >
           {messages.length === 0 ? (
@@ -1331,7 +1331,7 @@ function MainPageContent() {
                       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="fixed bottom-20 right-4 md:right-8 z-30 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+                  className="fixed bottom-20 right-4 md:right-8 z-30 text-white p-3 rounded-full transition-all duration-200 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
                   title="Scroll to latest message"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

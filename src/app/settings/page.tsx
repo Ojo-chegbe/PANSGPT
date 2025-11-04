@@ -99,7 +99,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Settings Menu */}
-        <div className="rounded-2xl shadow-xl border overflow-hidden bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+        <div className="rounded-2xl border overflow-hidden bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <div className="divide-y divide-gray-200 dark:divide-white/10">
             {/* Theme Toggle */}
             <div className="px-6 py-5 flex items-center gap-4 transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5"
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                 />
                 {/* Thumb */}
                 <span
-                  className={`relative inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300 ease-in-out ${
+                  className={`relative inline-block h-5 w-5 transform rounded-full bg-white transition-all duration-300 ease-in-out ${
                     theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 >
@@ -208,7 +208,7 @@ export default function SettingsPage() {
 
         {/* User Info */}
         {session?.user && (
-          <div className="mt-8 rounded-2xl shadow-xl border p-6 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+          <div className="mt-8 rounded-2xl border p-6 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Information</h2>
             <div className="space-y-3">
               <div>

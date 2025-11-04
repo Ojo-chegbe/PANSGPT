@@ -33,7 +33,7 @@ export default function QuizPage() {
             </p>
             <button
               onClick={() => window.location.href = '/plan'}
-              className="px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+              className="px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
             >
               Unlock Full Access
             </button>
@@ -46,15 +46,15 @@ export default function QuizPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C]">
       {/* Header */}
-      <div className="border-b bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="border-b bg-white dark:bg-transparent border-gray-200 dark:border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           {/* Back Button */}
-          <div className="mb-6">
+          <div className="mb-4">
             <BackButton href="/main" label="Back to Chat" />
           </div>
-          <div>
-            <div className="flex items-center space-x-4 mb-6">
-              <div className="p-4 rounded-2xl bg-green-600 dark:[background-color:#00A400]">
+          <div className="flex justify-center">
+            <div className="flex items-center space-x-4">
+              <div className="p-4 rounded-2xl bg-gray-400 dark:bg-[#7D8B6F]">
                 <SparklesIcon className="h-12 w-12 text-white" />
               </div>
               <div>

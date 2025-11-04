@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 
 export function QuizMockup() {
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-2xl">
+    <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
       {/* Quiz Header */}
       <div className="flex items-center justify-between pb-4 border-b border-border">
         <div className="space-y-1">

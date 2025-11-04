@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
-      <div className="w-full max-w-md p-6 md:p-10 rounded-lg bg-white shadow-xl border border-green-100">
+      <div className="w-full max-w-md p-6 md:p-10 rounded-lg bg-white border border-green-100">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-green-600">Forgot Password?</h1>
         <p className="text-gray-600 text-center mb-6">Enter your email and we'll send you a link to reset your password.</p>
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="appearance-none block w-full px-4 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-base border-green-300"
+              className="appearance-none block w-full px-4 py-3 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-base border-green-300"
             />
           </div>
           <button

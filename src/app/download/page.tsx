@@ -130,7 +130,7 @@ export default function DownloadPage() {
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1691256676376-357c3aa66c89?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwbW9ja3VwJTIwaGFuZHxlbnwxfHx8fDE3NjIxMTE4MzJ8MA&ixlib=rb-4.1.0&q=80&w=1080"
                   alt="PANSGPT App Mockup"
-                  className="w-full h-auto rounded-2xl shadow-2xl"
+                  className="w-full h-auto rounded-2xl"
                 />
               </motion.div>
             </motion.div>
@@ -245,7 +245,7 @@ export default function DownloadPage() {
                 onHoverStart={() => setHoveredStep(index)}
                 onHoverEnd={() => setHoveredStep(null)}
               >
-                <Card className={`bg-card border-border h-full transition-all duration-300 ${hoveredStep === index ? 'border-primary shadow-lg shadow-primary/20 scale-105' : ''}`}>
+                <Card className={`bg-card border-border h-full transition-all duration-300 ${hoveredStep === index ? 'border-primary scale-105' : ''}`}>
                   <CardContent className="pt-6 text-center">
                     <motion.div 
                       className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-4"
@@ -353,7 +353,7 @@ export default function DownloadPage() {
                   <ImageWithFallback
                     src="https://images.unsplash.com/photo-1608714783717-618b2de85e39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpcGhvbmUlMjBob21lJTIwc2NyZWVufGVufDF8fHx8MTc2MjExMTgzMnww&ixlib=rb-4.1.0&q=80&w=1080"
                     alt="iPhone Home Screen"
-                    className="relative w-full h-auto rounded-2xl shadow-xl"
+                    className="relative w-full h-auto rounded-2xl"
                   />
                 </motion.div>
               </div>

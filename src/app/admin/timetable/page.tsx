@@ -183,7 +183,7 @@ export default function AdminTimetablePage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
 
         {/* Add/Edit Form */}
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 mb-8 shadow-2xl">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 mb-8">
           <div className="flex items-center space-x-3 mb-6">
             <div className="bg-blue-600 p-2 rounded-lg">
               {editingEntry ? <PencilIcon className="h-5 w-5 text-white" /> : <PlusIcon className="h-5 w-5 text-white" />}
@@ -300,7 +300,7 @@ export default function AdminTimetablePage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+                className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {loading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -322,7 +322,7 @@ export default function AdminTimetablePage() {
         )}
 
         {/* Timetable Display */}
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
               <div className="bg-green-600 p-2 rounded-lg">

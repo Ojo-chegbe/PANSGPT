@@ -251,7 +251,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
         </div>
         
         {/* Header */}
-        <div className="rounded-lg shadow-sm p-6 mb-6 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+        <div className="rounded-lg p-6 mb-6 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{quiz.title}</h1>
@@ -286,7 +286,7 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
         </div>
 
         {/* Question */}
-        <div className="rounded-lg shadow-sm p-6 mb-6 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+        <div className="rounded-lg p-6 mb-6 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Question {currentQuestion.order}

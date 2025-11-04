@@ -100,7 +100,7 @@ export function MicrophoneButton({ onTranscript, disabled, className = '' }: Mic
         isRecording
           ? 'bg-red-500 hover:bg-red-600 animate-pulse'
           : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
-      } text-white p-3 md:p-2 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl`}
+      } text-white p-3 md:p-2 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
       title={isRecording ? 'Stop recording' : isLoading ? 'Transcribing...' : 'Start voice recording'}
       aria-label={isRecording ? 'Stop recording' : isLoading ? 'Transcribing...' : 'Start voice recording'}
     >

@@ -181,7 +181,7 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
-          className="rounded-2xl shadow-2xl border max-w-2xl w-full max-h-[90vh] overflow-hidden bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10"
+          className="rounded-2xl border max-w-2xl w-full max-h-[90vh] overflow-hidden bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10"
         >
           {/* Header */}
           <div className="p-6 border-b border-gray-200 dark:border-white/10">

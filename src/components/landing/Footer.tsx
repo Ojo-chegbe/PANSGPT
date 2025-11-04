@@ -9,15 +9,14 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 relative">
+              <div className="w-32 h-32 relative">
                 <Image
-                  src="/uploads/Logo.png"
+                  src="/uploads/Logo 2.png"
                   alt="PansGPT Logo"
                   fill
                   className="object-contain"
                 />
               </div>
-              <span className="text-foreground font-bold">PansGPT</span>
             </div>
             <p className="text-muted-foreground text-sm">
               Your personalized pharmacy tutor, built specifically for University of Jos students.

@@ -35,7 +35,7 @@ const TableFormattingDemo: React.FC = () => {
       <h1 className="text-2xl font-bold mb-6 text-white">
         Table Formatting Demo - Transparent with White Borders
       </h1>
-      <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-lg p-6 shadow-lg">
+      <div className="bg-gradient-to-br from-blue-900 to-purple-900 rounded-lg p-6">
         <MarkdownWithMath content={sampleTables} />
       </div>
     </div>

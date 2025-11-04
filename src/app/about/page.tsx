@@ -227,7 +227,7 @@ export default function AboutPage() {
       {/* Final CTA Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12 bg-card/30">
         <div className="container mx-auto max-w-4xl">
-          <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 shadow-2xl shadow-primary/10 overflow-hidden relative">
+          <Card className="border-2 border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
             
@@ -260,7 +260,7 @@ export default function AboutPage() {
                 <Link href="/signup">
                   <Button 
                     size="lg" 
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 h-auto group shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 h-auto group transition-all"
                   >
                     Sign Up & Start Studying Smarter (It's Free)
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

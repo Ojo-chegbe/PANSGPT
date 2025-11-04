@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 
 export function FeedbackMockup() {
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-2xl">
+    <div className="bg-card border border-border rounded-2xl p-6 space-y-6">
       {/* Result Header */}
       <div className="flex items-center gap-3 pb-4 border-b border-border">
         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">

@@ -84,7 +84,7 @@ function ResetPasswordPage() {
   if (!canReset) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-4">
-        <div className="w-full max-w-md p-6 md:p-10 rounded-lg bg-white shadow-xl border border-red-100">
+        <div className="w-full max-w-md p-6 md:p-10 rounded-lg bg-white border border-red-100">
           <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-red-600">Invalid Reset Link</h1>
           <p className="text-center text-gray-600 mb-4">
             This password reset link is invalid or has expired.
@@ -104,7 +104,7 @@ function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
-      <div className="w-full max-w-md p-6 md:p-10 rounded-lg bg-white shadow-xl border border-green-100">
+      <div className="w-full max-w-md p-6 md:p-10 rounded-lg bg-white border border-green-100">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-green-600">Reset Password</h1>
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
@@ -117,7 +117,7 @@ function ResetPasswordPage() {
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="appearance-none block w-full px-4 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-base border-green-300"
+              className="appearance-none block w-full px-4 py-3 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-base border-green-300"
             />
           </div>
           <div>
@@ -130,7 +130,7 @@ function ResetPasswordPage() {
               required
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              className="appearance-none block w-full px-4 py-3 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-base border-green-300"
+              className="appearance-none block w-full px-4 py-3 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 text-base border-green-300"
             />
           </div>
           <button

@@ -189,7 +189,7 @@ export default function DocumentUploadForm() {
 
   if (!session) {
     return (
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8">
         <div className="text-center">
           <div className="bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-6 max-w-md mx-auto">
             <ExclamationTriangleIcon className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
@@ -202,7 +202,7 @@ export default function DocumentUploadForm() {
   }
 
   return (
-    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+    <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8">
       <div className="flex items-center space-x-3 mb-8">
         <div className="bg-blue-600 p-2 rounded-lg">
           <DocumentArrowUpIcon className="h-6 w-6 text-white" />
@@ -371,7 +371,7 @@ export default function DocumentUploadForm() {
           <button
             type="submit"
             disabled={isUploading}
-            className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+            className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {isUploading ? (
               <>

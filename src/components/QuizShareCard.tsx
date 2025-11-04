@@ -203,7 +203,7 @@ export default function QuizShareCard({ result, onShare, exportMode = false }: Q
   // Card style logic
   const cardClass = exportMode
     ? 'bg-gradient-to-br from-green-900 via-black to-gray-900 flex flex-col items-center justify-between'
-    : 'relative bg-gradient-to-br from-green-900 via-black to-gray-900 rounded-2xl text-white shadow-2xl border border-green-500/20 overflow-hidden flex flex-col items-center justify-between';
+    : 'relative bg-gradient-to-br from-green-900 via-black to-gray-900 rounded-2xl text-white border border-green-500/20 overflow-hidden flex flex-col items-center justify-between';
   const cardStyle = exportMode
     ? { width: 1000, height: 1000, aspectRatio: '1/1', margin: 0, padding: 0, borderRadius: 0, boxShadow: 'none' }
     : {};

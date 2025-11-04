@@ -239,7 +239,7 @@ export default function QuizSelectionForm() {
 
   if (!session) {
     return (
-      <div className="backdrop-blur-sm border rounded-2xl p-8 shadow-2xl bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+      <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
         <div className="text-center">
           <div className="border rounded-xl p-6 max-w-md mx-auto bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-600/30">
             <ExclamationTriangleIcon className="h-12 w-12 mx-auto mb-4 text-red-600 dark:text-[#dc2626]" />
@@ -253,16 +253,6 @@ export default function QuizSelectionForm() {
 
   return (
     <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
-      <div className="flex items-center space-x-3 mb-8">
-        <div className="p-2 rounded-lg bg-green-600 dark:[background-color:#00A400]">
-          <SparklesIcon className="h-6 w-6 text-gray-700 dark:text-white" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Quiz</h2>
-          <p className="text-gray-600 dark:text-white/80">Generate AI-powered quizzes from your course materials</p>
-        </div>
-      </div>
-      
       {info && (
         <div className="mb-6 border rounded-xl p-4 flex items-center space-x-3 bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-600/30">
           <CheckCircleIcon className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-[#00A400]" />
@@ -334,7 +324,7 @@ export default function QuizSelectionForm() {
                     </svg>
                   </div>
                 ) : (showAllTopics || filteredTopics.length > 0) ? (
-                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl py-1 text-base shadow-lg focus:outline-none sm:text-sm border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl py-1 text-base focus:outline-none sm:text-sm border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
                     {filteredTopics.map((topic) => (
                       <Combobox.Option
                         key={topic}
@@ -481,7 +471,7 @@ export default function QuizSelectionForm() {
           <button
             type="submit"
             disabled={isGenerating}
-            className="w-full flex items-center justify-center space-x-2 px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+            className="w-full flex items-center justify-center space-x-2 px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
           >
             {isGenerating ? (
               <>

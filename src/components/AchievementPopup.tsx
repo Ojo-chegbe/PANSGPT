@@ -34,7 +34,7 @@ export default function AchievementPopup({ achievement, isOpen, onClose }: Achie
           exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
           className="fixed bottom-4 right-4 z-50"
         >
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-xl p-4 max-w-sm w-full border border-white/20">
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-4 max-w-sm w-full border border-white/20">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
                 <div className="text-4xl animate-bounce">

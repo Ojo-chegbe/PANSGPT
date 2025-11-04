@@ -11,22 +11,21 @@ export default function Navigation() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 py-4">
+      <div className="container mx-auto px-6 sm:px-8 lg:px-12 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link 
             href="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-10 h-10 relative">
+            <div className="w-20 h-20 relative">
               <Image
-                src="/uploads/Logo.png"
+                src="/uploads/Logo 2.png"
                 alt="PansGPT Logo"
                 fill
                 className="object-contain"
               />
             </div>
-            <span className="text-xl text-foreground font-bold">PansGPT</span>
           </Link>
           
           {/* Desktop Navigation */}
@@ -53,7 +52,7 @@ export default function Navigation() {
             <Link href="/login">
               <Button 
                 variant="ghost" 
-                className="hidden md:inline-flex"
+                className="hidden md:inline-flex text-white"
               >
                 Log In
               </Button>
@@ -68,10 +67,10 @@ export default function Navigation() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="lg:hidden"
+              className="lg:hidden text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
             </Button>
           </div>
         </div>
@@ -96,7 +95,7 @@ export default function Navigation() {
             </Link>
             <div className="pt-2">
               <Link href="/login">
-                <Button variant="outline" className="w-full mb-2" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full mb-2 text-white" onClick={() => setMobileMenuOpen(false)}>
                   Log In
                 </Button>
               </Link>

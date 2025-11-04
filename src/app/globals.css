@@ -385,7 +385,7 @@ input, textarea, select {
 
 /* Callout Boxes */
 .callout-box {
-  @apply rounded-lg p-4 mb-6 border-l-4 shadow-sm backdrop-blur-sm;
+  @apply rounded-lg p-4 mb-6 border-l-4 backdrop-blur-sm;
 }
 
 .callout-key-concept {
@@ -497,24 +497,30 @@ input, textarea, select {
 .markdown-math table {
   @apply w-full border-collapse border border-gray-300 dark:border-white rounded-lg overflow-hidden my-6;
   background: transparent;
+  border-spacing: 0;
+  border-width: 1px;
 }
 
 .markdown-math th {
   @apply font-semibold text-left px-4 py-3 border border-gray-300 dark:border-white text-gray-900 dark:text-white;
-  @apply bg-gray-100 dark:bg-gray-800;
+  background: transparent;
+  border-width: 1px;
+  border-style: solid;
 }
 
 .markdown-math td {
   @apply px-4 py-3 border border-gray-300 dark:border-white text-gray-900 dark:text-white;
-  @apply bg-white dark:bg-transparent;
+  background: transparent;
+  border-width: 1px;
+  border-style: solid;
 }
 
 .markdown-math tr:nth-child(even) {
-  @apply bg-gray-50 dark:bg-gray-900/30;
+  background: transparent;
 }
 
 .markdown-math tr:hover {
-  @apply bg-gray-100 dark:bg-gray-800/50;
+  background: transparent;
 }
 
 /* Table wrapper for responsive scrolling */
@@ -628,11 +634,20 @@ input, textarea, select {
   /* Mobile table adjustments */
   .markdown-math table {
     @apply text-sm;
+    border-width: 1px !important;
   }
   
   .markdown-math th,
   .markdown-math td {
     @apply px-2 py-2;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: rgb(209, 213, 219) !important;
+  }
+  
+  .dark .markdown-math th,
+  .dark .markdown-math td {
+    border-color: white !important;
   }
   
   .markdown-math .table-wrapper {
@@ -668,11 +683,20 @@ input, textarea, select {
   /* Extra small mobile table adjustments */
   .markdown-math table {
     @apply text-xs;
+    border-width: 1px !important;
   }
   
   .markdown-math th,
   .markdown-math td {
     @apply px-1 py-1;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: rgb(209, 213, 219) !important;
+  }
+  
+  .dark .markdown-math th,
+  .dark .markdown-math td {
+    border-color: white !important;
   }
 }
 
