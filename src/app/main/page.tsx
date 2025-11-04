@@ -1300,7 +1300,7 @@ function MainPageContent() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-4">
                 <span className="text-3xl md:text-6xl font-bold text-gray-900 dark:text-white">
-                  Hello, Great PANSite
+                  Hello, Pharm. {session?.user?.name ? session.user.name.split(' ')[0] : ''}
                 </span>
                 <p className="text-lg md:text-xl text-gray-700 dark:text-white font-light">
                   Ask me anything about your courses
