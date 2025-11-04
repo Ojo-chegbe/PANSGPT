@@ -1,14 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import QuizSummaryCards from '../../components/QuizSummaryCards';
 import { clearDeviceId } from '../../lib/device-id';
-import { useTheme } from '../../contexts/ThemeContext';
-import BackButton from '../../components/BackButton';
+
+interface QuizAnalytics {
+  averageScore: number;
+  totalQuizzes: number;
+  totalPoints: number;
+  recentTrendAverage: number;
+  coursePerformance?: Array<{
+    courseTitle: string;
+    averageScore: number;
+    quizCount: number;
+  }>;
+}
 
 interface TimetableEntry {
   id: string;
@@ -22,72 +30,77 @@ interface TimetableEntry {
 export default function ProfilePage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const { theme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState({ name: '', bio: '', level: '', image: '' });
-  const [profilePic, setProfilePic] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState({ 
+    name: '', 
+    bio: '', 
+    level: '', 
+    image: '',
+    university: '',
+    department: '',
+    faculty: ''
+  });
   const [saving, setSaving] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-  
-  // Timetable state
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [subscription, setSubscription] = useState<any>(null);
+  const [quizAnalytics, setQuizAnalytics] = useState<QuizAnalytics | null>(null);
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [timetableLoading, setTimetableLoading] = useState(false);
-
-  const [quizAnalytics, setQuizAnalytics] = useState<any>(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-  // Achievement icon mapping
-  const achievementIcons: Record<string, string> = {
-    "First Document": "📄",
-    "Document Explorer": "🧭",
-    "Document Master": "🏆",
-    "Diverse Reader": "🌐",
-    "Knowledge Seeker": "🔎"
-  };
-
   useEffect(() => {
-    async function fetchProfile() {
-      const res = await fetch('/api/user');
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user || data); // Always use data.user for profile fields
+    async function loadData() {
+      setLoading(true);
+      try {
+        const [profileRes, subscriptionRes, analyticsRes] = await Promise.all([
+          fetch('/api/user'),
+          fetch('/api/subscription/status'),
+          fetch('/api/quiz/history?page=1&limit=1')
+        ]);
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          const userData = profileData.user || profileData;
+          setUser(userData);
         setForm({
-          name: (data.user || data).name || '',
-          bio: (data.user || data).bio || '',
-          level: (data.user || data).level || '',
-          image: (data.user || data).image || '',
-        });
-        setProfilePic((data.user || data).image || '/uploads/user-placeholder.png');
+            name: userData.name || '',
+            bio: userData.bio || '',
+            level: userData.level || '',
+            image: userData.image || '',
+            university: userData.university || '',
+            department: userData.department || '',
+            faculty: userData.faculty || '',
+          });
+        }
+
+        if (subscriptionRes.ok) {
+          const subscriptionData = await subscriptionRes.json();
+          setSubscription(subscriptionData);
+        }
+
+        if (analyticsRes.ok) {
+          const analyticsData = await analyticsRes.json();
+          setQuizAnalytics(analyticsData.data?.analytics || null);
+        }
+      } catch (err) {
+        console.error('Error loading profile data:', err);
+      } finally {
+        setLoading(false);
       }
     }
-    fetchProfile();
+    loadData();
   }, []);
 
-  // Fetch timetable when user level is available
   useEffect(() => {
     if (user?.level) {
       fetchTimetable();
     }
   }, [user?.level]);
-
-  useEffect(() => {
-    async function fetchQuizAnalytics() {
-      try {
-        const res = await fetch('/api/quiz/history?page=1&limit=1');
-        if (res.ok) {
-          const data = await res.json();
-          setQuizAnalytics(data.data.analytics);
-        }
-      } catch (err) {
-        // ignore
-      }
-    }
-    fetchQuizAnalytics();
-  }, []);
 
   const fetchTimetable = async () => {
     if (!user?.level) return;
@@ -104,53 +117,6 @@ export default function ProfilePage() {
     } finally {
       setTimetableLoading(false);
     }
-  };
-
-  const handlePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setUploading(true);
-      const file = e.target.files[0];
-      const formData = new FormData();
-      formData.append('file', file);
-      // Upload to /api/upload (reuse existing logic)
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.fileKey) {
-        const url = `/uploads/${data.fileKey.split('/').pop()}`;
-        setProfilePic(url);
-        setForm(f => ({ ...f, image: url }));
-      }
-      setUploading(false);
-    }
-  };
-
-  const handleEdit = () => setEditMode(true);
-  const handleCancel = () => {
-    setEditMode(false);
-    setForm({
-      name: user?.name || '',
-      bio: user?.bio || '',
-      level: user?.level || '',
-      image: user?.image || '',
-    });
-    setProfilePic(user?.image || '/uploads/user-placeholder.png');
-  };
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-  };
-  const handleSave = async () => {
-    setSaving(true);
-    const res = await fetch('/api/user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setUser(data.user);
-      setEditMode(false);
-    }
-    setSaving(false);
   };
 
   const handleLogout = async () => {
@@ -174,78 +140,311 @@ export default function ProfilePage() {
     }
   };
 
-  if (!user) {
-    return <div className="min-h-screen flex items-center justify-center text-theme-primary">Loading...</div>;
+  const handleEdit = () => setEditMode(true);
+  const handleCancel = () => {
+    setEditMode(false);
+    setForm({
+      name: user?.name || '',
+      bio: user?.bio || '',
+      level: user?.level || '',
+      image: user?.image || '',
+      university: user?.university || '',
+      department: user?.department || '',
+      faculty: user?.faculty || '',
+    });
+  };
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  };
+  
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveMessage(null);
+    try {
+    const res = await fetch('/api/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setUser(data.user);
+      setEditMode(false);
+        setSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
+        setTimeout(() => setSaveMessage(null), 3000);
+      } else {
+        setSaveMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
+      }
+    } catch (error) {
+      setSaveMessage({ type: 'error', text: 'An error occurred. Please try again.' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:[background-color:#0C120C]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin border-green-600 dark:border-[#00A400]"></div>
+          <p className="text-lg text-green-700 dark:text-[#4ade80]">Loading your profile...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Use user object for all profile fields, and data.stats/achievements for stats
+  const averageScore = quizAnalytics?.averageScore || 0;
+  const totalQuizzes = quizAnalytics?.totalQuizzes || 0;
+  const totalPoints = quizAnalytics?.totalPoints || 0;
+  const recentTrend = quizAnalytics?.recentTrendAverage || 0;
+  const topCourse = quizAnalytics?.coursePerformance && quizAnalytics.coursePerformance.length > 0
+    ? quizAnalytics.coursePerformance.reduce((prev, current) => 
+        ((prev?.averageScore || 0) > (current?.averageScore || 0)) ? prev : current
+      )
+    : null;
+
+  const planType = subscription?.planType === 'trial' ? 'Free Trial' : subscription?.planType === 'paid' ? 'Paid Plan' : 'Free Trial';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-black dark:via-gray-900 dark:to-gray-800 text-theme-primary flex flex-col items-center py-10 px-4">
+    <div className="min-h-screen pb-12 bg-gray-50 dark:[background-color:#0C120C]">
+      {/* Success/Error Message */}
+      {saveMessage && (
+        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top duration-300">
+          <div
+            className={`px-6 py-4 rounded-xl shadow-lg flex items-center gap-3 ${
+              saveMessage.type === 'success' ? 'bg-green-600 dark:bg-green-600' : 'bg-red-600 dark:bg-red-600'
+            }`}
+          >
+            <span className="text-gray-900 dark:text-white font-medium">{saveMessage.text}</span>
+            <button
+              onClick={() => setSaveMessage(null)}
+              className="text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Back Button */}
-      <div className="w-full max-w-3xl mb-4">
-        <BackButton href="/main" label="Back to Chat" />
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/main')}
+            className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 active:scale-95 bg-white dark:[background-color:#2D3A2D] text-green-600 dark:text-[#00A400]"
+            aria-label="Go back"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Left Column */}
+          <div className="flex flex-col gap-6">
+            {/* User Profile Card */}
+            <div 
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                    <div className="flex-1 min-w-0">
+                      {editMode ? (
+                        <input
+                          type="text"
+                          name="name"
+                          value={form.name}
+                          onChange={handleChange}
+                          className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2 text-xl font-bold mb-2 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
+                          placeholder="Full Name"
+                          autoFocus
+                        />
+                      ) : (
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-900 dark:text-white break-words">
+                          {user.name || 'User'}
+                        </h2>
+                      )}
+                      <p className="text-sm sm:text-base mb-1 break-words text-gray-600 dark:text-white">
+                        {user.email || ''}
+                      </p>
+                    </div>
+                    {!editMode && (
+                      <button
+                        onClick={handleEdit}
+                        className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0 bg-green-50 dark:bg-green-900/10 text-green-600 dark:text-[#00A400] border border-green-200 dark:border-green-600/30"
+                      >
+                        Edit Details
+                      </button>
+                    )}
+                  </div>
+                  {editMode && (
+                    <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top duration-200">
+                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button
+                          onClick={handleSave}
+                          disabled={saving || !form.name.trim()}
+                          className="flex-1 px-5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 bg-green-600 dark:bg-[#00A400] text-white dark:text-[#0C120C] hover:bg-green-700 dark:hover:bg-[#008300]"
+                        >
+                          {saving ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            'Save Changes'
+                          )}
+                        </button>
+                        <button
+                          onClick={handleCancel}
+                          disabled={saving}
+                          className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 bg-transparent text-green-600 dark:text-[#00A400] border border-green-300 dark:border-green-600/50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
       </div>
       
-      <div className="w-full max-w-3xl bg-white dark:bg-[#181A1B] rounded-2xl dark:shadow-xl p-8 flex flex-col gap-8 border border-gray-200 dark:border-gray-700">
-        {/* Personal Info - Modern Revamp */}
-        <div className="flex flex-col items-center gap-6 border-b border-theme pb-10">
-          <div className="w-full max-w-lg mx-auto bg-gradient-to-br from-gray-100/80 via-gray-50/70 to-gray-100/80 dark:from-gray-900/80 dark:via-gray-800/70 dark:to-gray-900/80 rounded-3xl dark:shadow-2xl p-8 flex flex-col items-center backdrop-blur-md border border-theme">
-            <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-theme-primary text-center mb-2 dark:drop-shadow-lg">{user.name}</div>
-            <span className="inline-block px-4 py-1 rounded-full bg-green-500/20 text-green-600 dark:text-green-400 font-bold text-base mb-2 dark:shadow">Level {user.level}</span>
-            <div className="text-base text-theme-secondary text-center mb-4 select-all">{user.email}</div>
-            {user.bio && (
-              <div className="w-full bg-green-50/80 dark:bg-white/5 border border-green-300/40 dark:border-green-400/20 rounded-xl px-5 py-3 text-green-700 dark:text-green-200 text-center italic mb-4 dark:shadow-inner backdrop-blur-sm">
-                {user.bio}
+            {/* Academic Details Card */}
+            <div 
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-green-200 dark:border-green-600/10"
+            >
+              <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Academic Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
+                  <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
+                    University
+                  </label>
+                  {editMode ? (
+                    <input
+                      type="text"
+                      name="university"
+                      value={form.university}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
+                      placeholder="University name"
+                    />
+                  ) : (
+                    <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
+                      {form.university || user.university || 'University of Jos'}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
+                  <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
+                    Department
+                  </label>
+                  {editMode ? (
+                    <input
+                      type="text"
+                      name="department"
+                      value={form.department}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
+                      placeholder="Department name"
+                    />
+                  ) : (
+                    <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
+                      {form.department || user.department || 'Pharmacy'}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
+                  <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
+                    Faculty
+                  </label>
+                  {editMode ? (
+                    <input
+                      type="text"
+                      name="faculty"
+                      value={form.faculty}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
+                      placeholder="Faculty name"
+                    />
+                  ) : (
+                    <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
+                      {form.faculty || user.faculty || 'Pharmaceutical Sciences'}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10 sm:border-b-0">
+                  <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
+                    Current Level
+                  </label>
+                  {editMode ? (
+                    <input
+                      type="text"
+                      name="level"
+                      value={form.level}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 dark:bg-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all border border-gray-300 dark:border-white/20"
+                      placeholder="e.g., 300"
+                    />
+                  ) : (
+                    <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
+                      {user.level || form.level || 'N/A'} Level
               </div>
             )}
-            {/* Removed Edit Profile button as all data is from the database */}
+                </div>
           </div>
         </div>
 
-        {/* Quiz Summary Cards */}
-        {quizAnalytics && <QuizSummaryCards analytics={quizAnalytics} />}
-
-        {/* Class Timetable */}
-        <div className="border-b border-theme pb-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-            <div className="text-lg font-bold text-theme-primary">Class Timetable</div>
-            <div className="flex gap-2">
+            {/* Class Timetable Card */}
+            <div 
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Class Timetable</h3>
               <select
                 value={selectedDay}
                 onChange={(e) => setSelectedDay(e.target.value)}
-                className="bg-gray-100 dark:bg-gray-800 border border-theme rounded px-3 py-1 text-theme-primary text-sm"
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-50 dark:bg-white/10 text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all"
               >
                 {days.map(day => (
-                  <option key={day} value={day}>{day}</option>
+                    <option key={day} value={day} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">{day}</option>
                 ))}
               </select>
-            </div>
           </div>
           
           {timetableLoading ? (
-            <div className="text-center py-8 text-theme-muted">Loading timetable...</div>
+                <div className="text-center py-8">
+                  <div className="w-6 h-6 border-2 border-green-600 dark:border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-gray-900 dark:text-white/70 text-sm">Loading timetable...</p>
+                </div>
           ) : (
             <div className="space-y-3">
               {(() => {
                 const dayEntries = timetable.filter(entry => entry.day === selectedDay);
                 return dayEntries.length > 0 ? (
                   dayEntries.map(entry => (
-                    <div key={entry.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-theme">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <div 
+                          key={entry.id} 
+                          className="rounded-lg p-4 border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/15 transition-all duration-200"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div className="flex-1">
-                          <div className="font-semibold text-yellow-600 dark:text-yellow-400">{entry.timeSlot}</div>
-                          <div className="text-sm text-theme-secondary">
+                              <div className="font-semibold text-gray-900 dark:text-white mb-1">{entry.timeSlot}</div>
+                              <div className="text-sm text-gray-600 dark:text-white/80">
                             {entry.courseCode} - {entry.courseTitle}
                           </div>
                         </div>
-                        <div className="text-xs text-theme-muted bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                            <div className="text-xs text-gray-700 dark:text-white/60 bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-full inline-block w-fit">
                           {entry.level} Level
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-theme-muted">
+                      <div className="text-center py-8 text-gray-900 dark:text-white/60">
                     No classes scheduled for {selectedDay}
                   </div>
                 );
@@ -254,38 +453,150 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Achievements/Badges */}
-        <div className="flex flex-col gap-2 items-center">
-          <div className="text-lg font-bold mb-2 text-theme-primary">Achievements</div>
-          <div className="flex flex-wrap gap-4 justify-center">
-            {(user.achievements && user.achievements.length > 0) ? (
-              user.achievements.map((ach: string) => (
-                <div key={ach} className="flex flex-col items-center bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl dark:shadow border border-theme">
-                  <span className="text-3xl mb-1">{achievementIcons[ach] || "🎖️"}</span>
-                  <span className="text-xs text-theme-secondary font-semibold">{ach}</span>
+            {/* Current Plan / Logout Card */}
+            <div 
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Current Plan</h3>
+                  <p className="text-base font-medium text-gray-900 dark:text-white/90">{planType}</p>
+                  {subscription?.trialEndDate && subscription.isTrial && (
+                    <p className="text-xs mt-2 text-gray-900 dark:text-white/70">
+                      Trial ends: {new Date(subscription.trialEndDate).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-red-600 dark:bg-red-600 text-white"
+                >
+                  {loggingOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Logging out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      <span>Logout</span>
+                    </>
+                  )}
+                </button>
               </div>
-              ))
-            ) : (
-              <div className="text-theme-muted text-sm italic py-4">No achievements yet. Keep using the app to unlock them!</div>
+            </div>
+          </div>
+          
+          {/* Right Column */}
+          <div className="flex flex-col gap-6">
+            {/* Performance Metrics */}
+            <div className="flex flex-col gap-4">
+              {/* Quizzes Taken */}
+              <div 
+                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
+              >
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
+                  <svg className="w-7 h-7 text-green-600 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="text-3xl sm:text-4xl font-bold mb-1 text-gray-900 dark:text-white">{totalQuizzes}</div>
+                  <div className="text-sm font-medium text-gray-600 dark:text-white/80">Quizzes Taken</div>
+                </div>
+              </div>
+
+              {/* Total Points */}
+              <div 
+                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
+              >
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
+                  <svg className="w-7 h-7 text-green-600 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="text-3xl sm:text-4xl font-bold mb-1 text-gray-900 dark:text-white">{totalPoints}</div>
+                  <div className="text-sm font-medium text-gray-600 dark:text-white/80">Total Points</div>
+                </div>
+              </div>
+
+              {/* Recent Trend */}
+              <div 
+                className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
+              >
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
+                  <svg className="w-7 h-7 text-green-600 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="text-3xl sm:text-4xl font-bold mb-1 text-gray-900 dark:text-white">{recentTrend.toFixed(0)}%</div>
+                  <div className="text-sm font-medium text-gray-600 dark:text-white/80">Recent Trend</div>
+                </div>
+              </div>
+                        </div>
+
+            {/* Average Score Card */}
+            <div 
+              className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-xl bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
+            >
+              <h3 className="text-xl font-bold mb-6 text-center text-gray-900 dark:text-white">Average Score</h3>
+              <div className="flex flex-col items-center">
+                {/* Circular Progress Indicator */}
+                <div className="relative w-40 h-40 sm:w-48 sm:h-48 mb-6">
+                  <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 128 128">
+                    <circle
+                      cx="64"
+                      cy="64"
+                      r="56"
+                      className="stroke-gray-200 dark:stroke-[#0C120C]"
+                      strokeWidth="14"
+                      fill="none"
+                    />
+                    <circle
+                      cx="64"
+                      cy="64"
+                      r="56"
+                      className="stroke-green-600 dark:stroke-[#00A400] transition-all duration-1000 ease-out"
+                      strokeWidth="14"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 56}`}
+                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - averageScore / 100)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-4xl sm:text-5xl font-bold mb-1 text-green-600 dark:text-[#00A400]">
+                        {averageScore.toFixed(0)}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-sm sm:text-base text-center mb-6 font-medium text-gray-900 dark:text-white/90">
+                  Overall Quiz Success Rate
+                </div>
+                <div className="text-center p-4 rounded-xl w-full bg-gray-50 dark:bg-white/10 border border-gray-300 dark:border-white/20">
+                  <div className="text-xs sm:text-sm mb-2 font-medium uppercase tracking-wide text-gray-900 dark:text-white/70">
+                    Top Performing Course
+                  </div>
+                  {topCourse && topCourse.courseTitle ? (
+                    <div className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+                      {topCourse.courseTitle}
+                    </div>
+                  ) : (
+                    <div className="text-base sm:text-lg font-medium text-gray-900 dark:text-white/60">
+                      No quiz data yet
+            </div>
             )}
           </div>
         </div>
-
-
-        {/* Plan Page Button */}
-        <div className="flex justify-center gap-4 mt-6">
-          <Link href="/plan">
-            <button className="px-6 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition dark:shadow-md">
-              Go to Plan Page
-            </button>
-          </Link>
-          <button
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="px-6 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed dark:shadow-md"
-          >
-            {loggingOut ? 'Logging out...' : 'Logout'}
-          </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

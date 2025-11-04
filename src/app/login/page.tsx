@@ -81,18 +81,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C]">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+      <div className="border-b bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="bg-emerald-600 p-4 rounded-2xl">
+          <div>
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="p-4 rounded-2xl bg-green-600 dark:[background-color:#00A400]">
                 <UserCircleIcon className="h-12 w-12 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-white">Welcome Back</h1>
-                <p className="mt-2 text-lg text-gray-300">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+                <p className="mt-2 text-lg text-gray-600 dark:text-white/80">
                   Sign in to continue your AI-powered learning journey
                 </p>
               </div>
@@ -102,18 +102,18 @@ export default function LoginPage() {
       </div>
 
       <div className="max-w-md mx-auto px-6 py-8">
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+        <div className="backdrop-blur-sm border rounded-2xl p-8 shadow-2xl bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
-                <XMarkIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
-                <p className="text-red-300 font-medium">{error}</p>
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
+                <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
               </div>
             )}
 
             {/* Email */}
             <div className="space-y-2">
-              <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <EnvelopeIcon className="h-4 w-4" />
                 <span>Email Address *</span>
               </label>
@@ -125,11 +125,11 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
                 placeholder="Enter your email"
               />
               {emailError && (
-                <div className="flex items-center space-x-2 text-red-400 text-sm">
+                <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   <span>Please enter a valid email address</span>
                 </div>
@@ -138,7 +138,7 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="space-y-2">
-              <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                 <LockClosedIcon className="h-4 w-4" />
                 <span>Password *</span>
               </label>
@@ -151,13 +151,13 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                  className={`w-full border rounded-xl px-4 py-3 pr-12 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5" />
@@ -167,7 +167,7 @@ export default function LoginPage() {
                 </button>
               </div>
               {passwordError && (
-                <div className="flex items-center space-x-2 text-red-400 text-sm">
+                <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   <span>Please enter your password</span>
                 </div>
@@ -177,7 +177,7 @@ export default function LoginPage() {
               <div className="text-right">
                 <Link 
                   href="/forgot-password" 
-                  className="text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-colors duration-200"
+                  className="text-sm font-medium text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200"
                 >
                   Forgot password?
                 </Link>
@@ -185,11 +185,11 @@ export default function LoginPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-6 border-t border-gray-700">
+            <div className="pt-6 border-t border-gray-200 dark:border-white/10">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
               >
                 {isLoading ? (
                   <>
@@ -208,11 +208,11 @@ export default function LoginPage() {
 
           {/* Signup Link */}
           <div className="mt-8 text-center">
-            <p className="text-gray-400">
+              <p className="text-gray-600 dark:text-white/70">
               Don't have an account?{' '}
               <Link 
                 href="/signup" 
-                className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors duration-200"
+                className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200"
               >
                 Create one here
               </Link>

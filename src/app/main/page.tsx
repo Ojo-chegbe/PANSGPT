@@ -6,11 +6,9 @@ import { type ChatMessage } from '@/lib/google-ai';
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ClipboardIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { ClipboardIcon, PencilIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import MarkdownWithMath from '@/components/MarkdownWithMath';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { generateConversationTitle, isDefaultTitle } from '@/lib/conversation-title-generator';
-import { MicrophoneButton } from '@/components/MicrophoneButton';
 
 type MessageRole = 'user' | 'system' | 'model';
 
@@ -59,86 +57,54 @@ const MessageList = React.memo(({
   handleCopy: (idx: number, content: string) => void;
   isLoading: boolean;
 }) => (
-  <div className="max-w-6xl mx-auto w-full flex flex-col gap-6 md:gap-8">
+  <div className="max-w-6xl mx-auto px-4 md:px-8 flex flex-col gap-6 md:gap-8">
     {messages.map((message, idx) => (
       <div key={idx} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
         <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className={`rounded-2xl p-5 md:p-6 transition-all duration-200 ${
-            message.role === 'user'
-              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
-              : 'bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/90 dark:to-gray-900/90 backdrop-blur-xl text-gray-800 dark:text-white border border-gray-200/50 dark:border-gray-700/50'
-          }`}>
+          <div className={`p-5 md:p-6 transition-all duration-200 text-gray-900 dark:text-white ${message.role === 'user' ? 'bg-green-100 dark:[background-color:#2D3A2D] rounded-[18px_18px_0px_18px]' : 'bg-white dark:bg-transparent border border-gray-200 dark:border-transparent rounded-2xl shadow-sm dark:shadow-none'}`}
+          >
             {editingIdx === idx ? (
-              <div className="space-y-4">
-                {/* Edit Header */}
-                <div className="flex items-center space-x-2 pb-2 border-b border-gray-200/50 dark:border-gray-700/50">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Editing message</span>
-                </div>
+              <div className="space-y-3">
+                <textarea
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      handleEditCancel();
+                    }
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault();
+                      handleEditSave(idx);
+                    }
+                  }}
+                  className="w-full p-4 text-gray-900 dark:text-white bg-gray-100 dark:bg-[#2D3A2D] rounded-xl border border-gray-300 dark:border-white/10 focus:outline-none focus:border-green-600 dark:focus:border-[#00A400] text-sm md:text-base resize-none transition-all duration-200"
+                  rows={4}
+                  placeholder="Edit your message..."
+                  autoFocus
+                />
                 
-                {/* Enhanced Textarea */}
-                <div className="relative">
-                  <textarea
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape') {
-                        handleEditCancel();
-                      }
-                      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                        e.preventDefault();
-                        handleEditSave(idx);
-                      }
-                    }}
-                    className="w-full p-4 text-gray-800 dark:text-white bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border-2 border-gray-200/50 dark:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm md:text-base resize-none transition-all duration-200 shadow-lg"
-                    rows={4}
-                    placeholder="Edit your message..."
-                    autoFocus
-                  />
-                  {/* Character count */}
-                  <div className="absolute bottom-2 right-2 text-xs text-gray-400 dark:text-gray-500">
-                    {editingText.length} characters
-                  </div>
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-                    <span>Press</span>
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Esc</kbd>
-                    <span>to cancel or</span>
-                    <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">Ctrl+Enter</kbd>
-                    <span>to send</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => handleEditCancel()}
-                      className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 flex items-center space-x-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      <span>Cancel</span>
-                    </button>
-                    <button
-                      onClick={() => handleEditSave(idx)}
-                      disabled={!editingText.trim()}
-                      className="px-6 py-2 text-sm font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg hover:shadow-emerald-500/25"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
-                      <span>Send</span>
-                    </button>
-                  </div>
+                <div className="flex items-center justify-end gap-3">
+                  <button
+                    onClick={() => handleEditCancel()}
+                    className="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-white/70 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleEditSave(idx)}
+                    disabled={!editingText.trim()}
+                    className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+                  >
+                    <PaperAirplaneIcon className="w-4 h-4" />
+                    <span>Send</span>
+                  </button>
                 </div>
               </div>
             ) : (
               <>
                 <MarkdownWithMath content={message.content} role={message.role} />
                 {message.role === 'model' && message.hasContext && (
-                  <div className="mt-1.5 md:mt-2 text-xs md:text-sm text-gray-500 dark:text-gray-400 italic">
+                  <div className="mt-1.5 md:mt-2 text-xs md:text-sm text-gray-600 dark:text-white/70 italic">
                     Information from uploaded documents
                   </div>
                 )}
@@ -149,11 +115,11 @@ const MessageList = React.memo(({
           <div className={`flex items-center gap-2 md:gap-3 mt-1 justify-${message.role === 'user' ? 'end' : 'start'} opacity-0 group-hover:opacity-100 transition-opacity`}>
             <button
               onClick={() => handleCopy(idx, message.content)}
-              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors"
+              className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
               title="Copy message"
             >
               {copiedIdx === idx ? (
-                <span className="text-xs text-emerald-500">Copied!</span>
+                <span className="text-xs text-green-600 dark:text-[#00A400] font-medium">Copied!</span>
               ) : (
                 <ClipboardIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
               )}
@@ -161,7 +127,7 @@ const MessageList = React.memo(({
             {message.role === 'user' && (
               <button
                 onClick={() => handleEdit(idx)}
-                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors"
+                className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
                 title="Edit message"
               >
                 <PencilIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -176,14 +142,14 @@ const MessageList = React.memo(({
     {isLoading && (
       <div className="flex justify-start">
         <div className="relative group max-w-[90%] md:max-w-[80%]">
-          <div className="rounded-2xl p-4 md:p-5 text-gray-800 dark:text-white bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/90 dark:to-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 animate-pulse">
+          <div className="p-4 md:p-5 text-gray-900 dark:text-white animate-pulse">
             <div className="flex items-center gap-3">
               <div className="flex space-x-1">
-                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce"></div>
-                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2.5 h-2.5 rounded-full animate-bounce bg-green-600 dark:bg-[#00A400]"></div>
+                <div className="w-2.5 h-2.5 rounded-full animate-bounce bg-green-600 dark:bg-[#00A400]" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2.5 h-2.5 rounded-full animate-bounce bg-green-600 dark:bg-[#00A400]" style={{ animationDelay: '0.2s' }}></div>
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-200 font-medium">PANSGPT is thinking...</span>
+              <span className="text-sm text-gray-900 dark:text-white font-medium">PANSGPT is thinking...</span>
             </div>
           </div>
         </div>
@@ -210,45 +176,35 @@ const InputArea = React.memo(({
 }) => (
   <form
     onSubmit={handleSend}
-    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'} px-4 md:px-24 pb-4 md:pb-8 bg-transparent`}
+    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-24 pb-4 md:pb-8 bg-transparent`}
   >
-    <div className={`bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl rounded-2xl flex items-center gap-2 px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 relative ${
-      isLoading 
-        ? 'border-emerald-400' 
-        : 'border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300/50 dark:hover:border-gray-600/50'
-    }`}>
-      {/* Microphone button - left side, always visible */}
-      <MicrophoneButton 
-        onTranscript={(text) => setInput(text)} 
-        disabled={isLoading} 
-        className="flex-shrink-0" 
-      />
-      
+    <div className="rounded-2xl flex flex-col gap-3 px-4 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D] shadow-lg dark:shadow-none"
+      >
       {/* Input field */}
       <input
         type="text"
         placeholder={isLoading ? "PANSGPT is processing your message..." : "Ask a question from any course."}
-        className="flex-1 bg-transparent outline-none text-sm md:text-base text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 pr-20 lg:pr-4"
+        className="w-full bg-transparent outline-none text-sm md:text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 flex-shrink"
         value={input}
         onChange={handleInputChange}
         disabled={isLoading}
       />
       
-      {/* Send button */}
-      <button
-        type="submit"
-        className="absolute right-2 lg:relative lg:right-auto lg:ml-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-3 lg:px-8 py-2 lg:py-3 rounded-xl font-semibold text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all duration-200 z-10"
-        disabled={isLoading || !input.trim()}
-      >
-        {isLoading ? (
-          <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Thinking...</span>
-          </>
-        ) : (
-          'Send'
-        )}
-      </button>
+      {/* Button group - Send button */}
+      <div className="flex items-center justify-end gap-3 flex-shrink-0 w-full">
+        <button
+          type="submit"
+          className="text-white p-2 md:p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+          disabled={isLoading || !input.trim()}
+          title="Send message"
+        >
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <PaperAirplaneIcon className="w-5 h-5 md:w-6 md:h-6" />
+          )}
+        </button>
+      </div>
     </div>
   </form>
 ));
@@ -258,8 +214,6 @@ function MainPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef(null);
   const historyMenuRef = useRef(null);
   const [userSubscription, setUserSubscription] = useState<SubscriptionStatus | null>(null);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
@@ -484,9 +438,6 @@ function MainPageContent() {
   // Close dropdowns on outside click
   React.useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (userMenuRef.current && !(userMenuRef.current as any).contains(e.target)) {
-        setShowUserMenu(false);
-      }
       if (historyMenuRef.current && !(historyMenuRef.current as any).contains(e.target)) {
         setHistoryMenuIdx(null);
       }
@@ -1148,51 +1099,84 @@ function MainPageContent() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] bg-white dark:bg-black text-gray-800 dark:text-white">
-      {/* Sidebar */}
-      {sidebarOpen && (
-        <aside className="w-[85vw] md:w-72 bg-gradient-to-b from-gray-50/95 to-white/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl h-[100dvh] fixed left-0 top-0 z-50 flex flex-col border-r border-gray-200/50 dark:border-gray-700/50">
-          {/* Close button for mobile */}
+    <div className="flex min-h-[100dvh] text-gray-800 dark:text-white bg-gray-50 dark:[background-color:#0C120C]">
+      {/* Sidebar - Always visible collapsed, expands when sidebarOpen */}
+      <aside className={`h-[100dvh] fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ${
+        sidebarOpen 
+          ? 'w-[85vw] md:w-72 border-r border-gray-200 dark:border-white/10 bg-white dark:[background-color:#2D3A2D]' 
+          : 'w-0 md:w-20'
+      }`}>
+        {/* Sidebar toggle button - always visible on mobile when collapsed */}
+        <div className={`${sidebarOpen ? 'px-4 pt-4 pb-3' : 'p-3 md:px-4 md:pt-4 md:pb-3'} flex items-center justify-start ${!sidebarOpen ? 'md:border-r md:border-gray-200 dark:md:border-white/10' : ''}`}>
           <button
-            className="absolute top-3 right-3 md:hidden text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl z-50"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Close sidebar"
+            className="flex items-center justify-center text-gray-700 dark:text-white transition-all duration-200 hover:opacity-80 z-50 bg-gray-100 dark:bg-[#2D3A2D] rounded-lg p-2"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
-            &times;
+            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
           </button>
-          {/* Logo at the top */}
-          <div className="px-4 pt-4 pb-3 flex items-center justify-start">
-            <div className="w-32 h-32 md:w-36 md:h-36 relative">
-              <Image
-                src="/uploads/Logo 2.png"
-                alt="Logo"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </div>
-          {/* Chat history header with new chat icon */}
-          <div className="flex items-center justify-between px-4 mb-3">
-            <div className="text-base md:text-lg font-semibold text-gray-800 dark:text-white">Chat History</div>
-            <button
-              className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
-              title="New Chat"
+        </div>
+        
+        {/* New Chat button */}
+        <div className={`px-4 ${sidebarOpen ? 'pt-8 mb-4' : 'pt-6 mb-2 hidden md:block'}`}>
+          <div className={!sidebarOpen ? 'flex justify-center' : ''}>
+          <button
+              className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 border border-green-300 dark:border-green-600/30 bg-green-50 dark:bg-transparent hover:bg-green-100 dark:hover:bg-transparent hover:border-green-400 dark:hover:border-green-600/50`}
               onClick={handleNewChat}
-            >
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
+            title="New Chat"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+              <circle cx="21" cy="5" r="1.5" fill="currentColor" />
+            </svg>
+            {sidebarOpen && <span>New Chat</span>}
+          </button>
           </div>
-          {/* Chat history (scrollable only here) */}
-          <div className="flex-1 flex flex-col px-4 min-h-0">
-            <div className="flex-1 overflow-y-auto pr-2 min-h-0">
-              <ul className="space-y-1">
+        </div>
+        
+        {/* Take A Quiz entry */}
+        <div className={`px-4 ${sidebarOpen ? 'mb-4' : 'mb-2 hidden md:block'}`}>
+          <div className={!sidebarOpen ? 'flex justify-center' : ''}>
+          <button
+            className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
+            onClick={() => {
+              if (userSubscription && (userSubscription.isActive || userSubscription.isTrial)) {
+                window.location.href = '/quiz';
+              } else {
+                window.location.href = '/plan';
+              }
+            }}
+            disabled={!userSubscription}
+            title="Take A Quiz"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+            </svg>
+            {sidebarOpen && <span>Take A Quiz</span>}
+          </button>
+          </div>
+        </div>
+        
+        {/* History section - only visible when expanded */}
+        {(sidebarOpen) && (
+          <>
+            {/* History label */}
+            <div className="px-4 mb-3">
+              <div className="text-sm font-semibold text-green-600 dark:text-[#4ade80]">History</div>
+            </div>
+            
+            {/* Chat history (scrollable only here) */}
+            <div className="flex-1 flex flex-col px-4 min-h-0">
+              <div className="flex-1 overflow-y-auto pr-2 min-h-0">
+                <ul className="space-y-1">
                 {conversations.map((conv, idx) => (
                   <li
                     key={conv.id}
-                    className={`px-3 py-2.5 md:px-4 md:py-3 rounded-xl cursor-pointer text-sm flex items-center justify-between transition-all duration-200 ${conv.id === activeId ? "bg-gradient-to-r from-emerald-600/20 to-emerald-700/20 text-emerald-700 dark:text-white border border-emerald-500/30" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-800 dark:hover:text-white border border-transparent"}`}
+                    className={`px-4 py-3 rounded-xl cursor-pointer text-sm flex items-center justify-between transition-all duration-200 ${conv.id === activeId ? "text-gray-900 dark:text-white border border-green-300 dark:border-green-600/30 bg-green-50 dark:bg-green-900/10" : "text-gray-700 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white border border-transparent"}`}
                     onClick={() => handleSelectConv(conv.id)}
                   >
                     {renamingIdx === idx ? (
@@ -1201,13 +1185,13 @@ function MainPageContent() {
                         className="flex-1 flex gap-2 items-center"
                       >
                         <input
-                          className="bg-white dark:bg-gray-900 text-gray-800 dark:text-white rounded px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 flex-1"
+                          className="bg-gray-100 dark:bg-white/20 text-gray-900 dark:text-white rounded px-2 py-1 text-xs border border-gray-300 dark:border-white/30 flex-1 placeholder-gray-400 dark:placeholder-white/50"
                           value={renameText || ""}
                           onChange={e => setRenameText(e.target.value)}
                           autoFocus
                         />
-                        <button type="submit" className="text-emerald-600 dark:text-emerald-400 text-xs font-semibold">Save</button>
-                        <button type="button" className="text-gray-500 dark:text-gray-400 text-xs font-semibold" onClick={handleRenameCancel}>Cancel</button>
+                        <button type="submit" className="text-gray-900 dark:text-white text-xs font-semibold hover:text-gray-700 dark:hover:text-white/80">Save</button>
+                        <button type="button" className="text-gray-600 dark:text-white/70 text-xs font-semibold hover:text-gray-900 dark:hover:text-white" onClick={handleRenameCancel}>Cancel</button>
                       </form>
                     ) : (
                       <>
@@ -1215,7 +1199,7 @@ function MainPageContent() {
                         {/* Three-dot menu (desktop only) */}
                         <div className="relative" ref={historyMenuRef}>
                           <button
-                            className="p-1 ml-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-300"
+                            className="p-1 ml-2 rounded hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-white/80"
                             onClick={e => { e.stopPropagation(); setHistoryMenuIdx(idx === historyMenuIdx ? null : idx); }}
                           >
                             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1225,9 +1209,24 @@ function MainPageContent() {
                             </svg>
                           </button>
                           {historyMenuIdx === idx && (
-                            <div className="absolute right-0 mt-2 w-32 bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/95 dark:to-gray-900/95 backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200/50 dark:border-gray-700/50">
-                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white" onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}>Rename</button>
-                              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white" onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}>Delete conversation</button>
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#2D3A2D] backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200 dark:border-white/10 shadow-xl overflow-hidden">
+                              <button 
+                                className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-700 dark:text-white group"
+                                onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}
+                              >
+                                <PencilIcon className="w-4 h-4 text-gray-500 dark:text-white/70 group-hover:text-gray-700 dark:group-hover:text-white transition-colors flex-shrink-0" />
+                                <span className="text-sm font-medium">Rename</span>
+                              </button>
+                              <div className="h-px bg-gray-200 dark:bg-white/10 mx-2 my-1"></div>
+                              <button 
+                                className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-300 transition-colors text-gray-700 dark:text-white group"
+                                onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}
+                              >
+                                <svg className="w-4 h-4 text-gray-500 dark:text-white/70 group-hover:text-red-600 dark:group-hover:text-red-300 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                <span className="text-sm font-medium">Delete conversation</span>
+                              </button>
                             </div>
                           )}
                         </div>
@@ -1236,112 +1235,74 @@ function MainPageContent() {
                   </li>
                 ))}
               </ul>
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Settings link at bottom of sidebar */}
+        <div className={`px-4 pb-4 mt-auto ${sidebarOpen ? '' : 'hidden md:block'}`}>
+          <div className={!sidebarOpen ? 'flex justify-center' : ''}>
+          <button
+            className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
+            onClick={() => router.push('/settings')}
+            title="Settings and Help"
+          >
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {sidebarOpen && <span>Settings and Help</span>}
+          </button>
+          </div>
+        </div>
+      </aside>
+      {/* Main Chat Area */}
+      <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : 'md:ml-20'}`}>
+        {/* Top Bar - Fixed */}
+        <div className={`fixed top-0 right-0 z-40 flex items-center px-3 md:px-6 h-16 md:h-20 gap-2 md:gap-4 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-visible bg-white dark:[background-color:#0C120C] ${
+          sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'
+        }`}>
+          {/* Logo */}
+          <div className="flex items-center justify-center ml-2 md:ml-4 h-full">
+            <div className="w-32 h-32 md:w-40 md:h-40 relative">
+              <Image
+                src="/uploads/Logo 2.png"
+                alt="PansGPT Logo"
+                fill
+                className="object-contain"
+              />
             </div>
           </div>
-        </aside>
-      )}
-      {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : ''}`}>
-        {/* Top Bar - Fixed */}
-        <div className={`fixed top-0 right-0 z-40 bg-gradient-to-r from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 flex items-center px-3 md:px-6 py-3 md:py-4 gap-2 md:gap-4 transition-all duration-300 ${
-          sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 w-full'
-        }`}>
-          {/* Sidebar toggle button - moved here */}
-          <button
-            className={`flex items-center justify-center rounded-full transition-all duration-200 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-300 dark:border-gray-600 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-400/20 text-gray-700 dark:text-white`}
-            style={{ width: 36, height: 36, fontSize: 24 }}
-            onClick={() => setSidebarOpen((open) => !open)}
-            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-          >
-            {sidebarOpen ? (
-              <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              </svg>
-            ) : (
-              <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-                <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              </svg>
-            )}
-          </button>
           {/* Left: empty for spacing on mobile, hidden on desktop */}
           <div className="w-8 md:hidden" />
-          {/* Center: Take a Quiz button and theme toggle - centered on mobile, right on desktop */}
+          {/* Center: Empty space - centered on mobile, right on desktop */}
           <div className="flex-1 flex justify-center md:justify-end items-center gap-3">
-            <button
-              className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-xl font-semibold transition-all duration-200 text-xs shadow-lg shadow-emerald-600/20"
-              onClick={() => {
-                if (userSubscription && (userSubscription.isActive || userSubscription.isTrial)) {
-                  window.location.href = '/quiz';
-                } else {
-                  window.location.href = '/plan';
-                }
-              }}
-              disabled={!userSubscription}
-            >
-              Take a Quiz
-            </button>
-            <ThemeToggle />
           </div>
-          {/* Right: User profile and menu */}
+          {/* Right: User profile */}
           <div className="flex items-center gap-2">
-            <div className="relative" ref={userMenuRef}>
-              <div className="w-6 h-6 md:w-8 md:h-8 relative">
+            <div className="w-6 h-6 md:w-8 md:h-8 relative cursor-pointer" onClick={() => router.push('/profile')}>
                 <Image
                   src="/uploads/user-placeholder.png"
                   alt="User"
                   fill
-                  className="rounded-full cursor-pointer object-cover"
-                  onClick={() => setShowUserMenu((v) => !v)}
+                className="rounded-full object-cover"
+                title="View Profile"
                 />
               </div>
-              {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-40 md:w-48 bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-800/95 dark:to-gray-900/95 backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200/50 dark:border-gray-700/50">
-                  <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
-                    onClick={() => router.push('/profile')}
-                  >
-                    View Profile
-                  </button>
-                  <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
-                    onClick={() => router.push('/plan')}
-                  >
-                    View Plan
-                  </button>
-                  <button className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
-                    onClick={() => router.push('/faq')}
-                  >Help & FAQs</button>
-                  <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white"
-                    onClick={() => router.push('/feedback')}
-                  >
-                    Feedback
-                  </button>
-                  <button 
-                    className="block w-full text-left px-3 py-1.5 md:px-4 md:py-2 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-xs md:text-sm rounded-lg mx-1 transition-colors text-gray-700 dark:text-white" 
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
         {/* Chat Area - Adjusted with top padding to account for fixed topbar */}
-        <div className="flex-1 flex flex-col px-3 md:px-8 pt-20 md:pt-24 gap-6 md:gap-10 overflow-y-auto bg-transparent"
-          style={{ position: 'relative', paddingBottom: '0px' }}
+        <div className="flex-1 flex flex-col px-4 md:px-24 pt-20 md:pt-24 pb-32 md:pb-40 gap-6 md:gap-10 overflow-y-auto bg-transparent"
+          style={{ position: 'relative' }}
         >
           {messages.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-4">
-                <span className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent">
+                <span className="text-3xl md:text-6xl font-bold text-gray-900 dark:text-white">
                   Hello, Great PANSite
                 </span>
-                <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 font-light">
+                <p className="text-lg md:text-xl text-gray-700 dark:text-white font-light">
                   Ask me anything about your courses
                 </p>
               </div>
@@ -1370,7 +1331,7 @@ function MainPageContent() {
                       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
                     }
                   }}
-                  className="fixed bottom-20 right-4 md:right-8 z-30 bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
+                  className="fixed bottom-20 right-4 md:right-8 z-30 text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
                   title="Scroll to latest message"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

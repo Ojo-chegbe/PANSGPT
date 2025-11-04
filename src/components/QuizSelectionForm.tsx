@@ -239,12 +239,12 @@ export default function QuizSelectionForm() {
 
   if (!session) {
     return (
-      <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8 shadow-2xl">
+      <div className="backdrop-blur-sm border rounded-2xl p-8 shadow-2xl bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
         <div className="text-center">
-          <div className="bg-yellow-50 dark:bg-yellow-600/20 border border-yellow-200 dark:border-yellow-500/30 rounded-xl p-6 max-w-md mx-auto">
-            <ExclamationTriangleIcon className="h-12 w-12 text-yellow-600 dark:text-yellow-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-yellow-700 dark:text-yellow-400 mb-2">Authentication Required</h2>
-            <p className="text-yellow-600 dark:text-yellow-300">Please sign in to create quizzes</p>
+          <div className="border rounded-xl p-6 max-w-md mx-auto bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-600/30">
+            <ExclamationTriangleIcon className="h-12 w-12 mx-auto mb-4 text-red-600 dark:text-[#dc2626]" />
+            <h2 className="text-xl font-semibold mb-2 text-red-600 dark:text-[#dc2626]">Authentication Required</h2>
+            <p className="text-gray-600 dark:text-white/80">Please sign in to create quizzes</p>
           </div>
         </div>
       </div>
@@ -252,28 +252,28 @@ export default function QuizSelectionForm() {
   }
 
   return (
-    <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8">
+    <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
       <div className="flex items-center space-x-3 mb-8">
-        <div className="bg-green-600 p-2 rounded-lg">
-          <SparklesIcon className="h-6 w-6 text-white" />
+        <div className="p-2 rounded-lg bg-green-600 dark:[background-color:#00A400]">
+          <SparklesIcon className="h-6 w-6 text-gray-700 dark:text-white" />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Quiz</h2>
-          <p className="text-gray-600 dark:text-gray-300">Generate AI-powered quizzes from your course materials</p>
+          <p className="text-gray-600 dark:text-white/80">Generate AI-powered quizzes from your course materials</p>
         </div>
       </div>
       
       {info && (
-        <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30 rounded-xl p-4 flex items-center space-x-3">
-          <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-          <p className="text-green-700 dark:text-green-300 font-medium">{info}</p>
+        <div className="mb-6 border rounded-xl p-4 flex items-center space-x-3 bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-600/30">
+          <CheckCircleIcon className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-[#00A400]" />
+          <p className="font-medium text-green-700 dark:text-[#00A400]">{info}</p>
         </div>
       )}
 
       {error && (
-        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
-          <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-          <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+        <div className="mb-6 border rounded-xl p-4 flex items-center space-x-3 bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-600/30">
+          <XMarkIcon className="h-5 w-5 flex-shrink-0 text-red-600 dark:text-[#dc2626]" />
+          <p className="font-medium text-red-700 dark:text-[#dc2626]">{error}</p>
         </div>
       )}
 
@@ -281,7 +281,7 @@ export default function QuizSelectionForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Course Selection */}
           <div className="space-y-2">
-            <label htmlFor="courseCode" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label htmlFor="courseCode" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white">
               <BookOpenIcon className="h-4 w-4" />
               <span>Select Course *</span>
             </label>
@@ -291,11 +291,11 @@ export default function QuizSelectionForm() {
               required
               value={formData.courseCode}
               onChange={(e) => handleCourseSelect(e.target.value)}
-              className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+              className="w-full border rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
             >
-              <option value="" className="bg-white dark:bg-gray-800">Choose a course</option>
+              <option value="" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Choose a course</option>
               {availableCourses.map((course) => (
-                <option key={course.courseCode} value={course.courseCode} className="bg-white dark:bg-gray-800">
+                <option key={course.courseCode} value={course.courseCode} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">
                   {course.courseCode} - {course.courseTitle} (Level {course.level})
                 </option>
               ))}
@@ -304,7 +304,7 @@ export default function QuizSelectionForm() {
 
           {/* Topic - Combobox */}
           <div className="space-y-2">
-            <label htmlFor="topic" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label htmlFor="topic" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white">
               <TagIcon className="h-4 w-4" />
               <span>Topic (Optional)</span>
             </label>
@@ -314,7 +314,7 @@ export default function QuizSelectionForm() {
             }}>
               <div className="relative">
                 <Combobox.Input
-                  className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  className="w-full border rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
                   displayValue={(topic: string) => topic}
                   onChange={e => {
                     setFormData(prev => ({ ...prev, topic: e.target.value || "" }));
@@ -328,19 +328,19 @@ export default function QuizSelectionForm() {
                 />
                 {isLoadingTopics ? (
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5 text-gray-400 dark:text-white/50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   </div>
                 ) : (showAllTopics || filteredTopics.length > 0) ? (
-                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 py-1 text-base shadow-lg focus:outline-none sm:text-sm">
+                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl py-1 text-base shadow-lg focus:outline-none sm:text-sm border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
                     {filteredTopics.map((topic) => (
                       <Combobox.Option
                         key={topic}
                         value={topic}
                         className={({ active }) =>
-                          `relative cursor-pointer select-none py-2 pl-3 pr-9 ${active ? 'bg-green-600 text-white' : 'text-gray-900 dark:text-gray-200'}`
+                          `relative cursor-pointer select-none py-2 pl-3 pr-9 transition-colors ${active ? 'text-gray-700 dark:text-white bg-green-600 dark:bg-[#00A400]' : 'text-gray-900 dark:text-white/90'}`
                         }
                       >
                         {topic}
@@ -348,13 +348,13 @@ export default function QuizSelectionForm() {
                     ))}
                   </Combobox.Options>
                 ) : formData.courseCode && !isLoadingTopics ? (
-                  <div className="absolute z-10 mt-1 w-full rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 py-2 px-3 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="absolute z-10 mt-1 w-full rounded-xl py-2 px-3 text-sm border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10 text-gray-600 dark:text-white/60">
                     No topics found for this course
                   </div>
                 ) : null}
               </div>
             </Combobox>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-white/70">
               {formData.courseCode 
                 ? `Topics available for ${formData.courseCode}. Leave blank for a general quiz on the course.`
                 : 'Select a course first to see available topics. Leave blank for a general quiz on the course.'
@@ -366,7 +366,7 @@ export default function QuizSelectionForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Level */}
           <div className="space-y-2">
-            <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white">
               <AcademicCapIcon className="h-4 w-4" />
               <span>Level *</span>
             </label>
@@ -376,21 +376,21 @@ export default function QuizSelectionForm() {
               required
               value={formData.level}
               onChange={handleInputChange}
-              className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+              className="w-full border rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
             >
-              <option value="" className="bg-white dark:bg-gray-800">Select level</option>
-              <option value="100" className="bg-white dark:bg-gray-800">100</option>
-              <option value="200" className="bg-white dark:bg-gray-800">200</option>
-              <option value="300" className="bg-white dark:bg-gray-800">300</option>
-              <option value="400" className="bg-white dark:bg-gray-800">400</option>
-              <option value="500" className="bg-white dark:bg-gray-800">500</option>
-              <option value="600" className="bg-white dark:bg-gray-800">600</option>
+              <option value="" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Select level</option>
+              <option value="100" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">100</option>
+              <option value="200" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">200</option>
+              <option value="300" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">300</option>
+              <option value="400" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">400</option>
+              <option value="500" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">500</option>
+              <option value="600" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">600</option>
             </select>
           </div>
 
           {/* Number of Questions */}
           <div className="space-y-2">
-            <label htmlFor="numQuestions" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label htmlFor="numQuestions" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white">
               <QuestionMarkCircleIcon className="h-4 w-4" />
               <span>Number of Questions *</span>
             </label>
@@ -400,19 +400,19 @@ export default function QuizSelectionForm() {
               required
               value={formData.numQuestions}
               onChange={handleInputChange}
-              className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+              className="w-full border rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
             >
-              <option value={5} className="bg-white dark:bg-gray-800">5 Questions</option>
-              <option value={10} className="bg-white dark:bg-gray-800">10 Questions</option>
-              <option value={15} className="bg-white dark:bg-gray-800">15 Questions</option>
-              <option value={20} className="bg-white dark:bg-gray-800">20 Questions</option>
-              <option value={30} className="bg-white dark:bg-gray-800">30 Questions</option>
+              <option value={5} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">5 Questions</option>
+              <option value={10} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">10 Questions</option>
+              <option value={15} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">15 Questions</option>
+              <option value={20} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">20 Questions</option>
+              <option value={30} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">30 Questions</option>
             </select>
           </div>
 
           {/* Question Type */}
           <div className="space-y-2">
-            <label htmlFor="questionType" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label htmlFor="questionType" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white">
               <ChartBarIcon className="h-4 w-4" />
               <span>Question Type *</span>
             </label>
@@ -422,18 +422,18 @@ export default function QuizSelectionForm() {
               required
               value={formData.questionType}
               onChange={handleInputChange}
-              className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+              className="w-full border rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
             >
-              <option value="MCQ" className="bg-white dark:bg-gray-800">Multiple Choice Questions</option>
-              <option value="TRUE_FALSE" className="bg-white dark:bg-gray-800">True/False</option>
-              <option value="OBJECTIVE" className="bg-white dark:bg-gray-800">Objective Questions</option>
-              <option value="SHORT_ANSWER" className="bg-white dark:bg-gray-800">Short Answer</option>
+              <option value="OBJECTIVE" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Objective Questions</option>
+              <option value="MCQ" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Multiple Choice Questions</option>
+              <option value="TRUE_FALSE" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">True/False</option>
+              <option value="SHORT_ANSWER" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Short Answer</option>
             </select>
           </div>
 
           {/* Difficulty */}
           <div className="space-y-2">
-            <label htmlFor="difficulty" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label htmlFor="difficulty" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white">
               <ChartBarIcon className="h-4 w-4" />
               <span>Difficulty Level *</span>
             </label>
@@ -443,17 +443,17 @@ export default function QuizSelectionForm() {
               required
               value={formData.difficulty}
               onChange={handleInputChange}
-              className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+              className="w-full border rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
             >
-              <option value="easy" className="bg-white dark:bg-gray-800">Easy</option>
-              <option value="medium" className="bg-white dark:bg-gray-800">Medium</option>
-              <option value="hard" className="bg-white dark:bg-gray-800">Hard</option>
+              <option value="easy" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Easy</option>
+              <option value="medium" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Medium</option>
+              <option value="hard" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Hard</option>
             </select>
           </div>
 
           {/* Time Limit */}
           <div className="space-y-2">
-            <label htmlFor="timeLimit" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label htmlFor="timeLimit" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white">
               <ClockIcon className="h-4 w-4" />
               <span>Time Limit (Optional)</span>
             </label>
@@ -462,26 +462,26 @@ export default function QuizSelectionForm() {
               name="timeLimit"
               value={formData.timeLimit || ''}
               onChange={handleInputChange}
-              className="w-full bg-white dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+              className="w-full border rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
             >
-              <option value="" className="bg-white dark:bg-gray-800">No time limit</option>
-              <option value={5} className="bg-white dark:bg-gray-800">5 minutes</option>
-              <option value={10} className="bg-white dark:bg-gray-800">10 minutes</option>
-              <option value={15} className="bg-white dark:bg-gray-800">15 minutes</option>
-              <option value={20} className="bg-white dark:bg-gray-800">20 minutes</option>
-              <option value={30} className="bg-white dark:bg-gray-800">30 minutes</option>
-              <option value={45} className="bg-white dark:bg-gray-800">45 minutes</option>
-              <option value={60} className="bg-white dark:bg-gray-800">1 hour</option>
+              <option value="" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">No time limit</option>
+              <option value={5} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">5 minutes</option>
+              <option value={10} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">10 minutes</option>
+              <option value={15} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">15 minutes</option>
+              <option value={20} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">20 minutes</option>
+              <option value={30} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">30 minutes</option>
+              <option value={45} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">45 minutes</option>
+              <option value={60} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">1 hour</option>
             </select>
           </div>
         </div>
 
         {/* Submit Button */}
-        <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="pt-6 border-t border-gray-200 dark:border-white/10">
           <button
             type="submit"
             disabled={isGenerating}
-            className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+            className="w-full flex items-center justify-center space-x-2 px-8 py-4 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
           >
             {isGenerating ? (
               <>

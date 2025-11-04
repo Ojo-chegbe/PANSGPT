@@ -2,10 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  
+  /* Landing page theme variables */
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
 }
 
 /* Dark mode variables */
@@ -13,6 +42,27 @@
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 0, 0, 0;
   --background-end-rgb: 17, 24, 39;
+  
+  /* Landing page dark theme variables */
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.75 0.2 155);
+  --primary-foreground: oklch(0.145 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.75 0.2 155);
 }
 
 body {
@@ -23,6 +73,70 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Landing page theme utilities */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  .bg-background {
+    background-color: var(--background);
+  }
+  
+  .bg-card {
+    background-color: var(--card);
+  }
+  
+  .text-foreground {
+    color: var(--foreground);
+  }
+  
+  .text-primary {
+    color: var(--primary);
+  }
+  
+  .text-muted-foreground {
+    color: var(--muted-foreground);
+  }
+  
+  .border-border {
+    border-color: var(--border);
+  }
+  
+  .bg-primary {
+    background-color: var(--primary);
+  }
+  
+  .text-primary-foreground {
+    color: var(--primary-foreground);
+  }
+  
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+  
+  .text-secondary-foreground {
+    color: var(--secondary-foreground);
+  }
+  
+  .bg-muted {
+    background-color: var(--muted);
+  }
+  
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  
+  .text-accent-foreground {
+    color: var(--accent-foreground);
+  }
+  
+  .text-card-foreground {
+    color: var(--card-foreground);
+  }
 }
 
 /* Improve mobile viewport height behavior */
@@ -190,18 +304,31 @@ input, textarea, select {
   }
 }
 
-/* Specific fix for 850px width with sidebar open */
+/* Specific fix for 814px-1024px width with sidebar open */
 @media screen and (min-width: 769px) and (max-width: 1024px) {
-  /* When sidebar is open and screen is around 850px */
+  /* When sidebar is open and screen is around 814-850px */
   .fixed.bottom-0.z-40 {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }
   
-  /* Ensure input container has proper spacing */
+  /* Ensure input container has proper spacing and doesn't overflow */
   .max-w-6xl {
     margin-left: 0.5rem !important;
     margin-right: 0.5rem !important;
+    max-width: calc(100% - 1rem) !important;
+  }
+  
+  /* Ensure flex-col input container doesn't overflow */
+  .flex.flex-col.rounded-2xl {
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  /* Ensure buttons stay contained */
+  .flex.flex-col .flex.items-center.justify-end {
+    min-width: 0;
+    flex-wrap: wrap;
   }
   
   /* Layered input and button styling for medium screens */
@@ -209,28 +336,25 @@ input, textarea, select {
     position: relative;
   }
   
-  /* Ensure input text is layered under button */
+  /* Ensure input text is layered under button - disabled for new flex-col layout */
   input[type="text"] {
-    padding-right: 5rem !important; /* Space for button */
-    z-index: 1;
+    padding-right: 0 !important;
+    z-index: auto;
   }
   
-  /* Position Send button absolutely on medium screens */
-  button[type="submit"] {
-    position: absolute !important;
-    right: 0.5rem !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    z-index: 10 !important;
+  /* Position Send button absolutely on medium screens - disabled for new flex-col layout */
+  .flex.flex-col button[type="submit"] {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    z-index: auto !important;
     min-width: auto !important;
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-    font-size: 0.875rem !important;
   }
   
   /* Ensure button doesn't interfere with input */
-  button[type="submit"]:hover {
-    z-index: 15 !important;
+  .flex.flex-col button[type="submit"]:hover {
+    z-index: auto !important;
   }
 }
 
@@ -248,15 +372,15 @@ input, textarea, select {
 
 /* Enhanced Markdown Styling */
 .markdown-math {
-  @apply max-w-none text-sm sm:text-base md:text-lg;
+  @apply max-w-none text-sm sm:text-base md:text-lg text-gray-900 dark:text-white;
 }
 
 .markdown-math.ai-response {
-  @apply text-gray-800 dark:text-white;
+  @apply text-gray-900 dark:text-white;
 }
 
 .markdown-math.user-message {
-  @apply text-white dark:text-white;
+  @apply text-gray-900 dark:text-white;
 }
 
 /* Callout Boxes */
@@ -354,11 +478,19 @@ input, textarea, select {
 
 /* Code Block Improvements */
 .markdown-math pre {
-  @apply rounded-lg overflow-x-auto;
+  @apply rounded-lg overflow-x-auto bg-gray-100 dark:bg-gray-800 p-4 my-4;
 }
 
 .markdown-math code {
-  @apply font-mono text-sm md:text-base;
+  @apply font-mono text-sm md:text-base text-gray-900 dark:text-gray-100;
+}
+
+.markdown-math pre code {
+  @apply text-gray-900 dark:text-gray-100 bg-transparent;
+}
+
+.markdown-math :not(pre) > code {
+  @apply bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-1.5 py-0.5 rounded;
 }
 
 /* Enhanced Table Styling */
@@ -368,21 +500,21 @@ input, textarea, select {
 }
 
 .markdown-math th {
-  @apply font-semibold text-left px-4 py-3 border border-gray-300 dark:border-white text-gray-800 dark:text-white;
-  background: transparent;
+  @apply font-semibold text-left px-4 py-3 border border-gray-300 dark:border-white text-gray-900 dark:text-white;
+  @apply bg-gray-100 dark:bg-gray-800;
 }
 
 .markdown-math td {
-  @apply px-4 py-3 border border-gray-300 dark:border-white text-gray-800 dark:text-white;
-  background: transparent;
+  @apply px-4 py-3 border border-gray-300 dark:border-white text-gray-900 dark:text-white;
+  @apply bg-white dark:bg-transparent;
 }
 
 .markdown-math tr:nth-child(even) {
-  background: transparent;
+  @apply bg-gray-50 dark:bg-gray-900/30;
 }
 
 .markdown-math tr:hover {
-  background: transparent;
+  @apply bg-gray-100 dark:bg-gray-800/50;
 }
 
 /* Table wrapper for responsive scrolling */
@@ -584,4 +716,42 @@ input, textarea, select {
 
 .bg-gradient-theme-secondary {
   @apply bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900;
+}
+
+/* Custom Scrollbar - Smaller and Thinner */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Dark mode scrollbar */
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.25);
 } 

@@ -122,18 +122,18 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C]">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+      <div className="border-b bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="bg-green-600 p-4 rounded-2xl">
+          <div>
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="p-4 rounded-2xl bg-green-600 dark:[background-color:#00A400]">
                 <UserIcon className="h-12 w-12 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-white">Create Account</h1>
-                <p className="mt-2 text-lg text-gray-300">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Create Account</h1>
+                <p className="mt-2 text-lg text-gray-600 dark:text-white/80">
                   Join PANSGPT and start your AI-powered learning journey
                 </p>
               </div>
@@ -143,19 +143,19 @@ export default function SignupPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-8">
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl">
+        <div className="backdrop-blur-sm border rounded-2xl p-8 shadow-2xl bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
-                <XMarkIcon className="h-5 w-5 text-red-400 flex-shrink-0" />
-                <p className="text-red-300 font-medium">{error}</p>
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
+                <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Full Name */}
               <div className="space-y-2">
-                <label htmlFor="fullName" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                <label htmlFor="fullName" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                   <UserIcon className="h-4 w-4" />
                   <span>Full Name *</span>
                 </label>
@@ -166,14 +166,14 @@ export default function SignupPage() {
                   required
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
-                  className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  className="w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 border-gray-300 dark:border-white/20"
                   placeholder="Enter your full name"
                 />
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                   <EnvelopeIcon className="h-4 w-4" />
                   <span>Email Address *</span>
                 </label>
@@ -185,11 +185,11 @@ export default function SignupPage() {
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                  className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
                   placeholder="Enter your email"
                 />
                 {emailError && (
-                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
                     <ExclamationTriangleIcon className="h-4 w-4" />
                     <span>{emailError}</span>
                   </div>
@@ -198,7 +198,7 @@ export default function SignupPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                   <LockClosedIcon className="h-4 w-4" />
                   <span>Password *</span>
                 </label>
@@ -211,13 +211,13 @@ export default function SignupPage() {
                     required
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                    className={`w-full border rounded-xl px-4 py-3 pr-12 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
                     placeholder="Create a password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                   >
                     {showPassword ? (
                       <EyeSlashIcon className="h-5 w-5" />
@@ -227,7 +227,7 @@ export default function SignupPage() {
                   </button>
                 </div>
                 {passwordError && (
-                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
                     <ExclamationTriangleIcon className="h-4 w-4" />
                     <span>{passwordError}</span>
                   </div>
@@ -236,7 +236,7 @@ export default function SignupPage() {
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                <label htmlFor="confirmPassword" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                   <LockClosedIcon className="h-4 w-4" />
                   <span>Confirm Password *</span>
                 </label>
@@ -248,11 +248,11 @@ export default function SignupPage() {
                   required
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  className={`w-full bg-gray-700/50 border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 ${confirmPasswordError ? 'border-red-500 focus:ring-red-500' : 'border-gray-600'}`}
+                  className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${confirmPasswordError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
                   placeholder="Confirm your password"
                 />
                 {confirmPasswordError && (
-                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
                     <ExclamationTriangleIcon className="h-4 w-4" />
                     <span>{confirmPasswordError}</span>
                   </div>
@@ -261,7 +261,7 @@ export default function SignupPage() {
 
               {/* Level */}
               <div className="space-y-2 md:col-span-2">
-                <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+                <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                   <AcademicCapIcon className="h-4 w-4" />
                   <span>Academic Level *</span>
                 </label>
@@ -271,25 +271,25 @@ export default function SignupPage() {
                   required
                   value={level}
                   onChange={e => setLevel(e.target.value)}
-                  className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  className="w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 border-gray-300 dark:border-white/20"
                 >
-                  <option value="" className="bg-gray-800">Select your academic level</option>
-                  <option value="100" className="bg-gray-800">100 Level</option>
-                  <option value="200" className="bg-gray-800">200 Level</option>
-                  <option value="300" className="bg-gray-800">300 Level</option>
-                  <option value="400" className="bg-gray-800">400 Level</option>
-                  <option value="500" className="bg-gray-800">500 Level</option>
-                  <option value="600" className="bg-gray-800">600 Level</option>
+                  <option value="" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Select your academic level</option>
+                  <option value="100" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">100 Level</option>
+                  <option value="200" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">200 Level</option>
+                  <option value="300" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">300 Level</option>
+                  <option value="400" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">400 Level</option>
+                  <option value="500" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">500 Level</option>
+                  <option value="600" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">600 Level</option>
                 </select>
               </div>
             </div>
 
             {/* Submit Button */}
-            <div className="pt-6 border-t border-gray-700">
+            <div className="pt-6 border-t border-gray-200 dark:border-white/10">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
               >
                 {isLoading ? (
                   <>
@@ -308,11 +308,11 @@ export default function SignupPage() {
 
           {/* Login Link */}
           <div className="mt-8 text-center">
-            <p className="text-gray-400">
+              <p className="text-gray-600 dark:text-white/70">
               Already have an account?{' '}
               <Link 
                 href="/login" 
-                className="text-green-400 hover:text-green-300 font-semibold transition-colors duration-200"
+                className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200"
               >
                 Sign in here
               </Link>

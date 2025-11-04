@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { ThemeToggle } from './ThemeToggle';
 
 interface Question {
   id: string;
@@ -29,135 +28,6 @@ interface Quiz {
 interface UserAnswer {
   questionId: string;
   answer: string | string[];
-}
-
-interface VoiceInputButtonProps {
-  onTranscript: (text: string) => void;
-  disabled?: boolean;
-}
-
-function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonProps) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-
-  const startRecording = async () => {
-    try {
-      console.log('🎤 Starting microphone...');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('✅ Microphone access granted');
-      
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm'
-      });
-      
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-          console.log(`📊 Audio chunk received: ${(event.data.size / 1024).toFixed(2)} KB`);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        console.log('⏹️ Recording stopped. Preparing to transcribe...');
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const audioSize = (audioBlob.size / 1024).toFixed(2);
-        console.log(`📦 Audio blob created: ${audioSize} KB total`);
-        
-        setIsLoading(true);
-        console.log('🔄 Starting transcription...');
-        
-        const startTime = Date.now();
-        
-        try {
-          const { transcribeAudio } = await import('../lib/whisper-api');
-          console.log('📡 Sending audio to Whisper API...');
-          const text = await transcribeAudio(audioBlob);
-          const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-          console.log(`✅ Transcription complete! (${duration}s)`);
-          console.log(`📝 Transcribed text: "${text}"`);
-          onTranscript(text);
-        } catch (error) {
-          console.error('❌ Transcription error:', error);
-          alert('Failed to transcribe audio. Please try again.');
-        } finally {
-          setIsLoading(false);
-        }
-        
-        stream.getTracks().forEach(track => track.stop());
-        console.log('🔇 Microphone released');
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      console.log('🎙️ Recording started...');
-    } catch (error) {
-      console.error('❌ Error starting recording:', error);
-      alert('Failed to access microphone. Please check permissions.');
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const handleClick = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={disabled || isLoading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-        isRecording
-          ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
-          : 'bg-emerald-500 hover:bg-emerald-600 text-white'
-      }`}
-      title={isRecording ? 'Stop recording' : isLoading ? 'Transcribing...' : 'Start voice recording'}
-    >
-      {isLoading ? (
-        <>
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm">Transcribing...</span>
-        </>
-      ) : (
-        <>
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-            />
-          </svg>
-          <span className="text-sm font-medium">
-            {isRecording ? 'Stop Recording' : 'Voice Input'}
-          </span>
-          {isRecording && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-pulse"></span>
-          )}
-        </>
-      )}
-    </button>
-  );
 }
 
 export default function QuizTaking({ quizId }: { quizId: string }) {
@@ -326,21 +196,21 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:[background-color:#0C120C]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2" style={{ borderColor: '#00A400' }}></div>
       </div>
     );
   }
 
   if (error || !quiz) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:[background-color:#0C120C]">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-gray-600 dark:text-gray-400">{error || 'Quiz not found'}</p>
+          <h2 className="text-2xl font-bold mb-4" style={{ color: '#dc2626' }}>Error</h2>
+          <p className="text-gray-600 dark:text-gray-900 dark:text-white/70">{error || 'Quiz not found'}</p>
           <button
             onClick={() => router.push('/quiz')}
-            className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+            className="mt-4 px-4 py-2 text-white rounded transition-colors bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
           >
             Back to Quiz Selection
           </button>
@@ -353,13 +223,24 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
   const currentAnswer = userAnswers.find(a => a.questionId === currentQuestion.id)?.answer || '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 text-gray-800 dark:text-white py-8">
+    <div className="min-h-screen text-gray-900 dark:text-white py-8 bg-gray-50 dark:[background-color:#0C120C]">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Header with Theme Toggle and Close Button */}
-        <div className="flex justify-between items-center mb-4">
+        {/* Header with Close Button */}
+        <div className="flex justify-end items-center mb-4">
           <button
             onClick={handleCancelQuiz}
-            className="flex items-center gap-2 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-300 dark:border-red-700/40 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors"
+            style={{ 
+              color: '#dc2626', 
+              borderColor: 'rgba(220, 38, 38, 0.3)',
+              backgroundColor: 'rgba(220, 38, 38, 0.1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.1)';
+            }}
             title="Cancel Quiz"
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -367,24 +248,23 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
             </svg>
             Cancel Quiz
           </button>
-          <ThemeToggle />
         </div>
         
         {/* Header */}
-        <div className="bg-white dark:bg-[#181A1B] rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-emerald-700/20">
+        <div className="rounded-lg shadow-sm p-6 mb-6 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{quiz.title}</h1>
-              <p className="text-gray-800 dark:text-white font-medium">{quiz.courseCode} - {quiz.courseTitle}</p>
-              {quiz.topic && <p className="text-gray-600 dark:text-gray-300">Topic: {quiz.topic}</p>}
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{quiz.title}</h1>
+              <p className="text-gray-900 dark:text-white font-medium">{quiz.courseCode} - {quiz.courseTitle}</p>
+              {quiz.topic && <p className="text-gray-600 dark:text-gray-900 dark:text-white/70">Topic: {quiz.topic}</p>}
             </div>
             <div className="text-right">
               {timeRemaining !== null && (
-                <div className={`text-lg font-semibold ${timeRemaining < 300 ? 'text-red-500 dark:text-red-400' : 'text-gray-700 dark:text-gray-200'}`}> 
+                <div className="text-lg font-semibold" style={{ color: timeRemaining < 300 ? '#dc2626' : 'white' }}> 
                   {formatTime(timeRemaining)}
                 </div>
               )}
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-gray-600 dark:text-gray-900 dark:text-white/70">
                 Level {quiz.level} • {quiz.difficulty}
               </div>
             </div>
@@ -392,13 +272,13 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
 
           {/* Progress Bar */}
           <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-200 mb-2">
+            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-900 dark:text-white/70 mb-2">
               <span>Question {currentQuestionIndex + 1} of {quiz.questions.length}</span>
               <span>{getAnsweredCount()} answered</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700/40 rounded-full h-2">
+            <div className="w-full rounded-full h-2 bg-gray-200 dark:bg-black/30">
               <div 
-                className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                className="h-2 rounded-full transition-all duration-300 bg-green-600 dark:bg-[#00A400]"
                 style={{ width: `${getProgressPercentage()}%` }}
               ></div>
             </div>
@@ -406,12 +286,12 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
         </div>
 
         {/* Question */}
-        <div className="bg-white dark:bg-[#232625] rounded-lg shadow-sm p-6 mb-6 border border-gray-200 dark:border-emerald-700/20">
+        <div className="rounded-lg shadow-sm p-6 mb-6 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Question {currentQuestion.order}
             </h2>
-            <p className="text-lg text-gray-800 dark:text-white mb-6">{currentQuestion.questionText}</p>
+            <p className="text-lg text-gray-900 dark:text-white mb-6">{currentQuestion.questionText}</p>
 
             {/* Answer Options */}
             {currentQuestion.questionType === 'MCQ' && currentQuestion.options && (
@@ -419,7 +299,14 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                 {currentQuestion.options.map((option, index) => {
                   const selected = Array.isArray(currentAnswer) ? currentAnswer.includes(option) : false;
                   return (
-                    <label key={index} className={`flex items-center p-3 border rounded-lg cursor-pointer ${selected ? 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-500' : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40'}` }>
+                    <label 
+                      key={index} 
+                      className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
+                        selected 
+                          ? 'bg-green-50 dark:bg-[rgba(0,164,0,0.2)] border-green-600 dark:border-[#00A400]' 
+                          : 'bg-gray-50 dark:bg-transparent border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/5'
+                      }`}
+                    >
                       <input
                         type="checkbox"
                         name={`question-${currentQuestion.id}`}
@@ -434,9 +321,10 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                           }
                           handleAnswerChange(currentQuestion.id, newAnswers);
                         }}
-                        className="h-4 w-4 text-emerald-500 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-[#181A1B] accent-emerald-500"
+                        className="h-4 w-4"
+                        style={{ accentColor: '#00A400' }}
                       />
-                      <span className="ml-3 text-gray-800 dark:text-white">{option}</span>
+                      <span className="ml-3 text-gray-900 dark:text-white">{option}</span>
                     </label>
                   );
                 })}
@@ -446,16 +334,24 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
             {currentQuestion.questionType === 'TRUE_FALSE' && (
               <div className="space-y-3">
                 {['True', 'False'].map((option) => (
-                  <label key={option} className="flex items-center p-3 border rounded-lg cursor-pointer border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                  <label 
+                    key={option} 
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
+                      currentAnswer === option 
+                        ? 'bg-green-50 dark:bg-[rgba(0,164,0,0.2)] border-green-600 dark:border-[#00A400]' 
+                        : 'bg-gray-50 dark:bg-transparent border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/5'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name={`question-${currentQuestion.id}`}
                       value={option}
                       checked={currentAnswer === option}
                       onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                      className="h-4 w-4 text-emerald-500 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-[#181A1B] accent-emerald-500"
+                      className="h-4 w-4"
+                      style={{ accentColor: '#00A400' }}
                     />
-                    <span className="ml-3 text-gray-800 dark:text-white">{option}</span>
+                    <span className="ml-3 text-gray-900 dark:text-white">{option}</span>
                   </label>
                 ))}
               </div>
@@ -464,16 +360,24 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
             {currentQuestion.questionType === 'OBJECTIVE' && currentQuestion.options && (
               <div className="space-y-3">
                 {currentQuestion.options.map((option, index) => (
-                  <label key={index} className="flex items-center p-3 border rounded-lg cursor-pointer border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                  <label 
+                    key={index} 
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
+                      currentAnswer === option 
+                        ? 'bg-green-50 dark:bg-[rgba(0,164,0,0.2)] border-green-600 dark:border-[#00A400]' 
+                        : 'bg-gray-50 dark:bg-transparent border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/5'
+                    }`}
+                  >
                     <input
                       type="radio"
                       name={`question-${currentQuestion.id}`}
                       value={option}
                       checked={currentAnswer === option}
                       onChange={e => handleAnswerChange(currentQuestion.id, e.target.value)}
-                      className="h-4 w-4 text-emerald-500 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-[#181A1B] accent-emerald-500"
+                      className="h-4 w-4"
+                      style={{ accentColor: '#00A400' }}
                     />
-                    <span className="ml-3 text-gray-800 dark:text-white">{option}</span>
+                    <span className="ml-3 text-gray-900 dark:text-white">{option}</span>
                   </label>
                 ))}
               </div>
@@ -486,22 +390,10 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                     value={currentAnswer}
                     onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
                     placeholder={'Write your answer...'}
-                    className="flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-[#181A1B] text-gray-800 dark:text-white resize-none"
+                    className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent resize-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20"
                     rows={4}
                   />
-                  <div className="flex flex-col justify-center">
-                    <VoiceInputButton 
-                      onTranscript={(text) => handleAnswerChange(currentQuestion.id, text)} 
-                      disabled={false}
-                    />
-                  </div>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Tip: Click the microphone icon to answer by voice
-                </p>
               </div>
             )}
           </div>
@@ -512,11 +404,31 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
           <button
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
-            className={`px-6 py-2 border rounded-md ${
+            className="px-6 py-2 border rounded-md transition-all"
+            style={
               currentQuestionIndex === 0
-                ? 'text-gray-400 dark:text-gray-700 border-gray-300 dark:border-gray-700 cursor-not-allowed'
-                : 'text-emerald-600 dark:text-emerald-400 border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
-            }`}
+                ? {
+                    color: 'rgba(255, 255, 255, 0.3)',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    cursor: 'not-allowed',
+                    backgroundColor: 'transparent'
+                  }
+                : {
+                    color: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'transparent'
+                  }
+            }
+            onMouseEnter={(e) => {
+              if (currentQuestionIndex !== 0) {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentQuestionIndex !== 0) {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }
+            }}
           >
             Previous
           </button>
@@ -526,8 +438,10 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
               <button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className={`px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 ${
-                  !canProceed() ? 'opacity-50 cursor-not-allowed' : ''
+                className={`px-6 py-2 text-white rounded-md transition-all ${
+                  !canProceed() 
+                    ? 'bg-green-400 dark:bg-green-600/50 cursor-not-allowed' 
+                    : 'bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] cursor-pointer'
                 }`}
               >
                 Next
@@ -536,9 +450,19 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
               <button
                 onClick={handleSubmit}
                 disabled={!canProceed() || isSubmitting}
-                className={`px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 ${
-                  !canProceed() ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className="px-6 py-2 text-gray-900 dark:text-white rounded-md transition-all"
+                style={{ 
+                  backgroundColor: (!canProceed() || isSubmitting) ? 'rgba(0, 164, 0, 0.5)' : '#00A400',
+                  cursor: (!canProceed() || isSubmitting) ? 'not-allowed' : 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  if (!canProceed() || isSubmitting) return;
+                  e.currentTarget.style.backgroundColor = '#008300';
+                }}
+                onMouseLeave={(e) => {
+                  if (!canProceed() || isSubmitting) return;
+                  e.currentTarget.style.backgroundColor = '#00A400';
+                }}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
               </button>
@@ -548,18 +472,18 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
 
         {/* Error Message */}
         {error && (
-          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/60 border border-red-200 dark:border-red-700/40 rounded-lg text-red-700 dark:text-red-400">
+          <div className="mt-4 p-4 border rounded-lg" style={{ backgroundColor: 'rgba(220, 38, 38, 0.1)', borderColor: 'rgba(220, 38, 38, 0.3)', color: '#dc2626' }}>
             {error}
           </div>
         )}
 
         {/* Cancel Confirmation Dialog */}
         {showCancelDialog && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-[#181A1B] rounded-lg p-6 max-w-md mx-4 border border-gray-200 dark:border-gray-700">
+          <div className="fixed inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}>
+            <div className="rounded-lg p-6 max-w-md mx-4 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
               <div className="flex items-center mb-4">
-                <div className="flex-shrink-0 w-10 h-10 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-10 h-10 mx-auto rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(220, 38, 38, 0.2)' }}>
+                  <svg className="w-6 h-6" style={{ color: '#dc2626' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 </div>
@@ -568,19 +492,25 @@ export default function QuizTaking({ quizId }: { quizId: string }) {
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Cancel Quiz?
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-900 dark:text-white/70 mb-6">
                   Are you sure you want to cancel this quiz? Your progress will be lost and you'll need to start over.
                 </p>
                 <div className="flex space-x-3 justify-center">
                   <button
                     onClick={cancelCancel}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white rounded-md transition-colors"
+                    style={{ backgroundColor: '#2D3A2D', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#2D3A2D'}
                   >
                     Continue Quiz
                   </button>
                   <button
                     onClick={confirmCancel}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white rounded-md transition-colors"
+                    style={{ backgroundColor: '#dc2626' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
                   >
                     Cancel Quiz
                   </button>

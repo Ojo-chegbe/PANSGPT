@@ -4,7 +4,7 @@ import { NextRequestWithAuth } from 'next-auth/middleware';
 // Removed: import { prisma } from '@/lib/prisma';
 
 // Paths that are always public
-const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password'];
+const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/about', '/contact', '/download', '/terms', '/faq'];
 
 export default async function middleware(request: NextRequestWithAuth) {
   const token = await getToken({ req: request });

@@ -174,21 +174,22 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
       >
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.8, opacity: 0 }}
-          className="bg-gradient-to-br from-white to-gray-50 dark:from-[#181A1B] dark:to-[#232625] rounded-2xl shadow-2xl border border-gray-200 dark:border-emerald-700/30 max-w-2xl w-full max-h-[90vh] overflow-hidden"
+          className="rounded-2xl shadow-2xl border max-w-2xl w-full max-h-[90vh] overflow-hidden bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10"
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-200 dark:border-emerald-700/20">
+          <div className="p-6 border-b border-gray-200 dark:border-white/10">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Creating Your Quiz</h2>
+              <h2 className="text-2xl font-bold text-green-600 dark:text-[#00A400]">Creating Your Quiz</h2>
               <button
                 onClick={onCancel || onClose}
-                className="text-gray-400 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                className="transition-colors text-gray-500 dark:text-white/70 hover:text-gray-700 dark:hover:text-red-500"
                 title="Cancel Quiz Generation"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,20 +207,20 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">{currentStageData.icon}</div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{currentStageData.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm">{currentStageData.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{currentStageData.title}</h3>
+                  <p className="text-gray-600 dark:text-white/70 text-sm">{currentStageData.description}</p>
                 </div>
               </div>
 
               {/* Progress Bar */}
               <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex justify-between text-sm text-gray-600 dark:text-white/70">
                   <span>Progress</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700/40 rounded-full h-3 overflow-hidden">
+                <div className="w-full rounded-full h-3 overflow-hidden bg-gray-200 dark:bg-black/30">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                    className="h-full rounded-full bg-green-600 dark:bg-[#00A400]"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
@@ -234,10 +235,10 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
                     key={stage.id}
                     className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                       index <= currentStage
-                        ? 'bg-emerald-500'
+                        ? 'bg-green-600 dark:bg-[#00A400]'
                         : index === currentStage + 1
-                        ? 'bg-emerald-500/50'
-                        : 'bg-gray-300 dark:bg-gray-700/40'
+                        ? 'bg-green-400 dark:bg-green-600/50'
+                        : 'bg-gray-200 dark:bg-white/10'
                     }`}
                   />
                 ))}
@@ -245,9 +246,9 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
             </div>
 
             {/* Did You Know Section */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-700/30">
+            <div className="rounded-xl p-6 border bg-gray-50 dark:bg-black/20 border-gray-200 dark:border-white/10">
               <div className="flex-1">
-                <h4 className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-4">Did You Know?</h4>
+                <h4 className="text-lg font-semibold mb-4 text-green-600 dark:text-[#00A400]">Did You Know?</h4>
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={currentFact?.id}
@@ -255,7 +256,7 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.5 }}
-                    className="text-gray-800 dark:text-white text-sm leading-relaxed"
+                    className="text-gray-900 dark:text-white text-sm leading-relaxed"
                   >
                     {currentFact?.fact}
                   </motion.p>
@@ -265,8 +266,10 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
                     {Array.from({ length: 5 }).map((_, index) => (
                       <div
                         key={index}
-                        className="w-2 h-2 rounded-full bg-blue-300 dark:bg-blue-400/30 animate-pulse"
-                        style={{ animationDelay: `${index * 0.2}s` }}
+                        className="w-2 h-2 rounded-full animate-pulse bg-gray-400 dark:bg-white/40"
+                        style={{ 
+                          animationDelay: `${index * 0.2}s` 
+                        }}
                       />
                     ))}
                   </div>
@@ -276,9 +279,9 @@ export default function QuizLoadingModal({ isOpen, onClose, onCancel, isComplete
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-gray-200 dark:border-emerald-700/20 bg-gray-50 dark:bg-gray-900/50">
-            <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+          <div className="p-6 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/20">
+            <div className="flex items-center justify-center space-x-2 text-sm text-gray-600 dark:text-white/70">
+              <div className="w-2 h-2 rounded-full animate-pulse bg-green-600 dark:bg-[#00A400]"></div>
               <span>AI is working hard to create the perfect quiz for you...</span>
             </div>
           </div>

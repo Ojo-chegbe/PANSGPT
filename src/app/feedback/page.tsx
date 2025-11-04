@@ -1,12 +1,10 @@
 "use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTheme } from '../../contexts/ThemeContext';
 import BackButton from '../../components/BackButton';
 
 export default function FeedbackPage() {
   const router = useRouter();
-  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     level: '',
@@ -67,22 +65,19 @@ export default function FeedbackPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-black dark:to-gray-800 text-theme-primary flex items-center justify-center p-4 relative">
-      {/* Background pattern overlay */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] dark:bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.03%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
-      
+    <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C] flex flex-col items-center py-10 px-4">
       {/* Back Button */}
-      <div className="absolute top-4 left-4 z-20">
+      <div className="mb-4">
         <BackButton href="/main" label="Back to Chat" />
       </div>
       
-      <div className="w-full max-w-md bg-white/90 dark:bg-[#232625]/90 backdrop-blur-sm rounded-lg p-8 border border-gray-200 dark:border-gray-700 shadow-xl dark:shadow-2xl relative z-10">
-        <h1 className="text-2xl font-bold mb-6 text-center text-theme-primary">Send Feedback</h1>
+      <div className="max-w-md w-full mx-auto rounded-lg p-8 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Send Feedback</h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-theme-secondary">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-white">
                 Name
               </label>
               <input
@@ -92,12 +87,13 @@ export default function FeedbackPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-lg bg-gray-100 dark:bg-[#181A1B] border border-theme text-theme-primary px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
+                className="mt-1 block w-full rounded-lg border text-gray-900 dark:text-white px-4 py-2 focus:outline-none focus:ring-2 transition-colors placeholder-gray-400 dark:placeholder-white/50 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20 focus:border-green-600 dark:focus:border-[#00A400]"
+                placeholder="Enter your name"
               />
             </div>
 
             <div>
-              <label htmlFor="level" className="block text-sm font-medium text-theme-secondary">
+              <label htmlFor="level" className="block text-sm font-medium text-gray-700 dark:text-white">
                 Level
               </label>
               <select
@@ -106,11 +102,11 @@ export default function FeedbackPage() {
                 value={formData.level}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full rounded-lg bg-gray-100 dark:bg-[#181A1B] border border-theme text-theme-primary px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
+                className="mt-1 block w-full rounded-lg border text-gray-900 dark:text-white px-4 py-2 focus:outline-none focus:ring-2 transition-colors bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20 focus:border-green-600 dark:focus:border-[#00A400]"
               >
-                <option value="">Select your level</option>
+                <option value="" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Select your level</option>
                 {levels.map((level) => (
-                  <option key={level} value={level}>
+                  <option key={level} value={level} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">
                     {level}
                   </option>
                 ))}
@@ -118,7 +114,7 @@ export default function FeedbackPage() {
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-theme-secondary">
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-white">
                 Message
               </label>
               <textarea
@@ -128,7 +124,8 @@ export default function FeedbackPage() {
                 onChange={handleChange}
                 required
                 rows={4}
-                className="mt-1 block w-full rounded-lg bg-gray-100 dark:bg-[#181A1B] border border-theme text-theme-primary px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors resize-none"
+                className="mt-1 block w-full rounded-lg border text-gray-900 dark:text-white px-4 py-2 focus:outline-none focus:ring-2 transition-colors resize-none placeholder-gray-400 dark:placeholder-white/50 bg-gray-50 dark:bg-black/20 border-gray-300 dark:border-white/20 focus:border-green-600 dark:focus:border-[#00A400]"
+                placeholder="Enter your feedback..."
               />
             </div>
           </div>
@@ -136,19 +133,16 @@ export default function FeedbackPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-3 rounded-lg font-medium transition-colors text-white ${isSubmitting
-              ? 'bg-gray-500 cursor-not-allowed'
-              : 'bg-green-600 hover:bg-green-700'
-            }`}
+            className="w-full py-3 rounded-lg font-medium text-white transition-all bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#00B400] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Sending...' : 'Send Feedback'}
           </button>
 
           {submitStatus === 'success' && (
-            <p className="text-green-500 text-center">Feedback sent successfully!</p>
+            <p className="text-center" style={{ color: '#00A400' }}>Feedback sent successfully!</p>
           )}
           {submitStatus === 'error' && (
-            <p className="text-red-500 text-center">Failed to send feedback. Please try again.</p>
+            <p className="text-center" style={{ color: '#dc2626' }}>Failed to send feedback. Please try again.</p>
           )}
         </form>
       </div>

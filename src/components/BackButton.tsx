@@ -19,7 +19,7 @@ export default function BackButton({ href, label = "Back", className = "" }: Bac
   return (
     <button
       onClick={handleClick}
-      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:ring-offset-2 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 ${className}`}
     >
       <ArrowLeftIcon className="h-4 w-4" />
       {label}
