@@ -1,0 +1,15 @@
+# General Knowledge Base for PansGPT
+# This file contains general academic knowledge accessible to all students regardless of level.
+# Update this file to add or modify general knowledge content.
+
+# General Study Tips and Academic Information
+This knowledge base contains general academic information, study strategies, and foundational concepts that are useful for all pharmacy students at the University of Jos.
+
+# How to Use This File
+- Add general knowledge content here that should be accessible to all students
+- Format content clearly with sections and headings
+- Keep information concise and relevant to pharmacy studies
+- This content will be included in AI responses when relevant
+
+# Note: Course-specific materials should be uploaded through the document upload system, not added here.
+

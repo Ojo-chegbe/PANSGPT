@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       uploadedBy: session.user.id,
       uploadedAt: new Date().toISOString(),
       level: formData.get('level') as string || '',
-      documentType: (formData.get('documentType') as string) || 'course' // Default to 'course' for backward compatibility
+      documentType: 'course' // All uploaded documents are course materials
     };
     
     if (!file) {

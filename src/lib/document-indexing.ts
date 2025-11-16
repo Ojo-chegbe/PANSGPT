@@ -19,7 +19,7 @@ export interface DocumentIndexingJob {
     professorName: string;
     topic: string;
     level: string;
-    documentType?: string; // "course" or "general"
+    documentType?: string; // Always "course" - general knowledge is now in general-knowledge.txt file
   };
 }
 

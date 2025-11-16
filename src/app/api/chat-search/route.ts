@@ -16,38 +16,24 @@ export async function POST(request: Request) {
     const collection = client.collection(ASTRA_DB_COLLECTION);
 
     // Build filter conditions for course documents (level-based)
-    // General knowledge documents will be searched separately
-    const courseFilterConditions: any = {};
-    const generalFilterConditions: any = {};
+    const filterConditions: any = {};
     
     // Course documents: apply level filter and other filters
     if (filters.level) {
-      // For course documents: must match level AND be course type (or missing documentType for backward compatibility)
-      courseFilterConditions["metadata.level"] = filters.level;
+      filterConditions["metadata.level"] = filters.level;
     }
     
-    // General knowledge documents: accessible to all, no level filter
-    generalFilterConditions["metadata.documentType"] = "general";
-    
-    // Apply other filters to both types
+    // Apply other filters
     if (filters.courseCode) {
-      courseFilterConditions["metadata.courseCode"] = filters.courseCode;
-      generalFilterConditions["metadata.courseCode"] = filters.courseCode;
+      filterConditions["metadata.courseCode"] = filters.courseCode;
     }
     
     if (filters.topic) {
-      courseFilterConditions["metadata.topic"] = filters.topic.trim();
-      generalFilterConditions["metadata.topic"] = filters.topic.trim();
+      filterConditions["metadata.topic"] = filters.topic.trim();
     }
     
     if (filters.author) {
-      courseFilterConditions["metadata.professorName"] = { $in: [
-        filters.author,
-        `Prof. ${filters.author}`,
-        `Professor ${filters.author}`,
-        `Dr. ${filters.author}`
-      ]};
-      generalFilterConditions["metadata.professorName"] = { $in: [
+      filterConditions["metadata.professorName"] = { $in: [
         filters.author,
         `Prof. ${filters.author}`,
         `Professor ${filters.author}`,
@@ -55,10 +41,7 @@ export async function POST(request: Request) {
       ]};
     }
 
-    console.log('Fast chat search filter conditions:', {
-      course: courseFilterConditions,
-      general: generalFilterConditions
-    });
+    console.log('Fast chat search filter conditions:', filterConditions);
 
     let allResults: any[] = [];
 
@@ -78,50 +61,43 @@ export async function POST(request: Request) {
       
       console.log(`Fast search with query: "${query}"`);
       
-      // Perform two searches: one for course documents, one for general knowledge
-      const maxChunks = filters.max_chunks || 5;
-      const chunksPerType = Math.ceil(maxChunks / 2); // Split between course and general
-      
       // Search for course documents (level-filtered)
-      let courseResults: any[] = [];
-      if (filters.level) {
+      const maxChunks = filters.max_chunks || 5;
+      
+      if (Object.keys(filterConditions).length > 0) {
         try {
-          courseResults = await collection.find(
-            courseFilterConditions,
+          allResults = await collection.find(
+            filterConditions,
             {
               sort: {
                 $vector: queryEmbedding
               },
-              limit: chunksPerType,
+              limit: maxChunks,
               includeSimilarity: true
             }
           ).toArray();
-          console.log(`Found ${courseResults.length} course document results`);
+          console.log(`Found ${allResults.length} course document results`);
         } catch (error) {
           console.error('Error searching course documents:', error);
         }
+      } else {
+        // If no filters, do a broad search but still limit results
+        try {
+          allResults = await collection.find(
+            {},
+            {
+              sort: {
+                $vector: queryEmbedding
+              },
+              limit: maxChunks,
+              includeSimilarity: true
+            }
+          ).toArray();
+          console.log(`Found ${allResults.length} results (no filters)`);
+        } catch (error) {
+          console.error('Error searching documents:', error);
+        }
       }
-      
-      // Search for general knowledge documents (accessible to all)
-      let generalResults: any[] = [];
-      try {
-        generalResults = await collection.find(
-          generalFilterConditions,
-          {
-            sort: {
-              $vector: queryEmbedding
-            },
-            limit: chunksPerType,
-            includeSimilarity: true
-          }
-        ).toArray();
-        console.log(`Found ${generalResults.length} general knowledge results`);
-      } catch (error) {
-        console.error('Error searching general knowledge documents:', error);
-      }
-      
-      // Combine results and sort by similarity
-      allResults = [...courseResults, ...generalResults];
       
       // Remove duplicates based on chunk_text
       const seen = new Set<string>();
@@ -135,10 +111,10 @@ export async function POST(request: Request) {
       // Sort by similarity score
       allResults.sort((a, b) => (b.$similarity || 0) - (a.$similarity || 0));
       
-      // Limit to max_chunks
+      // Results are already limited by the query, but ensure we don't exceed maxChunks
       allResults = allResults.slice(0, maxChunks);
       
-      console.log(`Fast search found ${allResults.length} total results (${courseResults.length} course + ${generalResults.length} general)`);
+      console.log(`Fast search found ${allResults.length} total results`);
 
     } catch (embeddingError) {
       console.error('Embedding service failed for chat search:', embeddingError);
@@ -152,16 +128,9 @@ export async function POST(request: Request) {
       
       const textSearchResults = allDocs.filter(doc => {
         const metadata = doc.metadata || {};
-        const docType = metadata.documentType || 'course'; // Default to 'course' for backward compatibility
         
-        // Check if it's general knowledge (accessible to all) or course document matching level
-        const isGeneralKnowledge = docType === 'general';
-        const isCourseMatchingLevel = docType === 'course' && 
-          (!filters.level || metadata.level === filters.level);
-        
-        if (!isGeneralKnowledge && !isCourseMatchingLevel) {
-          return false;
-        }
+        // Check level filter (only for course documents)
+        const matchesLevel = !filters.level || metadata.level === filters.level;
         
         // Check other filters
         const matchesCourseCode = !filters.courseCode || metadata.courseCode === filters.courseCode;
@@ -172,7 +141,7 @@ export async function POST(request: Request) {
         // Check if text contains the query
         const matchesText = doc.chunk_text?.toLowerCase().includes(query.toLowerCase());
         
-        return matchesCourseCode && matchesTopic && matchesAuthor && matchesText;
+        return matchesLevel && matchesCourseCode && matchesTopic && matchesAuthor && matchesText;
       });
       
       allResults = textSearchResults.slice(0, filters.max_chunks || 5);

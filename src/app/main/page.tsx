@@ -1411,36 +1411,39 @@ function MainPageContent() {
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 overflow-hidden w-0 min-w-0 ${sidebarOpen ? 'md:ml-72' : 'md:ml-20'}`}>
         {/* Top Bar - Fixed */}
-        <div className={`fixed top-0 right-0 z-40 flex items-center px-3 md:px-6 h-16 md:h-20 gap-2 md:gap-4 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-visible bg-white dark:[background-color:#0C120C] ${
+        <div className={`fixed top-0 right-0 z-40 flex items-center justify-center px-3 md:px-6 h-16 md:h-20 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-visible bg-white dark:[background-color:#0C120C] ${
           sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'
         }`}>
-          {/* Logo */}
-          <div className="flex items-center justify-center ml-14 md:ml-4 h-full">
-            <div className="w-12 h-12 md:w-40 md:h-40 relative">
-              <Image
-                src="/uploads/Logo 2.png"
-                alt="PansGPT Logo"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </div>
-          {/* Left: empty for spacing on mobile, hidden on desktop */}
-          <div className="w-8 md:hidden" />
-          {/* Center: Empty space - centered on mobile, right on desktop */}
-          <div className="flex-1 flex justify-center md:justify-end items-center gap-3">
-          </div>
-          {/* Right: User profile */}
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 md:w-8 md:h-8 relative cursor-pointer" onClick={() => router.push('/profile')}>
+          {/* Constrained content container - matches conversation and input width */}
+          <div className="w-full max-w-6xl mx-auto flex items-center gap-2 md:gap-4" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}>
+            {/* Logo */}
+            <div className="flex items-center justify-center ml-14 md:ml-4 h-full">
+              <div className="w-12 h-12 md:w-40 md:h-40 relative">
                 <Image
-                  src="/uploads/user-placeholder.png"
-                  alt="User"
+                  src="/uploads/Logo 2.png"
+                  alt="PansGPT Logo"
                   fill
-                className="rounded-full object-cover"
-                title="View Profile"
+                  className="object-contain"
                 />
               </div>
+            </div>
+            {/* Left: empty for spacing on mobile, hidden on desktop */}
+            <div className="w-8 md:hidden" />
+            {/* Center: Empty space - centered on mobile, right on desktop */}
+            <div className="flex-1 flex justify-center md:justify-end items-center gap-3">
+            </div>
+            {/* Right: User profile */}
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 md:w-8 md:h-8 relative cursor-pointer" onClick={() => router.push('/profile')}>
+                  <Image
+                    src="/uploads/user-placeholder.png"
+                    alt="User"
+                    fill
+                  className="rounded-full object-cover"
+                  title="View Profile"
+                  />
+                </div>
+            </div>
           </div>
         </div>
         {/* Chat Area - Only this div should scroll */}

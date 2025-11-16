@@ -1,9 +1,28 @@
 import { ChatMessage, streamChatResponse } from "@/lib/google-ai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { readFile } from "fs/promises";
+import { join } from "path";
 
 const GOOGLE_API_KEY = process.env.GOOGLE_AI_API_KEY!;
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pansgpt.vercel.app';
+
+// Function to read general knowledge from file
+async function getGeneralKnowledge(): Promise<string> {
+  try {
+    const filePath = join(process.cwd(), 'src', 'lib', 'general-knowledge.txt');
+    const content = await readFile(filePath, 'utf-8');
+    // Remove comments and empty lines, return clean content
+    return content
+      .split('\n')
+      .filter(line => !line.trim().startsWith('#') && line.trim().length > 0)
+      .join('\n')
+      .trim();
+  } catch (error) {
+    console.error('Error reading general knowledge file:', error);
+    return ''; // Return empty string if file doesn't exist or can't be read
+  }
+}
 
 interface DocumentChunk {
   chunk_text: string;
@@ -302,6 +321,12 @@ export async function POST(req: Request) {
       context = context.substring(0, maxContextLength) + "...\n\n[Context truncated for length]";
     }
 
+    // Read general knowledge from file
+    const generalKnowledge = await getGeneralKnowledge();
+    const generalKnowledgeSection = generalKnowledge 
+      ? `\n\nGENERAL KNOWLEDGE BASE:\n${generalKnowledge}\n` 
+      : '';
+
     // Update the system message to only reference documents if user requests it
     let systemMessage = "You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as \"PANSites.\"";
     
@@ -430,9 +455,9 @@ IMPORTANT: For all chemical equations, formulas, and mathematical expressions, a
 
 I found some relevant information in the database that might be helpful:
 
-${context}
+${context}${generalKnowledgeSection}
 
-You can use this information to enhance your response, but also draw from your general knowledge. However, answer ONLY the question asked - do not provide extra information unless specifically requested.`;
+You can use this information to enhance your response. However, answer ONLY the question asked - do not provide extra information unless specifically requested.`;
     } else {
       systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
 
@@ -453,7 +478,7 @@ TABLE FORMATTING: When presenting data, comparisons, or structured information, 
 For chemical data, use tables with headers like "Substance", "Formula", "Molar Mass", etc. For comparisons, use clear comparative headers. Always include proper markdown table separators (|) and ensure data is properly aligned.
 Do not cite sources or reference documents unless the user requests it. Remember to answer ONLY the question asked - do not provide extra information unless specifically requested.
 IMPORTANT: For every chemical formula, ion, mathematical equation, calculation, or symbol (even inline), ALWAYS wrap it in LaTeX math delimiters: use $...$ for inline and $$...$$ for block. Do not use plain text for any formulas or symbols. For example: $H_3O^+$, $OH^-$, $x^2 + y^2 = r^2$, $$2H_2O(l) \rightleftharpoons H_3O^+(aq) + OH^-(aq)$$. Repeat: EVERY formula, symbol, or equation must be wrapped in math delimiters.
-IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$`;
+IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$${generalKnowledgeSection}`;
     }
 
     // Use Google Gemma model for chat response with optimized parameters
