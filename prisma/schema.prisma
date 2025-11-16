@@ -49,6 +49,7 @@ model Message {
   id             String       @id @default(cuid())
   content        String
   role           String
+  citations      Json?         // Store citations as JSON array
   createdAt      DateTime     @default(now())
   conversationId String
   userId         String
@@ -134,6 +135,7 @@ model Document {
   uploadedBy   String
   uploadedAt   DateTime
   level        String?
+  documentType String           @default("course") // "course" or "general"
   content      String?          // Store the text content
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
@@ -142,6 +144,7 @@ model Document {
   @@index([courseCode])
   @@index([uploadedBy])
   @@index([uploadedAt])
+  @@index([documentType])
 }
 
 model Timetable {

@@ -10,8 +10,7 @@ import {
   EyeSlashIcon,
   CheckCircleIcon,
   XMarkIcon,
-  ExclamationTriangleIcon,
-  UserCircleIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 export default function LoginPage() {
@@ -85,18 +84,11 @@ export default function LoginPage() {
       {/* Header */}
       <div className="border-b bg-white dark:bg-transparent border-gray-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex justify-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-4 rounded-2xl bg-gray-400 dark:bg-[#7D8B6F]">
-                <UserCircleIcon className="h-12 w-12 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-                <p className="mt-2 text-lg text-gray-600 dark:text-white/80">
-                  Sign in to continue your AI-powered learning journey
-                </p>
-              </div>
-            </div>
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+            <p className="mt-2 text-lg text-gray-600 dark:text-white/80">
+              Sign in to continue your AI-powered learning journey
+            </p>
           </div>
         </div>
       </div>

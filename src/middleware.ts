@@ -37,37 +37,6 @@ export default async function middleware(request: NextRequestWithAuth) {
     return NextResponse.redirect(url);
   }
 
-  // Only check subscription for authenticated users on protected pages
-  // Skip subscription check for plan page to avoid redirect loops
-  if (path !== '/plan') {
-    try {
-      const response = await fetch(`${request.nextUrl.origin}/api/subscription/status`, {
-        headers: {
-          cookie: request.headers.get('cookie') || '',
-        },
-      });
-
-      if (response.ok) {
-      const data = await response.json();
-
-        // If no active subscription and not a trial, or trial expired, redirect to plan
-        if ((!data.isActive && !data.isTrial) || (data.isTrial && new Date(data.trialEndDate) < new Date())) {
-        return NextResponse.redirect(new URL('/plan', request.url));
-      }
-      } else {
-        // If subscription check fails, allow the request through
-        // This prevents blocking users when the API is down
-        console.error('Subscription check failed:', response.status);
-        return NextResponse.next();
-      }
-    } catch (error) {
-      // If subscription check throws an error, allow the request through
-      // This prevents blocking users when there are network issues
-      console.error('Error checking subscription:', error);
-      return NextResponse.next();
-    }
-  }
-
   return NextResponse.next();
 }
 

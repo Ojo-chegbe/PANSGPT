@@ -11,6 +11,7 @@ interface DocumentChunk {
     source?: string;
     title?: string;
     author?: string;
+    professorName?: string;
     date?: string;
     page?: number;
     section?: string;
@@ -71,6 +72,8 @@ export async function POST(req: Request) {
     let hasRelevantContent = false;
     let topicAreas: Set<string> = new Set();
     let documentTypes: Set<string> = new Set();
+    // Track citations: lecturer name and document title
+    let citations: Array<{ lecturerName: string; documentTitle: string }> = [];
 
     if (searchResponse.ok) {
       const { results } = await searchResponse.json();
@@ -180,6 +183,17 @@ export async function POST(req: Request) {
 
           contextParts.push(sourceContext);
           sources.push(source);
+          
+          // Collect citation information
+          const lecturerName = metadata.author || metadata.context?.professor || metadata.professorName || '';
+          const documentTitle = metadata.topic || '';
+          if (lecturerName && documentTitle) {
+            // Avoid duplicates
+            const citationKey = `${lecturerName}|${documentTitle}`;
+            if (!citations.some(c => `${c.lecturerName}|${c.documentTitle}` === citationKey)) {
+              citations.push({ lecturerName, documentTitle });
+            }
+          }
         });
         
         context = contextParts.join("\n\n---\n\n");
@@ -204,6 +218,20 @@ export async function POST(req: Request) {
           if (fallbackContext.length > 0) {
             context = fallbackContext;
             hasRelevantContent = true;
+            
+            // Collect citations from fallback results
+            results.forEach((chunk: DocumentChunk) => {
+              const metadata = chunk.metadata;
+              const lecturerName = metadata.author || metadata.context?.professor || metadata.professorName || '';
+              const documentTitle = metadata.topic || '';
+              if (lecturerName && documentTitle) {
+                const citationKey = `${lecturerName}|${documentTitle}`;
+                if (!citations.some(c => `${c.lecturerName}|${c.documentTitle}` === citationKey)) {
+                  citations.push({ lecturerName, documentTitle });
+                }
+              }
+            });
+            
             console.log('Fallback context built:', {
               contextLength: context.length,
               contextPreview: context.substring(0, 200) + '...'
@@ -275,7 +303,7 @@ export async function POST(req: Request) {
     }
 
     // Update the system message to only reference documents if user requests it
-    let systemMessage = "You are an advanced academic assistant.";
+    let systemMessage = "You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as \"PANSites.\"";
     
     // Always use document context if we have relevant content and user is asking for specific sources
     const shouldUseDocs = (userWantsDocs && hasRelevantContent) || 
@@ -289,7 +317,9 @@ export async function POST(req: Request) {
       const availableTypes = Array.from(documentTypes).length > 0 ? Array.from(documentTypes).join(', ') : 'lecture notes, readings, and other materials';
       
       // Create a friendly system message for level restrictions
-      systemMessage = `You are an advanced academic assistant. The user is asking about specific documents or sources, but you don't have access to those materials because they are not available for their current academic level.
+      systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
+
+You have an empathetic and warm communication style. The user (a PANSite) is asking about specific documents or sources, but you don't have access to those materials because they are not available for their current academic level.
 
 The user is at the ${userLevel} academic level. The documents they're asking about are either from a higher level (more advanced) or a lower level (more basic) than their current level.
 
@@ -297,14 +327,14 @@ However, you DO have access to materials appropriate for their ${userLevel} leve
 - Topics: ${availableTopics}
 - Document types: ${availableTypes}
 
-Respond in a friendly, helpful way that:
-1. Acknowledges their question
+Respond in a friendly, empathetic, and helpful way that:
+1. Acknowledges their question warmly
 2. Explains that the materials they're asking about are not available for their current level (could be too advanced or too basic)
 3. Tells them what materials ARE available for their current level (${userLevel})
 4. Suggests they ask about the available topics or materials
 5. Offers to help them find appropriate materials for their level
 
-Be encouraging and helpful, not restrictive. Show them what they CAN access rather than what they can't.`;
+Be encouraging and helpful, not restrictive. Show them what they CAN access rather than what they can't. Answer only the question asked - do not provide extra information unless specifically requested.`;
       
       // Set up the AI response to be friendly about level restrictions
       const messagesForAI: ChatMessage[] = [
@@ -347,13 +377,15 @@ Be encouraging and helpful, not restrictive. Show them what they CAN access rath
     }
     
     if (shouldUseDocs) {
-      systemMessage = `You are an advanced academic assistant. You have access to a curated database of course materials and documents.
-The user is asking for specific information from documents or sources. Use the provided context below to answer their question accurately.
+      systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
+
+You have an empathetic and warm communication style. You have access to a curated database of course materials and documents from the Faculty of Pharmaceutical Sciences at the University of Jos.
+The user (a PANSite) is asking for specific information from documents or sources. Use the provided context below to answer their question accurately.
 IMPORTANT: The context below contains the actual document content that the user is asking about. You MUST use this information to provide your answer. Do not say you don't have access to the documents - you do have access through the context provided below.
 
 The user is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
 
-RESPONSE STYLE: Be direct, concise, and to-the-point. Give clear, simple answers unless the user specifically asks for detailed explanations. Avoid unnecessary academic verbosity.
+COMMUNICATION STYLE: Be empathetic, warm, and understanding in your responses. When users greet you, respond warmly and enthusiastically. Answer ONLY the questions asked - do not provide additional information, examples, or explanations unless the user specifically requests them. Be direct and concise while maintaining a friendly, supportive tone.
 
 Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, bullet points, and well-structured tables. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
 
@@ -373,13 +405,15 @@ I found relevant information in the database for this query across ${sources.len
 CONTEXT FROM DOCUMENTS:
 ${context}
 
-IMPORTANT: Provide direct, clear answers using document information. Be concise unless asked for details. Cite sources as "According to [Source]..." when relevant. For math, use LaTeX notation ($$...$$ for display, \\(...\\) for inline).`;
+IMPORTANT: Provide direct, clear answers using document information. Be concise unless asked for details. Answer ONLY the question asked - do not provide extra information unless specifically requested. Cite sources as "According to [Source]..." when relevant. For math, use LaTeX notation ($$...$$ for display, \\(...\\) for inline).`;
     } else if (hasRelevantContent) {
       // If we have content but user didn't explicitly ask for docs, offer it
-      systemMessage = `You are an advanced academic assistant. You have access to a curated database of course materials and documents.
-The user is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
+      systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
 
-RESPONSE STYLE: Be direct, concise, and to-the-point. Give clear, simple answers unless the user specifically asks for detailed explanations. Avoid unnecessary academic verbosity.
+You have an empathetic and warm communication style. You have access to a curated database of course materials and documents from the Faculty of Pharmaceutical Sciences at the University of Jos.
+The user (a PANSite) is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
+
+COMMUNICATION STYLE: Be empathetic, warm, and understanding in your responses. When users greet you, respond warmly and enthusiastically. Answer ONLY the questions asked - do not provide additional information, examples, or explanations unless the user specifically requests them. Be direct and concise while maintaining a friendly, supportive tone.
 
 Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, bullet points, and well-structured tables. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
 
@@ -398,12 +432,14 @@ I found some relevant information in the database that might be helpful:
 
 ${context}
 
-You can use this information to enhance your response, but also draw from your general knowledge to provide a comprehensive answer.`;
+You can use this information to enhance your response, but also draw from your general knowledge. However, answer ONLY the question asked - do not provide extra information unless specifically requested.`;
     } else {
-      systemMessage = `You are an advanced academic assistant. Reply neutrally and conversationally to greetings, general, or non-document questions. Only reference documents if the user explicitly asks for them.
-The user is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
+      systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
 
-RESPONSE STYLE: Be direct, concise, and to-the-point. Give clear, simple answers unless the user specifically asks for detailed explanations. Avoid unnecessary academic verbosity.
+You have an empathetic and warm communication style. Reply warmly and enthusiastically to greetings, general, or non-document questions. Only reference documents if the user explicitly asks for them.
+The user (a PANSite) is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
+
+COMMUNICATION STYLE: Be empathetic, warm, and understanding in your responses. When users greet you (e.g., "hello", "hi", "hey", "good morning", "good afternoon"), respond warmly and enthusiastically with a friendly greeting. Answer ONLY the questions asked - do not provide additional information, examples, or explanations unless the user specifically requests them. Be direct and concise while maintaining a friendly, supportive tone.
 
 Please format your responses using clear visual hierarchy by employing bold, numbered lists, subheadings, bullet points, and well-structured tables. Use line breaks between sections and concepts to reduce visual clutter. Do not use different text sizes or heading tags (like h1/h2); keep all text the same size and rely on formatting and spacing for structure.
 
@@ -415,7 +451,7 @@ TABLE FORMATTING: When presenting data, comparisons, or structured information, 
 | Data 4   | Data 5   | Data 6   |
 
 For chemical data, use tables with headers like "Substance", "Formula", "Molar Mass", etc. For comparisons, use clear comparative headers. Always include proper markdown table separators (|) and ensure data is properly aligned.
-Do not cite sources or reference documents unless the user requests it.
+Do not cite sources or reference documents unless the user requests it. Remember to answer ONLY the question asked - do not provide extra information unless specifically requested.
 IMPORTANT: For every chemical formula, ion, mathematical equation, calculation, or symbol (even inline), ALWAYS wrap it in LaTeX math delimiters: use $...$ for inline and $$...$$ for block. Do not use plain text for any formulas or symbols. For example: $H_3O^+$, $OH^-$, $x^2 + y^2 = r^2$, $$2H_2O(l) \rightleftharpoons H_3O^+(aq) + OH^-(aq)$$. Repeat: EVERY formula, symbol, or equation must be wrapped in math delimiters.
 IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$`;
     }
@@ -455,6 +491,15 @@ IMPORTANT: For all chemical equations, formulas, and mathematical expressions, a
             controller.enqueue(encoder.encode(data));
             firstChunk = false;
           });
+          
+          // Send citations metadata after streaming completes (only if documents were actually used)
+          // Citations should only be sent when shouldUseDocs is true, meaning documents were provided in context
+          if (citations.length > 0 && shouldUseDocs && hasRelevantContent) {
+            const citationsData = JSON.stringify({ type: 'citations', citations });
+            controller.enqueue(encoder.encode("\n"));
+            controller.enqueue(encoder.encode(citationsData));
+          }
+          
           controller.close();
         } catch (err) {
           controller.error(err);

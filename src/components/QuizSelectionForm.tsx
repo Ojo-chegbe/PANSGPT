@@ -13,7 +13,6 @@ import {
   ChartBarIcon,
   CheckCircleIcon,
   XMarkIcon,
-  ExclamationTriangleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline';
 
@@ -152,11 +151,6 @@ export default function QuizSelectionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session) {
-      setError('Please sign in to create quizzes');
-      return;
-    }
-
     if (!formData.courseCode || !formData.courseTitle) {
       setError('Please select a course');
       return;
@@ -236,20 +230,6 @@ export default function QuizSelectionForm() {
     setIsQuizComplete(false);
     setError('Quiz generation cancelled');
   };
-
-  if (!session) {
-    return (
-      <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
-        <div className="text-center">
-          <div className="border rounded-xl p-6 max-w-md mx-auto bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-600/30">
-            <ExclamationTriangleIcon className="h-12 w-12 mx-auto mb-4 text-red-600 dark:text-[#dc2626]" />
-            <h2 className="text-xl font-semibold mb-2 text-red-600 dark:text-[#dc2626]">Authentication Required</h2>
-            <p className="text-gray-600 dark:text-white/80">Please sign in to create quizzes</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">

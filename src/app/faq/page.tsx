@@ -2,7 +2,6 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import BackButton from '../../components/BackButton';
 
 const faqs = [
   {
@@ -48,10 +47,6 @@ const faqs = [
   {
     q: 'How do I contact support or give feedback?',
     a: `Click the three dots in the top right of the main page and select “Feedback.” You can send us your suggestions, bug reports, or questions. We value your input and are always working to improve PansGPT!`
-  },
-  {
-    q: 'How do I upgrade my plan or buy credits?',
-    a: `Go to the Plan page from the sidebar or the top bar. You can view available plans, upgrade, or purchase additional credits for quiz generation and advanced features.`
   },
   {
     q: 'What browsers and devices are supported?',
@@ -125,10 +120,6 @@ const FaqPage = () => {
     <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C] flex flex-col items-center py-10 px-4">
       <div className="w-full max-w-3xl mx-auto px-4">
         <div className="rounded-2xl p-8 flex flex-col gap-8 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10 max-w-2xl mx-auto">
-        {/* Back Button */}
-        <div className="mb-4">
-          <BackButton href="/main" label="Back to Chat" />
-        </div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white text-center mb-4">PansGPT FAQs</h1>
         <p className="text-lg text-gray-600 dark:text-white/70 text-center mb-8 max-w-2xl mx-auto">
           Find answers to common questions about using PansGPT for AI chat, quizzes, analytics, and more. If you have a question that's not listed here, reach out via the Feedback page!

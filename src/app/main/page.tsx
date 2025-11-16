@@ -6,7 +6,7 @@ import { type ChatMessage } from '@/lib/google-ai';
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ClipboardIcon, PencilIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { ClipboardIcon, PencilIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, AcademicCapIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 import MarkdownWithMath from '@/components/MarkdownWithMath';
 import { generateConversationTitle, isDefaultTitle } from '@/lib/conversation-title-generator';
 
@@ -17,6 +17,7 @@ interface ExtendedChatMessage {
   content: string;
   hasContext?: boolean;
   createdAt?: string;
+  citations?: Array<{ lecturerName: string; documentTitle: string }>;
 }
 
 interface Conversation {
@@ -25,13 +26,6 @@ interface Conversation {
   messages: ExtendedChatMessage[];
 }
 
-interface SubscriptionStatus {
-  isActive: boolean;
-  isTrial: boolean;
-  trialEndDate?: string;
-  planType: 'trial' | 'paid' | 'none';
-  startDate: string;
-}
 
 // Memoize the message list component
 const MessageList = React.memo(({ 
@@ -44,9 +38,11 @@ const MessageList = React.memo(({
   handleEditCancel, 
   handleEditSave, 
   handleCopy,
-  isLoading
+  isLoading,
+  showCitationsFor,
+  setShowCitationsFor
 }: {
-  messages: ChatMessage[];
+  messages: ExtendedChatMessage[];
   editingIdx: number | null;
   editingText: string;
   setEditingText: (text: string) => void;
@@ -56,8 +52,10 @@ const MessageList = React.memo(({
   handleEditSave: (idx: number) => void;
   handleCopy: (idx: number, content: string) => void;
   isLoading: boolean;
+  showCitationsFor: number | null;
+  setShowCitationsFor: (idx: number | null) => void;
 }) => (
-  <div className="max-w-6xl mx-auto px-2 md:px-8 flex flex-col gap-6 md:gap-8">
+  <div className="flex flex-col gap-6 md:gap-8">
     {messages.map((message, idx) => (
       <div key={idx} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
         <div className="relative group max-w-[95%] md:max-w-[80%]">
@@ -106,6 +104,43 @@ const MessageList = React.memo(({
                 {message.role === 'model' && message.hasContext && (
                   <div className="mt-1.5 md:mt-2 text-xs md:text-sm text-gray-600 dark:text-white/70 italic">
                     Information from uploaded documents
+                  </div>
+                )}
+                {message.role === 'model' && message.citations && message.citations.length > 0 && (
+                  <div className="mt-3 relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCitationsFor(showCitationsFor === idx ? null : idx);
+                      }}
+                      className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 transition-colors p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                      title="View sources"
+                    >
+                      <EllipsisVerticalIcon className="h-4 w-4" />
+                    </button>
+                    {showCitationsFor === idx && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={() => setShowCitationsFor(null)}
+                        />
+                        <div className="absolute z-50 left-0 bottom-full mb-2 p-3 bg-gray-100 dark:bg-[#2D3A2D] border border-gray-300 dark:border-green-800/50 rounded-lg shadow-lg max-w-sm min-w-[200px]">
+                          <div className="text-xs font-semibold text-gray-700 dark:text-green-100 mb-2">
+                            Sources:
+                          </div>
+                          <div className="space-y-2">
+                            {message.citations.map((citation: { lecturerName: string; documentTitle: string }, citationIdx: number) => (
+                              <div key={citationIdx} className="text-xs text-gray-600 dark:text-green-200/80">
+                                <span className="font-medium">{citation.lecturerName}</span>
+                                {citation.documentTitle && (
+                                  <> - <span className="italic">{citation.documentTitle}</span></>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </>
@@ -176,9 +211,9 @@ const InputArea = React.memo(({
 }) => (
   <form
     onSubmit={handleSend}
-    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-2 md:px-24 pb-4 md:pb-8 bg-transparent`}
+    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-8 pb-4 md:pb-8 bg-transparent`}
   >
-    <div className="rounded-2xl flex flex-col gap-3 px-3 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D]"
+    <div className="rounded-2xl flex flex-col gap-3 px-3 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D]" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}
       >
       {/* Input field */}
       <input
@@ -215,10 +250,10 @@ function MainPageContent() {
   const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const historyMenuRef = useRef(null);
-  const [userSubscription, setUserSubscription] = useState<SubscriptionStatus | null>(null);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editingText, setEditingText] = useState("");
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [showCitationsFor, setShowCitationsFor] = useState<number | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -261,7 +296,8 @@ function MainPageContent() {
     message: string,
     conversationHistory: ExtendedChatMessage[],
     onChunk: (chunk: string) => void,
-    userLevel?: string
+    userLevel?: string,
+    onCitations?: (citations: Array<{ lecturerName: string; documentTitle: string }>) => void
   ) {
     const response = await fetch('/api/chat', {
       method: 'POST',
@@ -281,16 +317,28 @@ function MainPageContent() {
       for (const line of lines) {
         if (line.trim()) {
           try {
-            const { chunk } = JSON.parse(line);
-            onChunk(chunk);
+            const parsed = JSON.parse(line);
+            // Check if this is a citations metadata message
+            if (parsed.type === 'citations' && parsed.citations && onCitations) {
+              onCitations(parsed.citations);
+            } else if (parsed.chunk) {
+              // Regular content chunk
+              onChunk(parsed.chunk);
+            }
           } catch {}
         }
       }
     }
     if (buffer.trim()) {
       try {
-        const { chunk } = JSON.parse(buffer);
-        onChunk(chunk);
+        const parsed = JSON.parse(buffer);
+        // Check if this is a citations metadata message
+        if (parsed.type === 'citations' && parsed.citations && onCitations) {
+          onCitations(parsed.citations);
+        } else if (parsed.chunk) {
+          // Regular content chunk
+          onChunk(parsed.chunk);
+        }
       } catch {}
     }
   }
@@ -344,15 +392,42 @@ function MainPageContent() {
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 content: updated[lastIdx].content + text,
+                // Preserve existing citations if any
+                citations: updated[lastIdx].citations,
               };
             }
             messagesRef.current = updated;
             return updated;
           });
         },
-        userLevel
+        userLevel,
+        (citations) => {
+          // Update the last message with citations
+          setMessages(prev => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            if (updated[lastIdx]?.role === 'model') {
+              updated[lastIdx] = {
+                ...updated[lastIdx],
+                citations: citations,
+              };
+            }
+            messagesRef.current = updated;
+            
+            // Also update conversations state to preserve citations
+            setConversations(prev => prev.map(c =>
+              c.id === activeId
+                ? { ...c, messages: updated }
+                : c
+            ));
+            
+            return updated;
+          });
+        }
       );
       // Auto-save after streaming completes, using latest messages from ref
+      // Wait a bit to ensure citations are set (they arrive after stream completes)
+      await new Promise(resolve => setTimeout(resolve, 500));
       if (session?.user?.id) {
         const latestMessages = messagesRef.current;
         const payload = {
@@ -389,7 +464,8 @@ function MainPageContent() {
             messages: savedConversation.messages.map((msg: any) => ({
               role: msg.role as MessageRole,
               content: msg.content,
-              createdAt: new Date(msg.createdAt)
+              createdAt: new Date(msg.createdAt),
+              citations: msg.citations || undefined
             }))
           };
           
@@ -412,7 +488,13 @@ function MainPageContent() {
             setActiveId(savedConversation.id);
           }
           
-          setMessages(updatedConversation.messages);
+            // Ensure messages are sorted by createdAt before setting
+            const sortedLoadedMessages = [...updatedConversation.messages].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateA - dateB;
+            });
+            setMessages(sortedLoadedMessages);
         } else {
           console.error('Failed to save edited conversation:', saveResponse.status, saveResponse.statusText);
           const errorText = await saveResponse.text();
@@ -480,13 +562,6 @@ function MainPageContent() {
     async function loadData() {
       if (session?.user?.id) {
         try {
-          // Fetch subscription status
-          const subscriptionResponse = await fetch('/api/subscription/status', {
-            credentials: 'include',
-          });
-          const subscriptionData = await subscriptionResponse.json();
-          setUserSubscription(subscriptionData);
-
           // Load conversations from database
           const response = await fetch(`/api/conversations?userId=${session.user.id}&limit=10&messageLimit=50`, {
             credentials: 'include',
@@ -541,16 +616,23 @@ function MainPageContent() {
           messages: conv.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt)
+            createdAt: new Date(msg.createdAt),
+            citations: msg.citations || undefined
           }))
         }));
         
         setConversations(formattedConversations);
         setActiveId(conversationId);
-        setMessages(existingConv.messages.map((msg: any) => ({
+        const sortedExistingMessages = [...existingConv.messages].sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateA - dateB;
+        });
+        setMessages(sortedExistingMessages.map((msg: any) => ({
           role: msg.role as MessageRole,
           content: msg.content,
-          createdAt: new Date(msg.createdAt)
+          createdAt: new Date(msg.createdAt),
+          citations: msg.citations || undefined
         })));
         
         console.log('Loaded existing conversation from URL:', {
@@ -577,7 +659,8 @@ function MainPageContent() {
           messages: conversation.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt)
+            createdAt: new Date(msg.createdAt),
+            citations: msg.citations || undefined
           }))
         };
         
@@ -588,13 +671,19 @@ function MainPageContent() {
           messages: conv.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt)
+            createdAt: new Date(msg.createdAt),
+            citations: msg.citations || undefined
           }))
         }))];
         
         setConversations(allConversations);
         setActiveId(conversationId);
-        setMessages(formattedConversation.messages);
+        const sortedFormattedMessages = [...formattedConversation.messages].sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateA - dateB;
+        });
+        setMessages(sortedFormattedMessages);
         
         console.log('Loaded conversation directly from API:', {
           conversationId,
@@ -629,7 +718,8 @@ function MainPageContent() {
           messages: conv.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt)
+            createdAt: new Date(msg.createdAt),
+            citations: msg.citations || undefined
           }))
         }));
       }
@@ -672,14 +762,25 @@ function MainPageContent() {
   // }, [conversations]);
 
   // Memoize sorted messages to prevent unnecessary sorting
+  // Always sort by createdAt to ensure consistent ordering
   const sortedMessages = useMemo(() => {
-    if (!activeConv) return [];
-    return [...activeConv.messages].sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateA - dateB;
+    if (!activeConv || !activeConv.messages || activeConv.messages.length === 0) return [];
+    // Create a stable sorted copy - messages should already be sorted from DB, but ensure consistency
+    const messages = [...activeConv.messages];
+    return messages.sort((a, b) => {
+      // Use createdAt if available
+      if (a.createdAt && b.createdAt) {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateA - dateB;
+      }
+      // If one has createdAt and the other doesn't, prioritize the one with timestamp
+      if (a.createdAt && !b.createdAt) return -1;
+      if (!a.createdAt && b.createdAt) return 1;
+      // If neither has createdAt, maintain original order (shouldn't happen)
+      return 0;
     });
-  }, [activeConv?.messages]);
+  }, [activeConv?.id, activeConv?.messages]);
 
   // Update messages when sorted messages change
   useEffect(() => {
@@ -689,7 +790,7 @@ function MainPageContent() {
   // Auto-scroll to bottom when messages change, but only if user is near bottom or not streaming
   useEffect(() => {
     if (chatEndRef.current) {
-      const chatContainer = chatEndRef.current.parentElement;
+      const chatContainer = (window as any).chatContainer;
       if (chatContainer) {
         const isNearBottom = chatContainer.scrollTop + chatContainer.clientHeight >= chatContainer.scrollHeight - 100;
         // Only auto-scroll if user is near bottom OR if we're not currently streaming
@@ -702,7 +803,7 @@ function MainPageContent() {
 
   // Handle scroll events to show/hide scroll to bottom button
   useEffect(() => {
-    const chatContainer = document.querySelector('.overflow-y-auto');
+    const chatContainer = (window as any).chatContainer;
     if (!chatContainer) return;
 
     const handleScroll = () => {
@@ -776,15 +877,42 @@ function MainPageContent() {
               updated[lastIdx] = {
                 ...updated[lastIdx],
                 content: updated[lastIdx].content + chunk,
+                // Preserve existing citations if any
+                citations: updated[lastIdx].citations,
               };
             }
             messagesRef.current = updated;
             return updated;
           });
         },
-        userLevel
+        userLevel,
+        (citations) => {
+          // Update the last message with citations
+          setMessages(prev => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            if (updated[lastIdx]?.role === 'model') {
+              updated[lastIdx] = {
+                ...updated[lastIdx],
+                citations: citations,
+              };
+            }
+            messagesRef.current = updated;
+            
+            // Also update conversations state to preserve citations
+            setConversations(prev => prev.map(c =>
+              c.id === activeId
+                ? { ...c, messages: updated }
+                : c
+            ));
+            
+            return updated;
+          });
+        }
       );
       // Auto-save after streaming completes, using latest messages from ref
+      // Wait a bit to ensure citations are set (they arrive after stream completes)
+      await new Promise(resolve => setTimeout(resolve, 500));
       if (session?.user?.id) {
         const latestMessages = messagesRef.current;
         
@@ -830,7 +958,8 @@ function MainPageContent() {
               messages: savedConversation.messages.map((msg: any) => ({
                 role: msg.role as MessageRole,
                 content: msg.content,
-                createdAt: new Date(msg.createdAt)
+                createdAt: new Date(msg.createdAt),
+                citations: msg.citations || undefined
               }))
             };
             
@@ -846,7 +975,21 @@ function MainPageContent() {
             
             // Update active ID to the real conversation ID
             setActiveId(savedConversation.id);
-            setMessages(updatedConversation.messages);
+            // Merge citations from current messages if they exist
+            const currentMessages = messagesRef.current;
+            const mergedMessages = updatedConversation.messages.map((savedMsg: ExtendedChatMessage, idx: number) => {
+              const currentMsg = currentMessages[idx];
+              if (currentMsg && currentMsg.citations && !savedMsg.citations) {
+                return { ...savedMsg, citations: currentMsg.citations };
+              }
+              return savedMsg;
+            });
+            const sortedMergedMessages = [...mergedMessages].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateA - dateB;
+            });
+            setMessages(sortedMergedMessages);
             
             // Update URL with the real conversation ID
             router.push(`/main?conversation=${savedConversation.id}`);
@@ -891,7 +1034,8 @@ function MainPageContent() {
               messages: savedConversation.messages.map((msg: any) => ({
                 role: msg.role as MessageRole,
                 content: msg.content,
-                createdAt: new Date(msg.createdAt)
+                createdAt: new Date(msg.createdAt),
+                citations: msg.citations || undefined
               }))
             };
             
@@ -906,7 +1050,21 @@ function MainPageContent() {
               return prev;
             });
             
-            setMessages(updatedConversation.messages);
+            // Merge citations from current messages if they exist
+            const currentMessages = messagesRef.current;
+            const mergedMessages = updatedConversation.messages.map((savedMsg: ExtendedChatMessage, idx: number) => {
+              const currentMsg = currentMessages[idx];
+              if (currentMsg && currentMsg.citations && !savedMsg.citations) {
+                return { ...savedMsg, citations: currentMsg.citations };
+              }
+              return savedMsg;
+            });
+            const sortedMergedMessages = [...mergedMessages].sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateA - dateB;
+            });
+            setMessages(sortedMergedMessages);
           } else {
             console.error('Failed to update conversation:', saveResponse.status, saveResponse.statusText);
             const errorText = await saveResponse.text();
@@ -1099,7 +1257,7 @@ function MainPageContent() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] text-gray-800 dark:text-white bg-gray-50 dark:[background-color:#0C120C]">
+    <div className="flex min-h-[100dvh] w-full overflow-hidden text-gray-800 dark:text-white bg-gray-50 dark:[background-color:#0C120C]">
       {/* Sidebar - Always visible collapsed, expands when sidebarOpen */}
       <aside className={`h-[100dvh] fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ${
         sidebarOpen 
@@ -1143,14 +1301,7 @@ function MainPageContent() {
           <div className={!sidebarOpen ? 'flex justify-center' : ''}>
           <button
             className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
-            onClick={() => {
-              if (userSubscription && (userSubscription.isActive || userSubscription.isTrial)) {
-                window.location.href = '/quiz';
-              } else {
-                window.location.href = '/plan';
-              }
-            }}
-            disabled={!userSubscription}
+            onClick={() => window.location.href = '/quiz'}
             title="Take A Quiz"
           >
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
@@ -1258,14 +1409,14 @@ function MainPageContent() {
         </div>
       </aside>
       {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 ${sidebarOpen ? 'md:ml-72' : 'md:ml-20'}`}>
+      <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 overflow-hidden w-0 min-w-0 ${sidebarOpen ? 'md:ml-72' : 'md:ml-20'}`}>
         {/* Top Bar - Fixed */}
         <div className={`fixed top-0 right-0 z-40 flex items-center px-3 md:px-6 h-16 md:h-20 gap-2 md:gap-4 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-visible bg-white dark:[background-color:#0C120C] ${
           sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'
         }`}>
           {/* Logo */}
-          <div className="flex items-center justify-center ml-2 md:ml-4 h-full">
-            <div className="w-32 h-32 md:w-40 md:h-40 relative">
+          <div className="flex items-center justify-center ml-14 md:ml-4 h-full">
+            <div className="w-12 h-12 md:w-40 md:h-40 relative">
               <Image
                 src="/uploads/Logo 2.png"
                 alt="PansGPT Logo"
@@ -1292,55 +1443,64 @@ function MainPageContent() {
               </div>
           </div>
         </div>
-        {/* Chat Area - Adjusted with top padding to account for fixed topbar */}
-        <div className="flex-1 flex flex-col px-2 md:px-24 pt-20 md:pt-24 pb-32 md:pb-40 gap-6 md:gap-10 overflow-y-auto bg-transparent"
-          style={{ position: 'relative' }}
+        {/* Chat Area - Only this div should scroll */}
+        <div className={`flex-1 flex flex-col min-h-0 overflow-y-auto pt-20 md:pt-24 pb-32 md:pb-40 bg-transparent ${messages.length === 0 ? 'scrollbar-hidden' : 'scrollbar-thin'}`}
+          ref={(el) => {
+            if (el) {
+              // Store reference for scroll detection
+              (window as any).chatContainer = el;
+            }
+          }}
         >
-          {messages.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <span className="text-3xl md:text-6xl font-bold text-gray-900 dark:text-white">
-                  Hello, Pharm. {session?.user?.name ? session.user.name.split(' ')[0] : ''}
-                </span>
-                <p className="text-lg md:text-xl text-gray-700 dark:text-white font-light">
-                  Ask me anything about your courses
-                </p>
+          <div className="w-full max-w-6xl mx-auto px-4 md:px-8 flex flex-col gap-6 md:gap-8" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}>
+            {messages.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-200px)]">
+                <div className="text-center space-y-4 w-full">
+                  <span className="text-3xl md:text-6xl font-bold text-gray-900 dark:text-white">
+                    Hello, Pharm. {session?.user?.name ? session.user.name.split(' ')[0] : ''}
+                  </span>
+                  <p className="text-lg md:text-xl text-gray-700 dark:text-white font-light">
+                    Ask me anything about your courses
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <>
-              <MessageList
-                messages={messages}
-                editingIdx={editingIdx}
-                editingText={editingText}
-                setEditingText={setEditingText}
-                copiedIdx={copiedIdx}
-                handleEdit={handleEdit}
-                handleEditCancel={handleEditCancel}
-                handleEditSave={handleEditSave}
-                handleCopy={handleCopy}
-                isLoading={isLoading}
-              />
-              <div ref={chatEndRef} />
-              
-              {/* Scroll to bottom button - only show when streaming and user has scrolled up */}
-              {showScrollButton && (
-                <button
-                  onClick={() => {
-                    if (chatEndRef.current) {
-                      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="fixed bottom-20 right-4 md:right-8 z-30 text-white p-3 rounded-full transition-all duration-200 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
-                  title="Scroll to latest message"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                </button>
-              )}
-            </>
-          )}
+            ) : (
+              <>
+                <MessageList
+                  messages={messages}
+                  editingIdx={editingIdx}
+                  editingText={editingText}
+                  setEditingText={setEditingText}
+                  copiedIdx={copiedIdx}
+                  handleEdit={handleEdit}
+                  handleEditCancel={handleEditCancel}
+                  handleEditSave={handleEditSave}
+                  handleCopy={handleCopy}
+                  isLoading={isLoading}
+                  showCitationsFor={showCitationsFor}
+                  setShowCitationsFor={setShowCitationsFor}
+                />
+                <div ref={chatEndRef} />
+                
+                {/* Scroll to bottom button - only show when streaming and user has scrolled up */}
+                {showScrollButton && (
+                  <button
+                    onClick={() => {
+                      if (chatEndRef.current) {
+                        chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="fixed bottom-20 right-4 md:right-8 z-30 text-white p-3 rounded-full transition-all duration-200 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+                    title="Scroll to latest message"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
         {/* Input Area */}
           <InputArea

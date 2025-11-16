@@ -145,13 +145,16 @@ export async function POST(req: Request) {
               create: data.messages.map((msg: any) => ({
                 content: msg.content,
                 role: msg.role,
+                citations: msg.citations || null,
                 userId: user.id,
                 createdAt: msg.createdAt ? new Date(msg.createdAt) : undefined
               })),
             },
           },
           include: {
-            messages: true,
+            messages: {
+              orderBy: { createdAt: "asc" }
+            },
           },
         });
 
@@ -196,6 +199,7 @@ export async function POST(req: Request) {
           create: data.messages.map((msg: any) => ({
             content: msg.content,
             role: msg.role,
+            citations: msg.citations || null,
             userId: user.id,
             createdAt: msg.createdAt ? new Date(msg.createdAt) : undefined
           })),

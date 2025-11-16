@@ -55,7 +55,8 @@ export async function POST(request: Request) {
       topic: formData.get('topic') as string,
       uploadedBy: session.user.id,
       uploadedAt: new Date().toISOString(),
-      level: formData.get('level') as string || ''
+      level: formData.get('level') as string || '',
+      documentType: (formData.get('documentType') as string) || 'course' // Default to 'course' for backward compatibility
     };
     
     if (!file) {
@@ -120,6 +121,7 @@ export async function POST(request: Request) {
         uploadedBy: metadata.uploadedBy,
         uploadedAt: new Date(metadata.uploadedAt),
         level: metadata.level,
+        documentType: metadata.documentType,
         content: text // Store the text content directly
       }
     });
@@ -148,7 +150,8 @@ export async function POST(request: Request) {
         file_url: uniqueFilename, // Use filename instead of Supabase path
         uploaded_by: metadata.uploadedBy,
         uploaded_at: metadata.uploadedAt,
-        level: metadata.level
+        level: metadata.level,
+        document_type: metadata.documentType
       });
 
       // Store document chunks with proper error handling
@@ -162,6 +165,7 @@ export async function POST(request: Request) {
           professorName: metadata.professorName,
           topic: metadata.topic,
           level: metadata.level || '',
+          documentType: metadata.documentType,
           author: metadata.professorName,
           source: `${metadata.professorName}'s notes`,
           fullSource: `${metadata.professorName}'s notes on ${metadata.topic} (${metadata.courseCode})`,

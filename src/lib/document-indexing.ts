@@ -19,6 +19,7 @@ export interface DocumentIndexingJob {
     professorName: string;
     topic: string;
     level: string;
+    documentType?: string; // "course" or "general"
   };
 }
 
@@ -73,6 +74,7 @@ export async function indexDocument(job: DocumentIndexingJob): Promise<IndexingR
       created_at: new Date().toISOString(),
       metadata: {
         ...job.metadata,
+        documentType: job.metadata.documentType || 'course', // Default to 'course' for backward compatibility
         author: job.metadata.professorName,
         source: `${job.metadata.professorName}'s notes`,
         fullSource: `${job.metadata.professorName}'s notes on ${job.metadata.topic} (${job.metadata.courseCode})`,
@@ -128,7 +130,8 @@ export async function reindexAllDocuments(): Promise<IndexingResult[]> {
           courseTitle: doc.course_title || '',
           professorName: doc.professor_name || '',
           topic: doc.topic || '',
-          level: doc.level || ''
+          level: doc.level || '',
+          documentType: doc.document_type || 'course' // Default to 'course' for backward compatibility
         }
       };
       

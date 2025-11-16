@@ -15,26 +15,39 @@ export async function POST(request: Request) {
     const client = await getClient();
     const collection = client.collection(ASTRA_DB_COLLECTION);
 
-    // Build filter conditions - LEVEL FILTER IS MANDATORY for security
-    const filterConditions: any = {};
+    // Build filter conditions for course documents (level-based)
+    // General knowledge documents will be searched separately
+    const courseFilterConditions: any = {};
+    const generalFilterConditions: any = {};
     
-    // ALWAYS apply level filter first for security
+    // Course documents: apply level filter and other filters
     if (filters.level) {
-      filterConditions["metadata.level"] = filters.level;
+      // For course documents: must match level AND be course type (or missing documentType for backward compatibility)
+      courseFilterConditions["metadata.level"] = filters.level;
     }
     
-    // Then apply other filters within the level-appropriate documents
+    // General knowledge documents: accessible to all, no level filter
+    generalFilterConditions["metadata.documentType"] = "general";
+    
+    // Apply other filters to both types
     if (filters.courseCode) {
-      filterConditions["metadata.courseCode"] = filters.courseCode;
+      courseFilterConditions["metadata.courseCode"] = filters.courseCode;
+      generalFilterConditions["metadata.courseCode"] = filters.courseCode;
     }
     
     if (filters.topic) {
-      filterConditions["metadata.topic"] = filters.topic.trim();
+      courseFilterConditions["metadata.topic"] = filters.topic.trim();
+      generalFilterConditions["metadata.topic"] = filters.topic.trim();
     }
     
     if (filters.author) {
-      // Search for professor within level-appropriate documents only
-      filterConditions["metadata.professorName"] = { $in: [
+      courseFilterConditions["metadata.professorName"] = { $in: [
+        filters.author,
+        `Prof. ${filters.author}`,
+        `Professor ${filters.author}`,
+        `Dr. ${filters.author}`
+      ]};
+      generalFilterConditions["metadata.professorName"] = { $in: [
         filters.author,
         `Prof. ${filters.author}`,
         `Professor ${filters.author}`,
@@ -42,7 +55,10 @@ export async function POST(request: Request) {
       ]};
     }
 
-    console.log('Fast chat search filter conditions:', filterConditions);
+    console.log('Fast chat search filter conditions:', {
+      course: courseFilterConditions,
+      general: generalFilterConditions
+    });
 
     let allResults: any[] = [];
 
@@ -62,27 +78,67 @@ export async function POST(request: Request) {
       
       console.log(`Fast search with query: "${query}"`);
       
-      // Try vector search with filters first
-      let queryResults = await collection.find(
-        filterConditions,
-        {
-          sort: {
-            $vector: queryEmbedding
-          },
-          limit: filters.max_chunks || 5, // Fewer chunks for chat
-          includeSimilarity: true
+      // Perform two searches: one for course documents, one for general knowledge
+      const maxChunks = filters.max_chunks || 5;
+      const chunksPerType = Math.ceil(maxChunks / 2); // Split between course and general
+      
+      // Search for course documents (level-filtered)
+      let courseResults: any[] = [];
+      if (filters.level) {
+        try {
+          courseResults = await collection.find(
+            courseFilterConditions,
+            {
+              sort: {
+                $vector: queryEmbedding
+              },
+              limit: chunksPerType,
+              includeSimilarity: true
+            }
+          ).toArray();
+          console.log(`Found ${courseResults.length} course document results`);
+        } catch (error) {
+          console.error('Error searching course documents:', error);
         }
-      ).toArray();
-
-      // If no results with filters, don't fall back to unfiltered search for security
-      // This ensures level-based restrictions are enforced
-      if (queryResults.length === 0 && Object.keys(filterConditions).length > 0) {
-        console.log('No results found with level filters - this is expected for level-based restrictions');
-        queryResults = [];
       }
-
-      allResults = queryResults;
-      console.log(`Fast search found ${queryResults.length} results`);
+      
+      // Search for general knowledge documents (accessible to all)
+      let generalResults: any[] = [];
+      try {
+        generalResults = await collection.find(
+          generalFilterConditions,
+          {
+            sort: {
+              $vector: queryEmbedding
+            },
+            limit: chunksPerType,
+            includeSimilarity: true
+          }
+        ).toArray();
+        console.log(`Found ${generalResults.length} general knowledge results`);
+      } catch (error) {
+        console.error('Error searching general knowledge documents:', error);
+      }
+      
+      // Combine results and sort by similarity
+      allResults = [...courseResults, ...generalResults];
+      
+      // Remove duplicates based on chunk_text
+      const seen = new Set<string>();
+      allResults = allResults.filter(chunk => {
+        const text = chunk.chunk_text;
+        if (seen.has(text)) return false;
+        seen.add(text);
+        return true;
+      });
+      
+      // Sort by similarity score
+      allResults.sort((a, b) => (b.$similarity || 0) - (a.$similarity || 0));
+      
+      // Limit to max_chunks
+      allResults = allResults.slice(0, maxChunks);
+      
+      console.log(`Fast search found ${allResults.length} total results (${courseResults.length} course + ${generalResults.length} general)`);
 
     } catch (embeddingError) {
       console.error('Embedding service failed for chat search:', embeddingError);
@@ -95,20 +151,28 @@ export async function POST(request: Request) {
       const allDocs = await collection.find({}).toArray();
       
       const textSearchResults = allDocs.filter(doc => {
-        // Check if document matches filter conditions
-        const matchesFilters = Object.entries(filterConditions).every(([key, value]) => {
-          const keys = key.split('.');
-          let current = doc;
-          for (const k of keys) {
-            current = current?.[k];
-          }
-          return current === value;
-        });
+        const metadata = doc.metadata || {};
+        const docType = metadata.documentType || 'course'; // Default to 'course' for backward compatibility
+        
+        // Check if it's general knowledge (accessible to all) or course document matching level
+        const isGeneralKnowledge = docType === 'general';
+        const isCourseMatchingLevel = docType === 'course' && 
+          (!filters.level || metadata.level === filters.level);
+        
+        if (!isGeneralKnowledge && !isCourseMatchingLevel) {
+          return false;
+        }
+        
+        // Check other filters
+        const matchesCourseCode = !filters.courseCode || metadata.courseCode === filters.courseCode;
+        const matchesTopic = !filters.topic || metadata.topic === filters.topic?.trim();
+        const matchesAuthor = !filters.author || 
+          metadata.professorName?.toLowerCase().includes(filters.author.toLowerCase());
         
         // Check if text contains the query
         const matchesText = doc.chunk_text?.toLowerCase().includes(query.toLowerCase());
         
-        return matchesFilters && matchesText;
+        return matchesCourseCode && matchesTopic && matchesAuthor && matchesText;
       });
       
       allResults = textSearchResults.slice(0, filters.max_chunks || 5);

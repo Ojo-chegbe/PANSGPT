@@ -64,9 +64,7 @@ export default function LandingPage() {
               
               <div className="space-y-4">
                 <h1 className="text-5xl lg:text-6xl text-foreground">
-                  Stop Searching. <br />
-                  <span className="text-primary">Start Understanding</span> <br />
-                  Your Lecture Notes.
+                The Ultimate Study Hack for PANSites.
                 </h1>
                 
                 <p className="text-xl text-muted-foreground max-w-xl">
@@ -77,7 +75,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/signup">
                   <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    Start Studying Smarter (It's 100% Free)
+                    Start Studying Smarter
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
@@ -278,18 +276,16 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="py-20 px-6 sm:px-8 lg:px-12">
         <div className="container mx-auto max-w-4xl text-center space-y-8">
-          <h2 className="text-5xl text-foreground">
-            Your Next In-Course Exam is Coming. <br />
+          <h2 className="text-5xl text-foreground mb-12">
+            Your Next Exam is Coming. <br />
             <span className="text-primary">Be Ready for It.</span>
           </h2>
           
-          <p className="text-xl text-muted-foreground">
-            It takes 30 seconds to sign up. Get your 100% free account and start studying smarter, not just harder.
-          </p>
+         
 
           <Link href="/signup">
             <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              Sign Up & Ace Your Next Test (for Free)
+              Study Smarter
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>

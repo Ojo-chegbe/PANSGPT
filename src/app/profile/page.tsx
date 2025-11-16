@@ -41,7 +41,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  const [subscription, setSubscription] = useState<any>(null);
   const [quizAnalytics, setQuizAnalytics] = useState<QuizAnalytics | null>(null);
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
   const [selectedDay, setSelectedDay] = useState('Monday');
@@ -54,9 +53,8 @@ export default function ProfilePage() {
     async function loadData() {
       setLoading(true);
       try {
-        const [profileRes, subscriptionRes, analyticsRes] = await Promise.all([
+        const [profileRes, analyticsRes] = await Promise.all([
           fetch('/api/user'),
-          fetch('/api/subscription/status'),
           fetch('/api/quiz/history?page=1&limit=1')
         ]);
 
@@ -70,11 +68,6 @@ export default function ProfilePage() {
             level: userData.level || '',
             image: userData.image || '',
           });
-        }
-
-        if (subscriptionRes.ok) {
-          const subscriptionData = await subscriptionRes.json();
-          setSubscription(subscriptionData);
         }
 
         if (analyticsRes.ok) {
@@ -195,8 +188,6 @@ export default function ProfilePage() {
         ((prev?.averageScore || 0) > (current?.averageScore || 0)) ? prev : current
       )
     : null;
-
-  const planType = subscription?.planType === 'trial' ? 'Free Trial' : subscription?.planType === 'paid' ? 'Paid Plan' : 'Free Trial';
 
   return (
     <div className="min-h-screen pb-12 bg-gray-50 dark:[background-color:#0C120C]">
@@ -414,19 +405,14 @@ export default function ProfilePage() {
           )}
         </div>
 
-            {/* Current Plan / Logout Card */}
+            {/* Logout Card */}
             <div 
               className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Current Plan</h3>
-                  <p className="text-base font-medium text-gray-900 dark:text-white/90">{planType}</p>
-                  {subscription?.trialEndDate && subscription.isTrial && (
-                    <p className="text-xs mt-2 text-gray-900 dark:text-white/70">
-                      Trial ends: {new Date(subscription.trialEndDate).toLocaleDateString()}
-                    </p>
-                  )}
+                  <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Account</h3>
+                  <p className="text-base font-medium text-gray-900 dark:text-white/90">Free Access</p>
                 </div>
                 <button
                   onClick={handleLogout}

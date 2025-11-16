@@ -118,6 +118,7 @@ export async function POST(request: Request) {
         created_at: new Date().toISOString(),
         metadata: {
           ...metadata,
+          documentType: (metadata as any).documentType || 'course', // Default to 'course' for backward compatibility
           author: metadata.professorName,
           source: `${metadata.professorName}'s notes`,
           fullSource: `${metadata.professorName}'s notes on ${metadata.topic} (${metadata.course})`,

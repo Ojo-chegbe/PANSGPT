@@ -23,6 +23,7 @@ interface UploadFormData {
   topic: string;
   file: File | null;
   level?: string;
+  documentType: 'course' | 'general';
 }
 
 export default function DocumentUploadForm() {
@@ -38,7 +39,8 @@ export default function DocumentUploadForm() {
     professorName: '',
     topic: '',
     file: null,
-    level: ''
+    level: '',
+    documentType: 'course'
   });
 
   useEffect(() => {
@@ -123,6 +125,7 @@ export default function DocumentUploadForm() {
       fileData.append('professorName', formData.professorName);
       fileData.append('topic', formData.topic);
       fileData.append('level', formData.level || '');
+      fileData.append('documentType', formData.documentType);
       
       const uploadResponse = await fetch('/api/admin/documents/upload', {
         method: 'POST',
@@ -170,7 +173,8 @@ export default function DocumentUploadForm() {
         professorName: '',
         topic: '',
         file: null,
-        level: ''
+        level: '',
+        documentType: 'course'
       });
 
     } catch (err: any) {
@@ -312,19 +316,44 @@ export default function DocumentUploadForm() {
             />
           </div>
 
+          {/* Document Type */}
+          <div className="space-y-2">
+            <label htmlFor="documentType" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
+              <DocumentTextIcon className="h-4 w-4" />
+              <span>Document Type *</span>
+            </label>
+            <select
+              id="documentType"
+              name="documentType"
+              required
+              value={formData.documentType}
+              onChange={handleInputChange}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            >
+              <option value="course" className="bg-gray-800">Course Material (Level-based)</option>
+              <option value="general" className="bg-gray-800">General Knowledge (Accessible to All)</option>
+            </select>
+            <p className="text-xs text-gray-400">
+              {formData.documentType === 'general' 
+                ? 'General knowledge documents are accessible to all users regardless of level'
+                : 'Course materials are restricted to users at the specified level'}
+            </p>
+          </div>
+
           {/* Level */}
           <div className="space-y-2">
             <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-300">
               <AcademicCapIcon className="h-4 w-4" />
-              <span>Level *</span>
+              <span>Level {formData.documentType === 'course' ? '*' : ''}</span>
             </label>
             <select
               id="level"
               name="level"
-              required
+              required={formData.documentType === 'course'}
               value={formData.level}
               onChange={handleInputChange}
-              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              disabled={formData.documentType === 'general'}
+              className="w-full bg-gray-700/50 border border-gray-600 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="" className="bg-gray-800">Select level</option>
               <option value="100" className="bg-gray-800">100</option>
@@ -334,6 +363,9 @@ export default function DocumentUploadForm() {
               <option value="500" className="bg-gray-800">500</option>
               <option value="600" className="bg-gray-800">600</option>
             </select>
+            {formData.documentType === 'general' && (
+              <p className="text-xs text-gray-400">Level not required for general knowledge documents</p>
+            )}
           </div>
         </div>
 

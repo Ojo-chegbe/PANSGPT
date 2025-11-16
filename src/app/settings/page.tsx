@@ -59,13 +59,6 @@ export default function SettingsPage() {
       color: 'text-green-600 dark:text-green-400'
     },
     {
-      icon: CreditCardIcon,
-      title: 'View Plan',
-      description: 'Manage your subscription and plan',
-      onClick: () => router.push('/plan'),
-      color: 'text-purple-600 dark:text-purple-400'
-    },
-    {
       icon: ArrowRightOnRectangleIcon,
       title: 'Logout',
       description: 'Sign out of your account',

@@ -4,7 +4,6 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { getDeviceId } from "../../lib/device-id";
 import { 
-  UserIcon, 
   EnvelopeIcon, 
   LockClosedIcon, 
   AcademicCapIcon,
@@ -28,6 +27,8 @@ export default function SignupPage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [clientDeviceId, setClientDeviceId] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsError, setTermsError] = useState("");
 
   useEffect(() => {
     const deviceId = getDeviceId();
@@ -41,6 +42,7 @@ export default function SignupPage() {
     setEmailError("");
     setPasswordError("");
     setConfirmPasswordError("");
+    setTermsError("");
 
     // Validation
     if (!email) {
@@ -62,6 +64,10 @@ export default function SignupPage() {
       valid = false;
     } else if (password !== confirmPassword) {
       setConfirmPasswordError("Passwords do not match.");
+      valid = false;
+    }
+    if (!acceptedTerms) {
+      setTermsError("You must accept the terms and conditions to create an account.");
       valid = false;
     }
     if (!valid) return;
@@ -126,18 +132,11 @@ export default function SignupPage() {
       {/* Header */}
       <div className="border-b bg-white dark:bg-transparent border-gray-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex justify-center">
-            <div className="flex items-center space-x-4">
-              <div className="p-4 rounded-2xl bg-gray-400 dark:bg-[#7D8B6F]">
-                <UserIcon className="h-12 w-12 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Create Account</h1>
-                <p className="mt-2 text-lg text-gray-600 dark:text-white/80">
-                  Join PANSGPT and start your AI-powered learning journey
-                </p>
-              </div>
-            </div>
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Create Account</h1>
+            <p className="mt-2 text-lg text-gray-600 dark:text-white/80">
+              Join PANSGPT and start your AI-powered learning journey
+            </p>
           </div>
         </div>
       </div>
@@ -282,6 +281,41 @@ export default function SignupPage() {
                   <option value="600" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">600 Level</option>
                 </select>
               </div>
+            </div>
+
+            {/* Terms and Conditions Checkbox */}
+            <div className="space-y-2">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  name="terms"
+                  checked={acceptedTerms}
+                  onChange={e => {
+                    setAcceptedTerms(e.target.checked);
+                    if (e.target.checked) {
+                      setTermsError("");
+                    }
+                  }}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-white/20 text-green-600 dark:text-[#00A400] focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  I agree to the{' '}
+                  <Link 
+                    href="/terms" 
+                    target="_blank"
+                    className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] underline transition-colors duration-200"
+                  >
+                    Terms and Conditions
+                  </Link>
+                </label>
+              </div>
+              {termsError && (
+                <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm ml-7">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  <span>{termsError}</span>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
