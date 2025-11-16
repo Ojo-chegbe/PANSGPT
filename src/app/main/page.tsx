@@ -464,7 +464,7 @@ function MainPageContent() {
             messages: savedConversation.messages.map((msg: any) => ({
               role: msg.role as MessageRole,
               content: msg.content,
-              createdAt: new Date(msg.createdAt),
+              createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
               citations: msg.citations || undefined
             }))
           };
@@ -616,7 +616,7 @@ function MainPageContent() {
           messages: conv.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt),
+            createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
             citations: msg.citations || undefined
           }))
         }));
@@ -631,7 +631,7 @@ function MainPageContent() {
         setMessages(sortedExistingMessages.map((msg: any) => ({
           role: msg.role as MessageRole,
           content: msg.content,
-          createdAt: new Date(msg.createdAt),
+          createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
           citations: msg.citations || undefined
         })));
         
@@ -659,7 +659,7 @@ function MainPageContent() {
           messages: conversation.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt),
+            createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
             citations: msg.citations || undefined
           }))
         };
@@ -671,7 +671,7 @@ function MainPageContent() {
           messages: conv.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt),
+            createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
             citations: msg.citations || undefined
           }))
         }))];
@@ -718,7 +718,7 @@ function MainPageContent() {
           messages: conv.messages.map((msg: any) => ({
             role: msg.role as MessageRole,
             content: msg.content,
-            createdAt: new Date(msg.createdAt),
+            createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
             citations: msg.citations || undefined
           }))
         }));
@@ -958,7 +958,7 @@ function MainPageContent() {
               messages: savedConversation.messages.map((msg: any) => ({
                 role: msg.role as MessageRole,
                 content: msg.content,
-                createdAt: new Date(msg.createdAt),
+                createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
                 citations: msg.citations || undefined
               }))
             };
@@ -1034,7 +1034,7 @@ function MainPageContent() {
               messages: savedConversation.messages.map((msg: any) => ({
                 role: msg.role as MessageRole,
                 content: msg.content,
-                createdAt: new Date(msg.createdAt),
+                createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
                 citations: msg.citations || undefined
               }))
             };
