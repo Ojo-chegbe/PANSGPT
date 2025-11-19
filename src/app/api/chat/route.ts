@@ -1,6 +1,7 @@
 import { ChatMessage, streamChatResponse } from "@/lib/google-ai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getClient } from "@/lib/db";
 import { readFile } from "fs/promises";
 import { join } from "path";
 
@@ -304,6 +305,11 @@ export async function POST(req: Request) {
                          messageLower.includes('according to') ||
                          messageLower.includes('dr.') ||
                          messageLower.includes('professor');
+    
+    // Detect if user is asking for a list of documents
+    const listKeywords = ['list', 'show', 'what documents', 'available documents', 'documents for', 'courses for', 'materials for'];
+    const isAskingForList = listKeywords.some(kw => messageLower.includes(kw)) && 
+                           (messageLower.includes('document') || messageLower.includes('course') || messageLower.includes('material') || messageLower.includes('level'));
 
     // Debug logging
     console.log('Chat request debug:', {
@@ -314,6 +320,58 @@ export async function POST(req: Request) {
       sources: sources.length,
       extractedFilters: extractSourceFilters(message)
     });
+
+    // If user is asking for a list of documents, fetch actual documents from database
+    let actualDocumentsList = '';
+    if (isAskingForList) {
+      try {
+        const client = await getClient();
+        const documentsCollection = client.collection('documents');
+        
+        // Build filter for user's level
+        const docFilter: any = {};
+        if (userLevel) {
+          docFilter.level = userLevel;
+        }
+        
+        // Fetch actual documents
+        const actualDocs = await documentsCollection.find(docFilter).toArray();
+        
+        if (actualDocs.length > 0) {
+          // Group by course code for better organization
+          const docsByCourse = new Map<string, any[]>();
+          actualDocs.forEach((doc: any) => {
+            const courseKey = doc.course_code || 'Uncategorized';
+            if (!docsByCourse.has(courseKey)) {
+              docsByCourse.set(courseKey, []);
+            }
+            docsByCourse.get(courseKey)!.push(doc);
+          });
+          
+          // Build formatted list
+          const docListParts: string[] = [];
+          docListParts.push(`ACTUAL DOCUMENTS AVAILABLE FOR ${userLevel} LEVEL:\n`);
+          
+          docsByCourse.forEach((docs, courseCode) => {
+            const courseTitle = docs[0].course_title || 'Unknown Course';
+            docListParts.push(`\n${courseCode} - ${courseTitle}:`);
+            docs.forEach(doc => {
+              const profName = doc.professor_name || 'Unknown Professor';
+              const docTitle = doc.title || doc.file_name || 'Untitled';
+              const topic = doc.topic ? ` (Topic: ${doc.topic})` : '';
+              docListParts.push(`  - ${docTitle} by ${profName}${topic}`);
+            });
+          });
+          
+          actualDocumentsList = docListParts.join('\n');
+        } else {
+          actualDocumentsList = `No documents found in the database for ${userLevel} level.`;
+        }
+      } catch (error) {
+        console.error('Error fetching actual documents:', error);
+        actualDocumentsList = 'Unable to retrieve document list from database.';
+      }
+    }
 
     // Limit context length to prevent token overflow
     const maxContextLength = 2000; // characters
@@ -375,7 +433,7 @@ Be encouraging and helpful, not restrictive. Show them what they CAN access rath
           try {
             await streamChatResponse(GOOGLE_API_KEY, messagesForAI, {
               maxOutputTokens: 1024,
-              temperature: 0.7,
+              temperature: 0.1,
               topK: 40,
               topP: 0.95,
             }, (chunk) => {
@@ -402,11 +460,21 @@ Be encouraging and helpful, not restrictive. Show them what they CAN access rath
     }
     
     if (shouldUseDocs) {
+      // Add document list to context if user is asking for a list
+      const documentListSection = actualDocumentsList ? `\n\n${actualDocumentsList}\n` : '';
+      
       systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
 
 You have an empathetic and warm communication style. You have access to a curated database of course materials and documents from the Faculty of Pharmaceutical Sciences at the University of Jos.
-The user (a PANSite) is asking for specific information from documents or sources. Use the provided context below to answer their question accurately.
-IMPORTANT: The context below contains the actual document content that the user is asking about. You MUST use this information to provide your answer. Do not say you don't have access to the documents - you do have access through the context provided below.
+The user (a PANSite) is asking for specific information from documents or sources.
+
+CRITICAL RULES - YOU MUST FOLLOW THESE STRICTLY:
+1. ONLY use information that is explicitly provided in the CONTEXT FROM DOCUMENTS section below.
+2. DO NOT make up, fabricate, or invent any information, document names, course codes, lecturer names, or topics.
+3. DO NOT use information from your training data or general knowledge unless it's in the provided context.
+4. If the information is NOT in the provided context, explicitly state: "I don't have that information in the available documents."
+5. If asked to list documents, ONLY list documents that appear in the ACTUAL DOCUMENTS section below. Do not invent or guess document names.
+6. When citing sources, ONLY cite sources that appear in the context provided below.
 
 The user is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
 
@@ -425,17 +493,25 @@ For chemical data, use tables with headers like "Substance", "Formula", "Molar M
 IMPORTANT: For every chemical formula, ion, mathematical equation, calculation, or symbol (even inline), ALWAYS wrap it in LaTeX math delimiters: use $...$ for inline and $$...$$ for block. Do not use plain text for any formulas or symbols. For example: $H_3O^+$, $OH^-$, $x^2 + y^2 = r^2$, $$2H_2O(l) \rightleftharpoons H_3O^+(aq) + OH^-(aq)$$. Repeat: EVERY formula, symbol, or equation must be wrapped in math delimiters.
 IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$
 
-I found relevant information in the database for this query across ${sources.length} sources, covering ${Array.from(topicAreas).join(", ") || "various"} topics from ${Array.from(documentTypes).join(", ") || "various"} document types.
+${documentListSection}I found relevant information in the database for this query across ${sources.length} sources, covering ${Array.from(topicAreas).join(", ") || "various"} topics from ${Array.from(documentTypes).join(", ") || "various"} document types.
 
 CONTEXT FROM DOCUMENTS:
 ${context}
 
-IMPORTANT: Provide direct, clear answers using document information. Be concise unless asked for details. Answer ONLY the question asked - do not provide extra information unless specifically requested. Cite sources as "According to [Source]..." when relevant. For math, use LaTeX notation ($$...$$ for display, \\(...\\) for inline).`;
+REMINDER: ONLY use information from the CONTEXT FROM DOCUMENTS section above. Do not fabricate or invent any information. If information is not in the context, say so explicitly. Provide direct, clear answers using document information. Be concise unless asked for details. Answer ONLY the question asked - do not provide extra information unless specifically requested. Cite sources as "According to [Source]..." when relevant, but ONLY cite sources that appear in the context above. For math, use LaTeX notation ($$...$$ for display, \\(...\\) for inline).`;
     } else if (hasRelevantContent) {
       // If we have content but user didn't explicitly ask for docs, offer it
+      const documentListSection = actualDocumentsList ? `\n\n${actualDocumentsList}\n` : '';
+      
       systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
 
 You have an empathetic and warm communication style. You have access to a curated database of course materials and documents from the Faculty of Pharmaceutical Sciences at the University of Jos.
+
+CRITICAL RULES - YOU MUST FOLLOW THESE STRICTLY:
+1. ONLY use information that is explicitly provided in the context sections below.
+2. DO NOT make up, fabricate, or invent any information, document names, course codes, lecturer names, or topics.
+3. If the information is NOT in the provided context, do not invent it - use only what's provided.
+
 The user (a PANSite) is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
 
 COMMUNICATION STYLE: Be empathetic, warm, and understanding in your responses. When users greet you, respond warmly and enthusiastically. Answer ONLY the questions asked - do not provide additional information, examples, or explanations unless the user specifically requests them. Be direct and concise while maintaining a friendly, supportive tone.
@@ -453,11 +529,11 @@ For chemical data, use tables with headers like "Substance", "Formula", "Molar M
 IMPORTANT: For every chemical formula, ion, mathematical equation, calculation, or symbol (even inline), ALWAYS wrap it in LaTeX math delimiters: use $...$ for inline and $$...$$ for block. Do not use plain text for any formulas or symbols. For example: $H_3O^+$, $OH^-$, $x^2 + y^2 = r^2$, $$2H_2O(l) \rightleftharpoons H_3O^+(aq) + OH^-(aq)$$. Repeat: EVERY formula, symbol, or equation must be wrapped in math delimiters.
 IMPORTANT: For all chemical equations, formulas, and mathematical expressions, always wrap them in LaTeX math delimiters: use $$...$$ for display (block) and $...$ for inline. For example: $$HCl(aq) + NaOH(aq) \\rightarrow H_2O(l) + NaCl(aq)$$
 
-I found some relevant information in the database that might be helpful:
+${documentListSection}I found some relevant information in the database that might be helpful:
 
 ${context}${generalKnowledgeSection}
 
-You can use this information to enhance your response. However, answer ONLY the question asked - do not provide extra information unless specifically requested.`;
+You can use this information to enhance your response. However, ONLY use information from the context above. Do not fabricate or invent information. Answer ONLY the question asked - do not provide extra information unless specifically requested.`;
     } else {
       systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
 
@@ -506,7 +582,7 @@ IMPORTANT: For all chemical equations, formulas, and mathematical expressions, a
         try {
           await streamChatResponse(GOOGLE_API_KEY, messagesForAI, {
             maxOutputTokens: 4096,
-            temperature: 0.3,
+            temperature: 0.1,
             topK: 40,
             topP: 0.95,
           }, (chunk) => {

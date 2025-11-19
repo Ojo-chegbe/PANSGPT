@@ -61,7 +61,7 @@ export default function Navigation() {
               <Button 
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                Get Started Free
+                Get Started
               </Button>
             </Link>
             <Button 

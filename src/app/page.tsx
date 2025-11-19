@@ -20,7 +20,6 @@ import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
 import { WhatIsPansGPT } from "@/components/landing/WhatIsPansGPT";
 import { HowItWorks } from "@/components/landing/HowItWorks";
-import { MidPageCTA } from "@/components/landing/MidPageCTA";
 import { ComparisonTable } from "@/components/landing/ComparisonTable";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { ChatMockup } from "@/components/landing/ChatMockup";
@@ -28,7 +27,6 @@ import { QuizMockup } from "@/components/landing/QuizMockup";
 import { FeedbackMockup } from "@/components/landing/FeedbackMockup";
 import { TestimonialCard } from "@/components/landing/TestimonialCard";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function LandingPage() {
   const { data: session, status } = useSession();
@@ -53,62 +51,50 @@ export default function LandingPage() {
       {/* Navigation */}
       <Navigation />
 
-      {/* Hero Section - Will add next */}
-      <section className="pt-32 pb-20 px-6 sm:px-8 lg:px-12">
+      {/* Hero Section */}
+      <section className="pt-40 pb-32 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-background via-background to-green-950/5 dark:to-green-950/10">
         <div className="container mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <Badge variant="secondary" className="w-fit">
-                Built by PANSites, for PANSites
-              </Badge>
+          <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
+            <div className="space-y-10">
+              {/* Badge */}
+              <div>
+                <Badge variant="secondary" className="w-fit mx-auto px-4 py-1.5 text-xs font-medium tracking-wide uppercase border border-border/50 bg-background/50 backdrop-blur-sm">
+                  Built by PANSites, for PANSites
+                </Badge>
+              </div>
               
-              <div className="space-y-4">
-                <h1 className="text-5xl lg:text-6xl text-foreground">
-                The Ultimate Study Hack for PANSites.
+              {/* Heading */}
+              <div className="space-y-6">
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
+                  The Ultimate Study Hack
+                  <br />
+                  <span className="text-green-600 dark:text-green-500">
+                    for PANSites
+                  </span>
                 </h1>
                 
-                <p className="text-xl text-muted-foreground max-w-xl">
-                  PansGPT is a free study partner built just for PANSites. It has already read all your official course notes. Ask it a question, and get a simple, correct answer in seconds.
+                <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light">
+                  PansGPT is a study partner built just for PANSites. It has already read all your official course notes. Ask it a question, and get a simple, correct answer in seconds.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              {/* CTA Button */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Link href="/signup">
-                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Button size="lg" className="group px-8 py-6 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 rounded-xl">
                     Start Studying Smarter
-                    <ArrowRight className="ml-2 w-5 h-5" />
+                    <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                   </Button>
                 </Link>
               </div>
 
-              <div className="flex items-center gap-8 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-primary" />
-                  <span>No credit card required</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-primary" />
-                  <span>100% Free Forever</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="aspect-square rounded-2xl overflow-hidden border border-border bg-card/50">
-      <Image
-                  src="https://images.unsplash.com/photo-1738831651985-e242f111309d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50JTIwc3R1ZHlpbmclMjBwaGFybWFjeXxlbnwxfHx8fDE3NjIxMDg0Njd8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Student studying"
-                  width={1080}
-                  height={1080}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-6 -left-6 bg-card border border-border rounded-xl p-4 max-w-sm">
-                <p className="text-sm text-muted-foreground mb-2">Student asks:</p>
-                <p className="text-foreground mb-3">"Explain Dr. Audu's one-compartment model in simple terms"</p>
-                <div className="flex items-center gap-2 text-primary">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm">Instant, accurate answer from course materials</span>
+              {/* Trust Indicators */}
+              <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 text-sm text-muted-foreground justify-center pt-6">
+                <div className="flex items-center gap-2.5 group">
+                  <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300">
+                    <Check className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="font-medium">No credit card required</span>
                 </div>
               </div>
             </div>
@@ -171,9 +157,6 @@ export default function LandingPage() {
 
       {/* How It Works Section */}
       <HowItWorks />
-
-      {/* Mid-Page CTA */}
-      <MidPageCTA />
 
       {/* Comparison Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12 bg-card/30">
@@ -313,15 +296,6 @@ export default function LandingPage() {
 
             <AccordionItem value="item-2" className="bg-card border border-border rounded-lg px-6">
               <AccordionTrigger className="text-foreground hover:text-primary">
-                Is it really free? What's the catch?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                Yes, it is 100% free. We are PANSites too, and we want everyone to be able to use it. There is no catch. We will never sell your personal data.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-foreground hover:text-primary">
                 How do I know the answers are correct?
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
@@ -329,7 +303,7 @@ export default function LandingPage() {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-4" className="bg-card border border-border rounded-lg px-6">
+            <AccordionItem value="item-3" className="bg-card border border-border rounded-lg px-6">
               <AccordionTrigger className="text-foreground hover:text-primary">
                 Can I upload my own notes?
               </AccordionTrigger>
