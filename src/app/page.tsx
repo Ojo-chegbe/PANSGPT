@@ -51,6 +51,8 @@ export default function LandingPage() {
       {/* Navigation */}
       <Navigation />
 
+      {/* Main Content Wrapper */}
+      <div className="max-w-6xl mx-auto">
       {/* Hero Section */}
       <section className="pt-40 pb-32 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-background via-background to-green-950/5 dark:to-green-950/10">
         <div className="container mx-auto">
@@ -327,6 +329,7 @@ export default function LandingPage() {
       </div>
       </section>
 
+      </div>
       {/* Footer */}
       <Footer />
     </div>

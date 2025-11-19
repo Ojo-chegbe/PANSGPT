@@ -106,28 +106,54 @@ const MessageList = React.memo(({
                     Information from uploaded documents
                   </div>
                 )}
-                {message.role === 'model' && message.citations && message.citations.length > 0 && (
-                  <div className="mt-3 relative">
+              </>
+            )}
+          </div>
+          {/* Action buttons */}
+          <div className={`flex items-center gap-2 md:gap-3 ${message.role === 'user' ? 'justify-end mt-2' : 'justify-start pl-3 md:pl-6 mt-0.5'} relative z-50`}>
+            <button
+              onClick={() => handleCopy(idx, message.content)}
+              className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
+              title="Copy message"
+            >
+              {copiedIdx === idx ? (
+                <span className="text-xs text-green-600 dark:text-[#00A400] font-medium">Copied!</span>
+              ) : (
+                <ClipboardIcon className="h-4 w-4 md:h-5 md:w-5" />
+              )}
+            </button>
+            {message.role === 'model' && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowCitationsFor(showCitationsFor === idx ? null : idx);
                       }}
-                      className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 transition-colors p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
                       title="View sources"
                     >
-                      <EllipsisVerticalIcon className="h-4 w-4" />
+                <EllipsisVerticalIcon className="h-4 w-4 md:h-5 md:w-5" />
                     </button>
+            )}
+            {message.role === 'user' && (
+              <button
+                onClick={() => handleEdit(idx)}
+                className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
+                title="Edit message"
+              >
+                <PencilIcon className="h-4 w-4 md:h-5 md:w-5" />
+              </button>
+            )}
                     {showCitationsFor === idx && (
                       <>
                         <div 
-                          className="fixed inset-0 z-40" 
+                  className="fixed inset-0 z-[45]" 
                           onClick={() => setShowCitationsFor(null)}
                         />
-                        <div className="absolute z-50 left-0 bottom-full mb-2 p-3 bg-gray-100 dark:bg-[#2D3A2D] border border-gray-300 dark:border-green-800/50 rounded-lg shadow-lg max-w-sm min-w-[200px]">
+                <div className="absolute z-[60] left-0 bottom-full mb-2 p-3 bg-gray-100 dark:bg-[#2D3A2D] border border-gray-300 dark:border-green-800/50 rounded-lg shadow-lg max-w-sm min-w-[200px]">
                           <div className="text-xs font-semibold text-gray-700 dark:text-green-100 mb-2">
                             Sources:
                           </div>
+                  {message.citations && message.citations.length > 0 ? (
                           <div className="space-y-2">
                             {message.citations.map((citation: { lecturerName: string; documentTitle: string }, citationIdx: number) => (
                               <div key={citationIdx} className="text-xs text-gray-600 dark:text-green-200/80">
@@ -138,35 +164,13 @@ const MessageList = React.memo(({
                               </div>
                             ))}
                           </div>
+                  ) : (
+                    <div className="text-xs text-gray-600 dark:text-green-200/80">
+                      No references available for this message.
                         </div>
-                      </>
                     )}
                   </div>
-                )}
               </>
-            )}
-          </div>
-          {/* Action buttons */}
-          <div className={`flex items-center gap-2 md:gap-3 mt-1 justify-${message.role === 'user' ? 'end' : 'start'} opacity-0 group-hover:opacity-100 transition-opacity`}>
-            <button
-              onClick={() => handleCopy(idx, message.content)}
-              className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
-              title="Copy message"
-            >
-              {copiedIdx === idx ? (
-                <span className="text-xs text-green-600 dark:text-[#00A400] font-medium">Copied!</span>
-              ) : (
-                <ClipboardIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              )}
-            </button>
-            {message.role === 'user' && (
-              <button
-                onClick={() => handleEdit(idx)}
-                className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
-                title="Edit message"
-              >
-                <PencilIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
-              </button>
             )}
           </div>
         </div>
@@ -585,10 +589,75 @@ function MainPageContent() {
             // Try to load the specific conversation from URL
             console.log('Loading conversation from URL:', conversationIdFromUrl);
             await loadConversationFromUrl(conversationIdFromUrl, data.conversations || []);
+            // Store the active conversation ID
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('ai_activeId', conversationIdFromUrl);
+            }
           } else {
-            // No conversation ID in URL - create a new conversation
-            console.log('No conversation ID in URL, creating new conversation');
+            // No conversation ID in URL - check localStorage for previous conversation
+            const storedActiveId = typeof window !== 'undefined' ? localStorage.getItem('ai_activeId') : null;
+            
+            if (storedActiveId && !storedActiveId.startsWith('temp_')) {
+              // Check if the stored conversation exists in the loaded conversations
+              const storedConv = data.conversations?.find((conv: any) => conv.id === storedActiveId);
+              if (storedConv) {
+                console.log('Restoring previous conversation from localStorage:', storedActiveId);
+                await loadConversationFromUrl(storedActiveId, data.conversations || []);
+              } else {
+                // Stored conversation doesn't exist, try to fetch it
+                console.log('Stored conversation not in list, fetching directly:', storedActiveId);
+                try {
+                  const fetchResponse = await fetch(`/api/conversations/${storedActiveId}`, {
+                    credentials: 'include',
+                  });
+                  if (fetchResponse.ok) {
+                    const fetchData = await fetchResponse.json();
+                    const conversation = fetchData.conversation;
+                    const formattedConversation = {
+                      id: conversation.id,
+                      name: conversation.title,
+                      messages: conversation.messages.map((msg: any) => ({
+                        role: msg.role as MessageRole,
+                        content: msg.content,
+                        createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
+                        citations: msg.citations || undefined
+                      }))
+                    };
+                    const allConversations = [formattedConversation, ...(data.conversations || []).map((conv: any) => ({
+                      id: conv.id,
+                      name: conv.title,
+                      messages: conv.messages.map((msg: any) => ({
+                        role: msg.role as MessageRole,
+                        content: msg.content,
+                        createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
+                        citations: msg.citations || undefined
+                      }))
+                    }))];
+                    setConversations(allConversations);
+                    setActiveId(storedActiveId);
+                    const sortedMessages = [...formattedConversation.messages].sort((a, b) => {
+                      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                      return dateA - dateB;
+                    });
+                    setMessages(sortedMessages);
+                    // Update URL to include conversation ID
+                    router.push(`/main?conversation=${storedActiveId}`);
+                  } else {
+                    // Conversation not found, create new one
+                    console.log('Stored conversation not found, creating new conversation');
             await createNewConversation();
+                  }
+                } catch (err) {
+                  console.error('Error fetching stored conversation:', err);
+                  await createNewConversation();
+                }
+              }
+            } else {
+              // No stored conversation - create a new conversation
+              console.log('No conversation ID in URL and no stored conversation, creating new conversation');
+              await createNewConversation();
+            }
           }
         } catch (err) {
           console.error("Error loading user data:", err);
@@ -747,19 +816,12 @@ function MainPageContent() {
     }
   };
 
-  // Remove localStorage usage - database is now the single source of truth
-  // useEffect(() => {
-  //   localStorage.setItem('ai_conversations', JSON.stringify(conversations));
-  //   if (activeId) localStorage.setItem('ai_activeId', activeId);
-  // }, [conversations, activeId]);
-
-  // Remove localStorage restoration - we load from database instead
-  // useEffect(() => {
-  //   const storedId = localStorage.getItem('ai_activeId');
-  //   if (storedId && conversations.some(c => c.id === storedId)) {
-  //     setActiveId(storedId);
-  //   }
-  // }, [conversations]);
+  // Store activeId in localStorage to restore when navigating back
+  useEffect(() => {
+    if (activeId && typeof window !== 'undefined' && !activeId.startsWith('temp_')) {
+      localStorage.setItem('ai_activeId', activeId);
+    }
+  }, [activeId]);
 
   // Memoize sorted messages to prevent unnecessary sorting
   // Always sort by createdAt to ensure consistent ordering
@@ -1468,7 +1530,7 @@ function MainPageContent() {
                 </div>
               </div>
             ) : (
-              <>
+              <div className="mb-20 md:mb-24">
                 <MessageList
                   messages={messages}
                   editingIdx={editingIdx}
@@ -1501,7 +1563,7 @@ function MainPageContent() {
                     </svg>
                   </button>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
