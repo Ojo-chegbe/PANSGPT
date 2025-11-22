@@ -215,7 +215,7 @@ const InputArea = React.memo(({
 }) => (
   <form
     onSubmit={handleSend}
-    className={`fixed bottom-0 z-40 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-8 pb-4 md:pb-8 bg-transparent`}
+    className={`fixed bottom-0 z-30 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-8 pb-4 md:pb-8 bg-transparent`}
   >
     <div className="rounded-2xl flex flex-col gap-3 px-3 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D]" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}
       >
@@ -1320,11 +1320,20 @@ function MainPageContent() {
 
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden text-gray-800 dark:text-white bg-gray-50 dark:[background-color:#0C120C]">
+      {/* Mobile backdrop overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-[55] md:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar"
+        />
+      )}
+      
       {/* Sidebar - Always visible collapsed, expands when sidebarOpen */}
-      <aside className={`h-[100dvh] fixed left-0 top-0 z-50 flex flex-col transition-all duration-300 ${
+      <aside className={`h-[100dvh] fixed left-0 top-0 flex flex-col transition-all duration-300 ${
         sidebarOpen 
-          ? 'w-[85vw] md:w-72 border-r border-gray-200 dark:border-white/10 bg-white dark:[background-color:#2D3A2D]' 
-          : 'w-0 md:w-20'
+          ? 'w-[85vw] md:w-72 border-r border-gray-200 dark:border-white/10 bg-white dark:[background-color:#2D3A2D] z-[60]' 
+          : 'w-0 md:w-20 z-50'
       }`}>
         {/* Sidebar toggle button - always visible on mobile when collapsed */}
         <div className={`${sidebarOpen ? 'px-4 pt-4 pb-3' : 'p-3 md:px-4 md:pt-4 md:pb-3'} flex items-center justify-start ${!sidebarOpen ? 'md:border-r md:border-gray-200 dark:md:border-white/10' : ''}`}>
@@ -1473,7 +1482,7 @@ function MainPageContent() {
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 overflow-hidden w-0 min-w-0 ${sidebarOpen ? 'md:ml-72' : 'md:ml-20'}`}>
         {/* Top Bar - Fixed */}
-        <div className={`fixed top-0 right-0 z-50 flex items-center justify-center px-3 md:px-6 h-16 md:h-20 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-hidden bg-white dark:[background-color:#0C120C] ${
+        <div className={`fixed top-0 right-0 z-40 flex items-center justify-center px-3 md:px-6 h-16 md:h-20 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-hidden bg-white dark:[background-color:#0C120C] ${
           sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'
         }`}>
           {/* Constrained content container - matches conversation and input width */}
