@@ -1639,7 +1639,7 @@ function MainPageContent() {
           <div className="w-full max-w-6xl mx-auto flex items-center gap-2 md:gap-4 overflow-hidden" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}>
             {/* Logo */}
             <div className="flex items-center justify-center ml-14 md:ml-4 h-full">
-              <div className="w-12 h-12 md:w-40 md:h-40 relative">
+              <div className="w-20 h-20 md:w-40 md:h-40 relative flex-shrink-0">
                 <Image
                   src="/uploads/Logo 2.png"
                   alt="PansGPT Logo"

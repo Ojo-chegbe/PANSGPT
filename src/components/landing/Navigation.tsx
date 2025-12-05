@@ -18,7 +18,7 @@ export default function Navigation() {
             href="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
-            <div className="w-20 h-20 relative">
+            <div className="w-28 h-28 md:w-32 md:h-32 relative">
               <Image
                 src="/uploads/Logo 2.png"
                 alt="PansGPT Logo"
