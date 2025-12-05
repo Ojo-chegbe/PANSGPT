@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -105,6 +105,23 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0C120C] flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white dark:bg-[#2D3A2D] rounded-lg shadow-lg p-8 text-center">
+          <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Loading...
+          </h1>
+        </div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
 
