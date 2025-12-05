@@ -2,6 +2,7 @@ import { ChatMessage, streamChatResponse } from "@/lib/google-ai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getClient } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { readFile } from "fs/promises";
 import { join } from "path";
 
@@ -62,12 +63,18 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: "Message is required" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Get user session to access level
+    // Get user session to access user ID
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
-    const userLevel = session.user.level;
+    
+    // Fetch user's current level from database to ensure it's up-to-date
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { level: true }
+    });
+    const userLevel = user?.level || session.user.level || null;
 
     // Extract source filters from the query
     const extractedFilters = extractSourceFilters(message);
@@ -204,14 +211,60 @@ export async function POST(req: Request) {
           contextParts.push(sourceContext);
           sources.push(source);
           
-          // Collect citation information
+          // Collect citation information with better fallbacks
           const lecturerName = metadata.author || metadata.context?.professor || metadata.professorName || '';
-          const documentTitle = metadata.topic || '';
-          if (lecturerName && documentTitle) {
+          
+          // Build document title with better prioritization - skip 'Untitled' and 'Unknown'
+          let documentTitle = '';
+          
+          // First, try course info title (most specific)
+          if (metadata.context?.course_info?.title && metadata.context.course_info.title !== 'Unknown') {
+            documentTitle = metadata.context.course_info.title;
+          }
+          // Then try topic or topic_area (more descriptive than 'Untitled')
+          else if (metadata.topic && metadata.topic !== 'General' && metadata.topic !== 'Untitled') {
+            documentTitle = metadata.topic;
+          }
+          else if (metadata.context?.topic_area && metadata.context.topic_area !== 'General' && metadata.context.topic_area !== 'Untitled') {
+            documentTitle = metadata.context.topic_area;
+          }
+          // Try original title if it's not 'Untitled'
+          else if (metadata.title && metadata.title !== 'Untitled') {
+            documentTitle = metadata.title;
+          }
+          // Try combining course code and topic if available
+          else if (metadata.context?.course_info?.code && metadata.context.course_info.code !== 'Unknown') {
+            const courseCode = metadata.context.course_info.code;
+            const topic = metadata.topic || metadata.context?.topic_area;
+            if (topic && topic !== 'General' && topic !== 'Untitled') {
+              documentTitle = `${courseCode}: ${topic}`;
+            } else {
+              documentTitle = courseCode;
+            }
+          }
+          // Extract from source if it's in "code - professor" format
+          else if (source && source !== 'Unknown') {
+            const sourceParts = source.split(' - ');
+            if (sourceParts.length > 1) {
+              documentTitle = sourceParts[0]; // Use course code part
+            } else {
+              documentTitle = source;
+            }
+          }
+          // Last resort
+          else {
+            documentTitle = 'Course Materials';
+          }
+          
+          // Add citation if we have at least a lecturer name or a meaningful document title
+          if (lecturerName || (documentTitle && documentTitle !== 'Course Materials' && documentTitle !== 'Unknown')) {
             // Avoid duplicates
             const citationKey = `${lecturerName}|${documentTitle}`;
             if (!citations.some(c => `${c.lecturerName}|${c.documentTitle}` === citationKey)) {
-              citations.push({ lecturerName, documentTitle });
+              citations.push({ 
+                lecturerName: lecturerName || 'Unknown Lecturer', 
+                documentTitle: documentTitle 
+              });
             }
           }
         });
@@ -239,15 +292,65 @@ export async function POST(req: Request) {
             context = fallbackContext;
             hasRelevantContent = true;
             
-            // Collect citations from fallback results
+            // Collect citations from fallback results with better fallbacks
             results.forEach((chunk: DocumentChunk) => {
               const metadata = chunk.metadata;
+              const source = metadata.source || 
+                            (metadata.context?.course_info?.code && metadata.context?.professor 
+                              ? `${metadata.context.course_info.code} - ${metadata.context.professor}`
+                              : metadata.context?.professor) || '';
               const lecturerName = metadata.author || metadata.context?.professor || metadata.professorName || '';
-              const documentTitle = metadata.topic || '';
-              if (lecturerName && documentTitle) {
+              
+              // Build document title with better prioritization - skip 'Untitled' and 'Unknown'
+              let documentTitle = '';
+              
+              // First, try course info title (most specific)
+              if (metadata.context?.course_info?.title && metadata.context.course_info.title !== 'Unknown') {
+                documentTitle = metadata.context.course_info.title;
+              }
+              // Then try topic or topic_area (more descriptive than 'Untitled')
+              else if (metadata.topic && metadata.topic !== 'General' && metadata.topic !== 'Untitled') {
+                documentTitle = metadata.topic;
+              }
+              else if (metadata.context?.topic_area && metadata.context.topic_area !== 'General' && metadata.context.topic_area !== 'Untitled') {
+                documentTitle = metadata.context.topic_area;
+              }
+              // Try original title if it's not 'Untitled'
+              else if (metadata.title && metadata.title !== 'Untitled') {
+                documentTitle = metadata.title;
+              }
+              // Try combining course code and topic if available
+              else if (metadata.context?.course_info?.code && metadata.context.course_info.code !== 'Unknown') {
+                const courseCode = metadata.context.course_info.code;
+                const topic = metadata.topic || metadata.context?.topic_area;
+                if (topic && topic !== 'General' && topic !== 'Untitled') {
+                  documentTitle = `${courseCode}: ${topic}`;
+                } else {
+                  documentTitle = courseCode;
+                }
+              }
+              // Extract from source if it's in "code - professor" format
+              else if (source && source !== 'Unknown') {
+                const sourceParts = source.split(' - ');
+                if (sourceParts.length > 1) {
+                  documentTitle = sourceParts[0]; // Use course code part
+                } else {
+                  documentTitle = source;
+                }
+              }
+              // Last resort
+              else {
+                documentTitle = 'Course Materials';
+              }
+              
+              // Add citation if we have at least a lecturer name or a meaningful document title
+              if (lecturerName || (documentTitle && documentTitle !== 'Course Materials' && documentTitle !== 'Unknown')) {
                 const citationKey = `${lecturerName}|${documentTitle}`;
                 if (!citations.some(c => `${c.lecturerName}|${c.documentTitle}` === citationKey)) {
-                  citations.push({ lecturerName, documentTitle });
+                  citations.push({ 
+                    lecturerName: lecturerName || 'Unknown Lecturer', 
+                    documentTitle: documentTitle 
+                  });
                 }
               }
             });
@@ -593,9 +696,9 @@ IMPORTANT: For all chemical equations, formulas, and mathematical expressions, a
             firstChunk = false;
           });
           
-          // Send citations metadata after streaming completes (only if documents were actually used)
-          // Citations should only be sent when shouldUseDocs is true, meaning documents were provided in context
-          if (citations.length > 0 && shouldUseDocs && hasRelevantContent) {
+          // Send citations metadata after streaming completes (whenever documents were actually used)
+          // Send citations if we have citations and relevant content was used, regardless of whether user explicitly asked for docs
+          if (citations.length > 0 && hasRelevantContent) {
             const citationsData = JSON.stringify({ type: 'citations', citations });
             controller.enqueue(encoder.encode("\n"));
             controller.enqueue(encoder.encode(citationsData));

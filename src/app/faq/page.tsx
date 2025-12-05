@@ -118,7 +118,7 @@ const FaqPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C] flex flex-col items-center py-10 px-4">
-      <div className="w-full max-w-3xl mx-auto px-4">
+      <div className="w-full max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
         <div className="rounded-2xl p-8 flex flex-col gap-8 border bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10 max-w-2xl mx-auto">
         <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white text-center mb-4">PansGPT FAQs</h1>
         <p className="text-lg text-gray-600 dark:text-white/70 text-center mb-8 max-w-2xl mx-auto">

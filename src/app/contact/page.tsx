@@ -63,7 +63,7 @@ export default function ContactPage() {
 
       {/* Hero Section */}
       <section className="pt-32 pb-12 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-5xl">
+        <div className="max-w-6xl mx-auto">
           <motion.div 
             className="text-center space-y-6"
             initial={{ opacity: 0, y: 30 }}
@@ -84,7 +84,7 @@ export default function ContactPage() {
 
       {/* Contact Options Grid */}
       <section className="pb-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-6xl">
+        <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* 1. Report a Problem */}
@@ -399,7 +399,7 @@ export default function ContactPage() {
                           <Input 
                             id="contrib-courses" 
                             required 
-                            placeholder="E.g., PHA 301, PHA 303"
+                            placeholder="E.g., PCH 301, PCH 303"
                           />
                         </div>
                         
@@ -454,20 +454,6 @@ export default function ContactPage() {
                         If you find this tool helpful and want to help us cover those costs, please consider a small donation. 
                         Every "thank you" donation helps keep the lights on for everyone.
                       </p>
-                      
-                      <div className="space-y-3">
-                        <Button className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Donate via Paystack
-                          <ExternalLink className="w-4 h-4 ml-2" />
-                        </Button>
-                        
-                        <Button className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground ml-0 md:ml-2">
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Donate via Flutterwave
-                          <ExternalLink className="w-4 h-4 ml-2" />
-                        </Button>
-                      </div>
                     </div>
                     
                     <div className="md:w-80 bg-card border border-border rounded-lg p-4">
@@ -504,7 +490,7 @@ export default function ContactPage() {
 
       {/* Bottom CTA */}
       <section className="pb-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-4xl">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

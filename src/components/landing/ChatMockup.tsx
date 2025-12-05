@@ -24,7 +24,7 @@ export function ChatMockup() {
               <li>• Reduces intestinal glucose absorption</li>
             </ul>
             <div className="pt-2 border-t border-border/50 mt-3">
-              <p className="text-xs text-primary">📄 Source: PHA 303 - Dr. Chime's Pharmacodynamics Notes, Page 45</p>
+              <p className="text-xs text-primary">📄 Source: PCH 303 - Dr. Chime's Pharmacodynamics Notes, Page 45</p>
             </div>
           </div>
         </div>

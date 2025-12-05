@@ -11,7 +11,7 @@ export default function Navigation() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="container mx-auto max-w-6xl px-6 sm:px-8 lg:px-12 py-2">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link 

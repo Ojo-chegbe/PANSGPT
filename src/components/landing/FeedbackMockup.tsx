@@ -45,18 +45,8 @@ export function FeedbackMockup() {
         </p>
         <div className="flex items-center gap-2 pt-2">
           <BookOpen className="w-3 h-3 text-primary" />
-          <span className="text-xs text-primary">Reference: PHA 302 - Drug Metabolism, Page 23</span>
+          <span className="text-xs text-primary">Reference: PCH 302 - Drug Metabolism, Page 23</span>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button variant="outline" className="flex-1">
-          Review Topic
-        </Button>
-        <Button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground">
-          Next Question
-        </Button>
       </div>
     </div>
   );

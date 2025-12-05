@@ -17,6 +17,8 @@ model User {
   updatedAt            DateTime             @updatedAt
   password             String?
   emailVerified        DateTime?
+  verificationToken    String?
+  verificationTokenExpires DateTime?
   achievements         Json?
   bio                  String?
   level                String?
@@ -30,6 +32,7 @@ model User {
   subscription         Subscription?
   activeSessions       Json?                // Stored as: Session[]
   passwordResetTokens  PasswordResetToken[]
+  messageFeedbacks     MessageFeedback[]
 }
 
 model Conversation {
@@ -230,4 +233,20 @@ model PasswordResetToken {
 
   @@index([userId])
   @@index([token])
+}
+
+model MessageFeedback {
+  id          String   @id @default(cuid())
+  messageId   String?  // Optional: message ID if available
+  userId      String
+  rating      String   // "thumbs_up", "thumbs_down", or "popup_feedback"
+  feedback    String?  @db.Text // Optional text feedback
+  messageContent String? @db.Text // Store full message content for context (unlimited length)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([messageId])
+  @@index([rating])
+  @@index([createdAt])
 }

@@ -43,6 +43,6 @@ export default async function middleware(request: NextRequestWithAuth) {
 export const config = {
   // Match all pages except static assets and API routes
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|logo|uploads).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|logo|uploads|apk|videos).*)',
   ],
 }; 

@@ -47,7 +47,7 @@ export default function TermsPage() {
 
       {/* Hero Section */}
       <section className="pt-32 pb-12 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-5xl">
+        <div className="max-w-6xl mx-auto">
           <motion.div 
             className="text-center space-y-6"
             initial={{ opacity: 0, y: 30 }}
@@ -86,7 +86,7 @@ export default function TermsPage() {
 
       {/* Important Notice */}
       <section className="pb-12 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-5xl">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -113,7 +113,7 @@ export default function TermsPage() {
 
       {/* Quick Navigation */}
       <section className="pb-12 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-5xl">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}

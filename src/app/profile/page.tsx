@@ -43,7 +43,20 @@ export default function ProfilePage() {
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [quizAnalytics, setQuizAnalytics] = useState<QuizAnalytics | null>(null);
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
-  const [selectedDay, setSelectedDay] = useState('Monday');
+  // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  const getCurrentDay = () => {
+    const today = new Date().getDay();
+    const dayMap: { [key: number]: string } = {
+      1: 'Monday',
+      2: 'Tuesday',
+      3: 'Wednesday',
+      4: 'Thursday',
+      5: 'Friday',
+    };
+    // If it's Saturday (6) or Sunday (0), default to Monday
+    return dayMap[today] || 'Monday';
+  };
+  const [selectedDay, setSelectedDay] = useState(getCurrentDay());
   const [timetableLoading, setTimetableLoading] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -375,7 +388,44 @@ export default function ProfilePage() {
           ) : (
             <div className="space-y-3">
               {(() => {
-                const dayEntries = timetable.filter(entry => entry.day === selectedDay);
+                // Filter entries for selected day and sort by time
+                const dayEntries = timetable
+                  .filter(entry => entry.day === selectedDay)
+                  .sort((a, b) => {
+                    // Parse time slots to compare chronologically
+                    const parseTime = (timeSlot: string): number => {
+                      // Extract the start time from time slot (e.g., "8:00 AM - 9:00 AM" -> "8:00 AM")
+                      const startTime = timeSlot.split(' - ')[0] || timeSlot;
+                      
+                      // Handle 12-hour format (e.g., "8:00 AM", "2:00 PM")
+                      const timeMatch = startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                      if (timeMatch) {
+                        let hours = parseInt(timeMatch[1], 10);
+                        const minutes = parseInt(timeMatch[2], 10);
+                        const period = timeMatch[3].toUpperCase();
+                        
+                        // Convert to 24-hour format
+                        if (period === 'PM' && hours !== 12) hours += 12;
+                        if (period === 'AM' && hours === 12) hours = 0;
+                        
+                        return hours * 60 + minutes; // Return minutes since midnight
+                      }
+                      
+                      // Handle 24-hour format (e.g., "08:00", "14:00")
+                      const time24Match = startTime.match(/(\d{1,2}):(\d{2})/);
+                      if (time24Match) {
+                        const hours = parseInt(time24Match[1], 10);
+                        const minutes = parseInt(time24Match[2], 10);
+                        return hours * 60 + minutes;
+                      }
+                      
+                      // Fallback: return 0 if time can't be parsed
+                      return 0;
+                    };
+                    
+                    return parseTime(a.timeSlot) - parseTime(b.timeSlot);
+                  });
+                
                 return dayEntries.length > 0 ? (
                   dayEntries.map(entry => (
                         <div 

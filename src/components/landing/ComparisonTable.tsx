@@ -24,7 +24,7 @@ const comparisonData: ComparisonRow[] = [
   {
     feature: "Is it specialized?",
     chatgpt: "No. It knows nothing about your lecturers or courses.",
-    pansgpt: "Yes. It knows \"PHA 301\" and \"Dr. Audu's\" notes.",
+    pansgpt: "Yes. It knows \"PCH 301\" and \"Dr. Audu's\" notes.",
     chatgptNegative: true
   },
   {

@@ -30,6 +30,8 @@ export default function SignupPage() {
   const [clientDeviceId, setClientDeviceId] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsError, setTermsError] = useState("");
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [signupEmail, setSignupEmail] = useState("");
 
   useEffect(() => {
     const deviceId = getDeviceId();
@@ -94,15 +96,24 @@ export default function SignupPage() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         // Show backend error if available, otherwise generic
         setError(data.error || data.message || "Something went wrong");
         setIsLoading(false);
         return;
       }
 
-      // Sign in the user
+      // Check if email verification is required
+      if (data.requiresVerification || data.message?.includes("verify")) {
+        setVerificationSent(true);
+        setSignupEmail(email);
+        setIsLoading(false);
+        return;
+      }
+
+      // If verification not required (shouldn't happen with new flow), sign in the user
       const result = await signIn("credentials", {
         email,
         password,
@@ -144,13 +155,54 @@ export default function SignupPage() {
 
       <div className="max-w-2xl mx-auto px-6 py-8">
         <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
-                <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+          {verificationSent ? (
+            <div className="text-center space-y-6">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30 rounded-xl p-6">
+                <CheckCircleIcon className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  Check Your Email!
+                </h2>
+                <p className="text-gray-700 dark:text-gray-300 mb-2">
+                  We've sent a verification link to <strong>{signupEmail}</strong>
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  Please click the link in the email to verify your account. You'll be able to log in once your email is verified.
+                </p>
+                <p className="text-gray-500 dark:text-gray-500 text-xs mt-4">
+                  Didn't receive the email? Check your spam folder or try signing up again.
+                </p>
               </div>
-            )}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/login"
+                  className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+                >
+                  Go to Login
+                </Link>
+                <button
+                  onClick={() => {
+                    setVerificationSent(false);
+                    setSignupEmail("");
+                    setEmail("");
+                    setPassword("");
+                    setConfirmPassword("");
+                    setFullName("");
+                    setLevel("");
+                  }}
+                  className="inline-block bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-2 px-6 rounded-lg transition-colors"
+                >
+                  Sign Up Again
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
+                  <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                  <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+                </div>
+              )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Full Name */}
@@ -340,8 +392,10 @@ export default function SignupPage() {
               </button>
             </div>
           </form>
-
+          )}
+          
           {/* Login Link */}
+          {!verificationSent && (
           <div className="mt-8 text-center">
               <p className="text-gray-600 dark:text-white/70">
               Already have an account?{' '}
@@ -353,6 +407,7 @@ export default function SignupPage() {
               </Link>
             </p>
           </div>
+          )}
         </div>
       </div>
     </div>

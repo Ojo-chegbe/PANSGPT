@@ -49,9 +49,7 @@ export function QuizMockup() {
       </div>
 
       {/* Action Button */}
-      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-        Submit Answer
-      </Button>
+     
     </div>
   );
 }

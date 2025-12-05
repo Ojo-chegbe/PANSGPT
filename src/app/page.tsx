@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { 
   Zap, 
@@ -13,14 +12,12 @@ import {
   MessageSquare, 
   ListChecks, 
   Lightbulb, 
-  Check,
-  ArrowRight
+  ArrowRight,
+  Download
 } from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
-import { WhatIsPansGPT } from "@/components/landing/WhatIsPansGPT";
 import { HowItWorks } from "@/components/landing/HowItWorks";
-import { ComparisonTable } from "@/components/landing/ComparisonTable";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { ChatMockup } from "@/components/landing/ChatMockup";
 import { QuizMockup } from "@/components/landing/QuizMockup";
@@ -88,15 +85,17 @@ export default function LandingPage() {
                     <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                   </Button>
                 </Link>
+                <Link href="/download">
+                  <Button size="lg" variant="outline" className="px-8 py-6 text-base font-semibold border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 rounded-xl">
+                    <Download className="mr-2 w-5 h-5" />
+                    Download
+                  </Button>
+                </Link>
               </div>
 
               {/* Trust Indicators */}
               <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 text-sm text-muted-foreground justify-center pt-6">
                 <div className="flex items-center gap-2.5 group">
-                  <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300">
-                    <Check className="w-3.5 h-3.5 text-primary" />
-                  </div>
-                  <span className="font-medium">No credit card required</span>
                 </div>
               </div>
             </div>
@@ -104,16 +103,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* What is PansGPT Section */}
-      <WhatIsPansGPT />
-
       {/* Why Use PansGPT Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12">
         <div className="container mx-auto">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-4xl text-foreground">
-              Because Your 2 AM Cram Session <br />
-              <span className="text-primary">Needs a Co-pilot.</span>
+              Pharmacy School is intense, we know, so we built <br />
+              <span className="text-primary">PansGPT to make sure you can...</span>
             </h2>
           </div>
 
@@ -159,25 +155,6 @@ export default function LandingPage() {
 
       {/* How It Works Section */}
       <HowItWorks />
-
-      {/* Comparison Section */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12 bg-card/30">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl text-foreground">
-              How PansGPT is Different <br />
-              <span className="text-primary">from ChatGPT</span>
-            </h2>
-          </div>
-
-          <ComparisonTable />
-
-          <p className="text-center text-lg text-muted-foreground mt-12">
-            Using ChatGPT for your course is like searching a giant, messy library with no librarian. <br />
-            <span className="text-foreground">PansGPT is your personal, organized study folder.</span>
-          </p>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section id="features" className="py-20 px-6 sm:px-8 lg:px-12">
@@ -228,31 +205,27 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             <TestimonialCard 
-              quote="PansGPT helps me study faster. I use it to summarize 10 lectures into one and then generate 50 quiz questions to find my weak spots. It's how I find what I don't know before an exam."
-              name="Kelvin A."
-              role="500 Level (Academic Excellence Awardee)"
-              imageUrl="https://images.unsplash.com/photo-1685538856920-9c7cdd86a49c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwc3R1ZGVudCUyMHBvcnRyYWl0fGVufDF8fHx8MTc2MjEwODQ2OHww&ixlib=rb-4.1.0&q=80&w=1080"
+              quote="What stood out while test running the app was that it gives you concise and wholesome answers according to what you're expected to know. The tests are really helpful in gauging one's preparedness for an actual test or exam and serve as a good pre-test & post-study drill."
+              name="Naomi C. Okwuzi"
+              role="Pharmacy Student"
             />
             
             <TestimonialCard 
-              quote="I was failing PHA 303. I just couldn't keep up. PansGPT was like having a patient friend explain things to me over and over. I finally understood pharmacodynamics, and I passed. It's a lifesaver."
-              name="Anita E."
-              role="300 Level"
-              imageUrl="https://images.unsplash.com/photo-1706025090794-7ade2c1b6208?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b3VuZyUyMHByb2Zlc3Npb25hbCUyMGhlYWRzaG90fGVufDF8fHx8MTc2MjA1MDY5OHww&ixlib=rb-4.1.0&q=80&w=1080"
+              quote="PansGPT is a great tool that makes studying a lot easier. It is course-specific to aid us as Pharmacy students. I personally love the quiz section."
+              name="Kelvin E."
+              role="Pharmacy Student"
             />
             
             <TestimonialCard 
-              quote="As an educator, my goal is to help students understand complex topics, not just memorize. The way PansGPT uses our own materials to help students learn is remarkable. I am recommending it to all my students as a powerful study aid."
-              name="Dr. [Respected Lecturer's Name]"
-              role="Dept. of Clinical Pharmacy"
-              imageUrl="https://images.unsplash.com/photo-1758270705031-ebd46917a454?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwcHJvZmVzc29yJTIwdGVhY2hpbmd8ZW58MXx8fHwxNzYyMDE3Njc1fDA&ixlib=rb-4.1.0&q=80&w=1080"
+              quote="PansGPT has transformed how I approach my studies. The personalized explanations help me understand complex pharmaceutical concepts, and the quiz feature is perfect for testing my knowledge before exams. It's like having a study partner available 24/7."
+              name="Anita Dangwam"
+              role="Pharmacy Student"
             />
             
             <TestimonialCard 
-              quote="We built this because we lived through the 2 AM cram sessions. We knew there had to be a better way than scrolling through 20 different PDFs. This is the tool we wish we had."
+              quote="We created PansGPT because we experienced the challenges of pharmacy education firsthand. We knew there had to be a smarter way to study than endless hours with scattered resources. This is the comprehensive study companion we always wished we had during our academic journey—built by students, for students."
               name="The PansGPT Team"
-              role="Creators"
-              imageUrl="https://images.unsplash.com/photo-1685538856920-9c7cdd86a49c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwc3R1ZGVudCUyMHBvcnRyYWl0fGVufDF8fHx8MTc2MjEwODQ2OHww&ixlib=rb-4.1.0&q=80&w=1080"
+              role="Creators & Pharmacy Alumni"
             />
           </div>
         </div>
@@ -274,46 +247,6 @@ export default function LandingPage() {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section id="faq" className="py-20 px-6 sm:px-8 lg:px-12 bg-card/30">
-        <div className="mx-auto max-w-lg">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl text-foreground">
-              Got Questions? <span className="text-primary">We've Got Answers.</span>
-            </h2>
-          </div>
-
-          <Accordion type="single" collapsible className="space-y-4 w-full">
-            <AccordionItem value="item-1" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-foreground hover:text-primary">
-                Is this cheating?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                No. PansGPT is a study tool, like a textbook, past question, or a tutor. It helps you understand your notes, not cheat on a test. It even tells you where in your notes the answer came from, so you learn the source material.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-foreground hover:text-primary">
-                How do I know the answers are correct?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                PansGPT only uses your official UJ Pharmacy notes. Its answers are as accurate as your course materials. It is not guessing from the internet.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3" className="bg-card border border-border rounded-lg px-6">
-              <AccordionTrigger className="text-foreground hover:text-primary">
-                Can I upload my own notes?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
-                Yes! You can add your own personal notes, jottings, or anything else to a private, secure folder that only you can see.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
         </div>
       </section>
 

@@ -6,9 +6,11 @@ import { type ChatMessage } from '@/lib/google-ai';
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ClipboardIcon, PencilIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, AcademicCapIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import { ClipboardIcon, PencilIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, AcademicCapIcon, EllipsisVerticalIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
+import { HandThumbUpIcon as HandThumbUpIconSolid, HandThumbDownIcon as HandThumbDownIconSolid } from '@heroicons/react/24/solid';
 import MarkdownWithMath from '@/components/MarkdownWithMath';
 import { generateConversationTitle, isDefaultTitle } from '@/lib/conversation-title-generator';
+import FeedbackPopup from '@/components/FeedbackPopup';
 
 type MessageRole = 'user' | 'system' | 'model';
 
@@ -18,6 +20,7 @@ interface ExtendedChatMessage {
   hasContext?: boolean;
   createdAt?: string;
   citations?: Array<{ lecturerName: string; documentTitle: string }>;
+  feedback?: 'thumbs_up' | 'thumbs_down' | null;
 }
 
 interface Conversation {
@@ -26,6 +29,28 @@ interface Conversation {
   messages: ExtendedChatMessage[];
 }
 
+/**
+ * Formats author name for APA 7th edition citation
+ * Converts names to "Last, First Initial." format if not already formatted
+ */
+function formatAuthorName(lecturerName: string): string {
+  let formattedAuthor = lecturerName.trim();
+  
+  // If the name doesn't contain a comma, try to format it
+  if (!formattedAuthor.includes(',')) {
+    const nameParts = formattedAuthor.split(/\s+/);
+    if (nameParts.length >= 2) {
+      // Assume last word is last name, rest are first/middle names
+      const lastName = nameParts[nameParts.length - 1];
+      const firstNames = nameParts.slice(0, -1);
+      // Format as "Last, First Initial."
+      const firstInitial = firstNames[0]?.charAt(0)?.toUpperCase() || '';
+      formattedAuthor = `${lastName}, ${firstInitial}.`;
+    }
+  }
+  
+  return formattedAuthor;
+}
 
 // Memoize the message list component
 const MessageList = React.memo(({ 
@@ -40,7 +65,8 @@ const MessageList = React.memo(({
   handleCopy,
   isLoading,
   showCitationsFor,
-  setShowCitationsFor
+  setShowCitationsFor,
+  handleFeedback
 }: {
   messages: ExtendedChatMessage[];
   editingIdx: number | null;
@@ -54,6 +80,7 @@ const MessageList = React.memo(({
   isLoading: boolean;
   showCitationsFor: number | null;
   setShowCitationsFor: (idx: number | null) => void;
+  handleFeedback: (idx: number, rating: 'thumbs_up' | 'thumbs_down') => void;
 }) => (
   <div className="flex flex-col gap-6 md:gap-8">
     {messages.map((message, idx) => (
@@ -123,16 +150,54 @@ const MessageList = React.memo(({
               )}
             </button>
             {message.role === 'model' && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowCitationsFor(showCitationsFor === idx ? null : idx);
-                      }}
-                className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
-                      title="View sources"
-                    >
-                <EllipsisVerticalIcon className="h-4 w-4 md:h-5 md:w-5" />
-                    </button>
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFeedback(idx, 'thumbs_up');
+                  }}
+                  className={`transition-colors ${
+                    message.feedback === 'thumbs_up'
+                      ? 'text-green-600 dark:text-[#00A400]'
+                      : 'text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white'
+                  }`}
+                  title="Helpful"
+                >
+                  {message.feedback === 'thumbs_up' ? (
+                    <HandThumbUpIconSolid className="h-4 w-4 md:h-5 md:w-5" />
+                  ) : (
+                    <HandThumbUpIcon className="h-4 w-4 md:h-5 md:w-5" />
+                  )}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFeedback(idx, 'thumbs_down');
+                  }}
+                  className={`transition-colors ${
+                    message.feedback === 'thumbs_down'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-gray-500 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400'
+                  }`}
+                  title="Not helpful"
+                >
+                  {message.feedback === 'thumbs_down' ? (
+                    <HandThumbDownIconSolid className="h-4 w-4 md:h-5 md:w-5" />
+                  ) : (
+                    <HandThumbDownIcon className="h-4 w-4 md:h-5 md:w-5" />
+                  )}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowCitationsFor(showCitationsFor === idx ? null : idx);
+                  }}
+                  className="text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white transition-colors"
+                  title="View sources"
+                >
+                  <EllipsisVerticalIcon className="h-4 w-4 md:h-5 md:w-5" />
+                </button>
+              </>
             )}
             {message.role === 'user' && (
               <button
@@ -155,14 +220,15 @@ const MessageList = React.memo(({
                           </div>
                   {message.citations && message.citations.length > 0 ? (
                           <div className="space-y-2">
-                            {message.citations.map((citation: { lecturerName: string; documentTitle: string }, citationIdx: number) => (
-                              <div key={citationIdx} className="text-xs text-gray-600 dark:text-green-200/80">
-                                <span className="font-medium">{citation.lecturerName}</span>
-                                {citation.documentTitle && (
-                                  <> - <span className="italic">{citation.documentTitle}</span></>
-                                )}
-                              </div>
-                            ))}
+                            {message.citations.map((citation: { lecturerName: string; documentTitle: string }, citationIdx: number) => {
+                              const formattedAuthor = formatAuthorName(citation.lecturerName);
+                              const formattedTitle = citation.documentTitle.trim();
+                              return (
+                                <div key={citationIdx} className="text-xs text-gray-600 dark:text-green-200/80 leading-relaxed">
+                                  {formattedAuthor}. <span className="italic">{formattedTitle}</span> [Lecture notes]. University of Jos, Faculty of Pharmaceutical Sciences.
+                                </div>
+                              );
+                            })}
                           </div>
                   ) : (
                     <div className="text-xs text-gray-600 dark:text-green-200/80">
@@ -271,6 +337,10 @@ function MainPageContent() {
   const [userLevel, setUserLevel] = useState<string>("");
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const messagesRef = useRef<ExtendedChatMessage[]>([]);
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [feedbackMessageContent, setFeedbackMessageContent] = useState<string>('');
+  const lastFeedbackPopupTime = useRef<number>(0);
+  const messageCountSinceLastPopup = useRef<number>(0);
 
   // Helper to get active conversation
   const activeConv = conversations.find(c => c.id === activeId);
@@ -284,6 +354,57 @@ function MainPageContent() {
       setTimeout(() => setCopiedIdx(null), 1200);
     } catch (err) {
       console.error('Failed to copy text:', err);
+    }
+  };
+
+  const handleFeedback = async (idx: number, rating: 'thumbs_up' | 'thumbs_down') => {
+    if (!session?.user?.id) return;
+    
+    const message = messagesInConv[idx];
+    if (!message || message.role !== 'model') return;
+
+    // Update local state immediately for better UX
+    setMessages(prev => {
+      const updated = [...prev];
+      if (updated[idx]) {
+        updated[idx] = { ...updated[idx], feedback: rating };
+      }
+      return updated;
+    });
+
+    // Also update conversations state
+    setConversations(prev => prev.map(c =>
+      c.id === activeId
+        ? {
+            ...c,
+            messages: c.messages.map((m, i) =>
+              i === idx ? { ...m, feedback: rating } : m
+            )
+          }
+        : c
+    ));
+
+    // Send feedback to server
+    try {
+      await fetch('/api/feedback/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messageId: null, // We don't have message IDs in the frontend
+          rating,
+          messageContent: message.content, // Store full message content
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save feedback:', error);
+      // Revert on error
+      setMessages(prev => {
+        const updated = [...prev];
+        if (updated[idx]) {
+          updated[idx] = { ...updated[idx], feedback: null };
+        }
+        return updated;
+      });
     }
   };
 
@@ -887,7 +1008,7 @@ function MainPageContent() {
     setInput(e.target.value);
   }, []);
 
-  // Fetch user level on mount or when session changes
+  // Fetch user level on mount, when session changes, or periodically
   useEffect(() => {
     async function fetchLevel() {
       if (session?.user) {
@@ -901,6 +1022,18 @@ function MainPageContent() {
       }
     }
     fetchLevel();
+    
+    // Refresh level every 30 seconds to catch profile updates
+    const interval = setInterval(fetchLevel, 30000);
+    
+    // Also refresh when window regains focus (user might have updated profile in another tab)
+    const handleFocus = () => fetchLevel();
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [session]);
 
   // Send message - Database-first approach with immediate UI update
@@ -972,6 +1105,23 @@ function MainPageContent() {
           });
         }
       );
+      
+      // Check if we should show feedback popup (every 25th AI response, at least 5 minutes apart)
+      messageCountSinceLastPopup.current += 1;
+      const now = Date.now();
+      const timeSinceLastPopup = now - lastFeedbackPopupTime.current;
+      const fiveMinutes = 5 * 60 * 1000;
+      
+      if (messageCountSinceLastPopup.current >= 25 && timeSinceLastPopup >= fiveMinutes) {
+        const lastMessage = messagesRef.current[messagesRef.current.length - 1];
+        if (lastMessage && lastMessage.role === 'model' && lastMessage.content) {
+          setFeedbackMessageContent(lastMessage.content);
+          setShowFeedbackPopup(true);
+          lastFeedbackPopupTime.current = now;
+          messageCountSinceLastPopup.current = 0;
+        }
+      }
+      
       // Auto-save after streaming completes, using latest messages from ref
       // Wait a bit to ensure citations are set (they arrive after stream completes)
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -1553,6 +1703,7 @@ function MainPageContent() {
                   isLoading={isLoading}
                   showCitationsFor={showCitationsFor}
                   setShowCitationsFor={setShowCitationsFor}
+                  handleFeedback={handleFeedback}
                 />
                 <div ref={chatEndRef} />
                 
@@ -1586,6 +1737,29 @@ function MainPageContent() {
             sidebarOpen={sidebarOpen}
           />
       </div>
+      
+      {/* Feedback Popup */}
+      <FeedbackPopup
+        isOpen={showFeedbackPopup}
+        onClose={() => setShowFeedbackPopup(false)}
+        onSubmit={async (feedbackText) => {
+          try {
+            await fetch('/api/feedback/message', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                messageId: null,
+                rating: 'popup_feedback',
+                feedback: feedbackText,
+                messageContent: feedbackMessageContent,
+              }),
+            });
+          } catch (error) {
+            console.error('Failed to submit feedback:', error);
+          }
+        }}
+        messageContent={feedbackMessageContent}
+      />
     </div>
   );
 }

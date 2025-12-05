@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import crypto from "crypto";
@@ -11,85 +10,73 @@ const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'PansGPT <onboarding@resend.
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name, level } = await request.json();
-    if (!email || !password || !name) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const { email } = await request.json();
+
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Check if user already exists using the singleton prisma client
-    const existingUser = await prisma.user.findUnique({ 
+    // Find user
+    const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, email: true, name: true, emailVerified: true }
     });
-    if (existingUser) {
-      if (existingUser.emailVerified) {
-        return NextResponse.json({ error: "User already exists" }, { status: 400 });
-      } else {
-        // User exists but email not verified - allow resending verification
-        return NextResponse.json({ 
-          error: "An account with this email already exists but is not verified. Please check your email for the verification link or request a new one." 
-        }, { status: 400 });
-      }
+
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return NextResponse.json({ 
+        success: true, 
+        message: "If an account with that email exists and is not verified, a verification email has been sent." 
+      });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+    // If already verified, don't send another email
+    if (user.emailVerified) {
+      return NextResponse.json({ 
+        success: true, 
+        message: "This email is already verified. You can log in." 
+      });
+    }
 
-    const user = await prisma.user.create({
-      data: { 
-        email, 
-        password: hashedPassword, 
-        name, 
-        level,
+    // Generate new verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Update user with new token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
         verificationToken,
         verificationTokenExpires
-      },
-      select: { id: true, email: true, name: true, level: true }
+      }
     });
 
     // Send verification email
     const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
     
-    // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured. Verification email cannot be sent.');
-      // Still create the user, but log the error
-      return NextResponse.json({ 
-        success: true, 
-        message: "Account created successfully, but verification email could not be sent. Please contact support.",
-        requiresVerification: true,
-        warning: "Email service not configured"
-      });
-    }
+    const plainText = `Verify Your PansGPT Account
 
-    try {
-      const plainText = `Welcome to PansGPT!
+Hi ${user.name || 'there'},
 
-Hi ${name},
+You requested a new verification email. Please click the link below to verify your email address:
 
-Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.
-
-Verify your email by clicking this link:
 ${verificationUrl}
 
 This verification link will expire in 24 hours.
 
 If the link doesn't work, copy and paste it into your browser.
 
-If you didn't create an account with PansGPT, please ignore this email.
+If you didn't request this verification email, please ignore it.
 
 Best regards,
 The PansGPT Team`;
 
-      const { data: emailData, error: emailError } = await resend.emails.send({
-        from: FROM_EMAIL,
-        to: email,
-        subject: 'Verify your PansGPT account',
-        text: plainText,
-        html: `
+    const { error: emailError } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Verify your PansGPT account',
+      text: plainText,
+      html: `
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -122,14 +109,14 @@ The PansGPT Team`;
           <!-- Header -->
           <tr>
             <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #ffffff; border-radius: 8px 8px 0 0;">
-              <h1 style="margin: 0; color: #10b981; font-size: 28px; font-weight: 600; line-height: 1.2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Welcome to PansGPT!</h1>
+              <h1 style="margin: 0; color: #10b981; font-size: 28px; font-weight: 600; line-height: 1.2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Verify Your PansGPT Account</h1>
             </td>
           </tr>
           <!-- Content -->
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${name},</p>
-              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.</p>
+              <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${user.name || 'there'},</p>
+              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">You requested a new verification email. Please click the button below to verify your email address:</p>
             </td>
           </tr>
           <!-- Button -->
@@ -155,7 +142,7 @@ The PansGPT Team`;
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
               <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This verification link will expire in 24 hours.</p>
-              <p style="margin: 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If you didn't create an account with PansGPT, please ignore this email.</p>
+              <p style="margin: 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If you didn't request this verification email, please ignore it.</p>
             </td>
           </tr>
           <!-- Footer -->
@@ -170,57 +157,26 @@ The PansGPT Team`;
   </table>
 </body>
 </html>
-        `,
-      });
+      `,
+    });
 
-      if (emailError) {
-        console.error('Resend API Error sending verification email:', JSON.stringify(emailError, null, 2));
-        // Log the error but still return success (user is created)
-        // In production, you might want to queue this for retry
-        return NextResponse.json({ 
-          success: true, 
-          message: "Account created successfully, but verification email failed to send. Please contact support or try resending verification.",
-          requiresVerification: true,
-          warning: "Email sending failed"
-        });
-      }
-
-      console.log('Verification email sent successfully:', emailData?.id || 'sent');
-    } catch (emailSendError: any) {
-      console.error('Exception sending verification email:', emailSendError);
-      // User is already created, so return success with warning
+    if (emailError) {
+      console.error('Error sending verification email:', emailError);
       return NextResponse.json({ 
-        success: true, 
-        message: "Account created successfully, but verification email could not be sent. Please contact support.",
-        requiresVerification: true,
-        warning: "Email service error"
-      });
+        error: "Failed to send verification email. Please try again later." 
+      }, { status: 500 });
     }
-
-    // Log the created user (without sensitive data)
-    console.log("Created user (signup):", { id: user.id, email: user.email, name: user.name, level: user.level });
 
     return NextResponse.json({ 
       success: true, 
-      message: "Account created successfully. Please check your email to verify your account before logging in.",
-      requiresVerification: true
+      message: "Verification email sent. Please check your inbox." 
     });
-  } catch (err: any) {
-    console.error("Error in signup:", err);
-    
-    // Handle specific database errors
-    if (err.code === 'P2022') {
-      return NextResponse.json({ 
-        error: "Database schema mismatch. Please contact support." 
-      }, { status: 500 });
-    }
-    
-    if (err.code === 'P1001') {
-      return NextResponse.json({ 
-        error: "Database connection failed. Please try again later." 
-      }, { status: 503 });
-    }
-    
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+  } catch (error) {
+    console.error('Error in resend verification:', error);
+    return NextResponse.json({ 
+      error: "Internal server error" 
+    }, { status: 500 });
   }
-} 
+}
+

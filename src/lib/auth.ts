@@ -55,6 +55,12 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          // Check if email is verified
+          if (!user.emailVerified) {
+            console.log("Email not verified for user:", credentials.email);
+            return null; // Return null to indicate authentication failure
+          }
+
           // --- SIMPLIFIED SESSION MANAGEMENT ---
           const clientDeviceId = credentials.clientDeviceId;
           if (!clientDeviceId) {

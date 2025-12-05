@@ -22,6 +22,9 @@ export default function LoginPage() {
   const [passwordError, setPasswordError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [clientDeviceId, setClientDeviceId] = useState<string | null>(null);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   useEffect(() => {
     // Use the robust device ID utility
@@ -63,9 +66,30 @@ export default function LoginPage() {
         if (result.error.includes("Maximum number of devices reached")) {
           setError("You have reached the maximum number of devices for this account. Please log out from another device before logging in.");
         } else {
-          setError("Invalid email or password.");
-          setEmailError(true);
-          setPasswordError(true);
+          // Check if email is verified
+          const checkResponse = await fetch("/api/auth/check-verification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          
+          if (checkResponse.ok) {
+            const checkData = await checkResponse.json();
+            if (checkData.exists && !checkData.verified) {
+              setError("Please verify your email address before logging in.");
+              setEmailNotVerified(true);
+            } else {
+              setError("Invalid email or password.");
+              setEmailError(true);
+              setPasswordError(true);
+              setEmailNotVerified(false);
+            }
+          } else {
+            setError("Invalid email or password.");
+            setEmailError(true);
+            setPasswordError(true);
+            setEmailNotVerified(false);
+          }
         }
         return;
       }
@@ -76,6 +100,36 @@ export default function LoginPage() {
       setError("An error occurred during login. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleResendVerification() {
+    if (!email) {
+      setResendMessage("Please enter your email address first.");
+      return;
+    }
+
+    setResendLoading(true);
+    setResendMessage("");
+    
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResendMessage(data.message || "Verification email sent! Please check your inbox.");
+      } else {
+        setResendMessage(data.error || "Failed to send verification email. Please try again.");
+      }
+    } catch (error) {
+      setResendMessage("An error occurred. Please try again.");
+    } finally {
+      setResendLoading(false);
     }
   }
 
@@ -97,9 +151,38 @@ export default function LoginPage() {
         <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center space-x-3">
-                <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30 rounded-xl p-4 space-y-3">
+                <div className="flex items-center space-x-3">
+                  <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                  <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
+                </div>
+                {emailNotVerified && (
+                  <div className="pt-2 border-t border-red-200 dark:border-red-500/30">
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      disabled={resendLoading}
+                      className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {resendLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span>Sending...</span>
+                        </>
+                      ) : (
+                        <>
+                          <EnvelopeIcon className="h-4 w-4" />
+                          <span>Resend Verification Email</span>
+                        </>
+                      )}
+                    </button>
+                    {resendMessage && (
+                      <p className={`mt-2 text-sm ${resendMessage.includes("sent") || resendMessage.includes("check") ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+                        {resendMessage}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -116,7 +199,11 @@ export default function LoginPage() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  setEmailNotVerified(false);
+                  setResendMessage("");
+                }}
                 className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
                 placeholder="Enter your email"
               />

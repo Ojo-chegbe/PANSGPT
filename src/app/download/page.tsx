@@ -24,12 +24,10 @@ import {
   PlayCircle,
   Brain
 } from "lucide-react";
-import { useState } from "react";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
 
 export default function DownloadPage() {
-  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen bg-background dark">
@@ -38,7 +36,7 @@ export default function DownloadPage() {
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-6 sm:px-8 lg:px-12 overflow-hidden">
-        <div className="container mx-auto max-w-6xl">
+        <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
             <motion.div 
@@ -82,13 +80,25 @@ export default function DownloadPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground group">
-                  <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
-                  Download for Android
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  asChild
+                >
+                  <a href="/apk/pansgpt.apk" download>
+                    <Download className="w-5 h-5 mr-2" />
+                    Download for Android
+                  </a>
                 </Button>
-                <Button size="lg" variant="outline">
-                  <Apple className="w-5 h-5 mr-2" />
-                  iOS Instructions
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  asChild
+                >
+                  <a href="#ios-instructions">
+                    <Apple className="w-5 h-5 mr-2" />
+                    iOS Instructions
+                  </a>
                 </Button>
               </motion.div>
 
@@ -122,17 +132,13 @@ export default function DownloadPage() {
               transition={{ duration: 0.8, delay: 0.3 }}
             >
               <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full animate-pulse"></div>
-              <motion.div 
-                className="relative"
-                whileHover={{ scale: 1.05, rotate: 2 }}
-                transition={{ duration: 0.3 }}
-              >
+              <div className="relative">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1691256676376-357c3aa66c89?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwbW9ja3VwJTIwaGFuZHxlbnwxfHx8fDE3NjIxMTE4MzJ8MA&ixlib=rb-4.1.0&q=80&w=1080"
                   alt="PANSGPT App Mockup"
                   className="w-full h-auto rounded-2xl"
                 />
-              </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -140,7 +146,7 @@ export default function DownloadPage() {
 
       {/* Why Download Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
-        <div className="container mx-auto max-w-6xl">
+        <div className="max-w-6xl mx-auto">
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
@@ -183,17 +189,12 @@ export default function DownloadPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
               >
-                <Card className="bg-card border-border h-full hover:border-primary/50 transition-all duration-300">
+                <Card className="bg-card border-border h-full">
                   <CardContent className="pt-6">
-                    <motion.div 
-                      className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4"
-                      whileHover={{ rotate: 360, scale: 1.1 }}
-                      transition={{ duration: 0.5 }}
-                    >
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                       <feature.icon className={`w-6 h-6 ${feature.color}`} />
-                    </motion.div>
+                    </div>
                     <h3 className="text-foreground mb-2">{feature.title}</h3>
                     <p className="text-muted-foreground">
                       {feature.description}
@@ -208,7 +209,7 @@ export default function DownloadPage() {
 
       {/* Download for Android Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-5xl">
+        <div className="max-w-6xl mx-auto">
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
@@ -242,21 +243,15 @@ export default function DownloadPage() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                onHoverStart={() => setHoveredStep(index)}
-                onHoverEnd={() => setHoveredStep(null)}
               >
-                <Card className={`bg-card border-border h-full transition-all duration-300 ${hoveredStep === index ? 'border-primary scale-105' : ''}`}>
+                <Card className="bg-card border-border h-full">
                   <CardContent className="pt-6 text-center">
-                    <motion.div 
-                      className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-4"
-                      animate={hoveredStep === index ? { rotate: [0, -10, 10, -10, 0] } : {}}
-                      transition={{ duration: 0.5 }}
-                    >
+                    <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-4">
                       <span className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
                         {item.step}
                       </span>
                       <item.icon className="w-7 h-7 text-primary" />
-                    </motion.div>
+                    </div>
                     <h4 className="text-foreground mb-2">{item.title}</h4>
                     <p className="text-muted-foreground text-sm">
                       {item.description}
@@ -274,17 +269,18 @@ export default function DownloadPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-12"
+              asChild
             >
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 group">
-                <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+              <a href="/apk/pansgpt.apk" download>
+                <Download className="w-5 h-5 mr-2" />
                 Download PANSGPT (Android APK)
-              </Button>
-            </motion.div>
+              </a>
+            </Button>
             <p className="text-sm text-muted-foreground mt-4">
-              File size: ~25MB • Version 1.0.0 • Last updated: November 2025
+              File size: ~6MB • Version 1.0.0 • Last updated: November 2025
             </p>
           </motion.div>
 
@@ -313,97 +309,9 @@ export default function DownloadPage() {
         </div>
       </section>
 
-      {/* iOS Section */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
-        <div className="container mx-auto max-w-5xl">
-          <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Badge className="bg-muted-foreground/10 text-muted-foreground border-muted-foreground/20 mb-4">
-              <Clock className="w-3 h-3 mr-1" />
-              Coming Soon
-            </Badge>
-            <h2 className="text-4xl lg:text-5xl text-foreground mb-4">
-              iOS Version Coming Soon
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              We're currently perfecting the iOS version of PANSGPT. But you can still use it today — directly from your browser.
-            </p>
-          </motion.div>
-
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Image */}
-            <motion.div 
-              className="order-2 lg:order-1"
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-full"></div>
-                <motion.div
-                  whileHover={{ scale: 1.05, rotate: -2 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1608714783717-618b2de85e39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpcGhvbmUlMjBob21lJTIwc2NyZWVufGVufDF8fHx8MTc2MjExMTgzMnww&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="iPhone Home Screen"
-                    className="relative w-full h-auto rounded-2xl"
-                  />
-                </motion.div>
-              </div>
-            </motion.div>
-
-            {/* Content */}
-            <motion.div 
-              className="order-1 lg:order-2"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h3 className="text-3xl text-foreground mb-4">
-                Use PANSGPT Now on iPhone
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Just add PANSGPT to your home screen for a full app-like experience. It works just like a native app — with push notifications and instant loading.
-              </p>
-              
-              <div className="space-y-4">
-                {[
-                  { title: "Full-screen experience", description: "No browser bars, just pure learning" },
-                  { title: "Launch from home screen", description: "One tap access, just like any app" },
-                  { title: "Quick Access", description: "Study anywhere with one tap from your home screen" }
-                ].map((item, index) => (
-                  <motion.div 
-                    key={index}
-                    className="flex gap-3"
-                    initial={{ opacity: 0, x: 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-foreground">{item.title}</p>
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* How to Add to Home Screen (iOS) */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-5xl">
+      <section id="ios-instructions" className="py-20 px-6 sm:px-8 lg:px-12 scroll-mt-20">
+        <div className="max-w-6xl mx-auto">
           <motion.div 
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
@@ -418,105 +326,38 @@ export default function DownloadPage() {
             </p>
           </motion.div>
 
-          {/* Steps */}
-          <div className="space-y-6 max-w-3xl mx-auto">
-            {[
-              { 
-                step: 1, 
-                icon: BookOpen, 
-                title: "Open pansgpt.com in Safari", 
-                description: "Make sure you're using Safari browser (not Chrome or any other browser). This feature only works in Safari on iOS.",
-                tip: "Find Safari on your iPhone — it's the blue compass icon"
-              },
-              { 
-                step: 2, 
-                icon: Share2, 
-                title: "Tap the Share icon", 
-                description: "Look for the square icon with an arrow pointing up at the bottom of your screen (or top on iPad). Tap it to open the share menu.",
-                tip: "It looks like this: □↑"
-              },
-              { 
-                step: 3, 
-                icon: Target, 
-                title: "Scroll and tap 'Add to Home Screen'", 
-                description: "In the share menu, scroll down until you find 'Add to Home Screen' option and tap it.",
-                tip: "You might need to scroll down a bit to find it"
-              },
-              { 
-                step: 4, 
-                icon: Home, 
-                title: "Name it 'PANSGPT' and tap Add", 
-                description: "Give it a name (we suggest 'PANSGPT') and tap 'Add' in the top right corner. Now you can open it directly from your home screen anytime — just like a native app.",
-                tip: "You can also customize the icon name if you want"
-              }
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-              >
-                <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
-                  <CardContent className="pt-6">
-                    <div className="flex gap-6">
-                      <div className="flex-shrink-0">
-                        <motion.div 
-                          className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center"
-                          whileHover={{ rotate: 360 }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <span className="absolute -top-2 -left-2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
-                            {item.step}
-                          </span>
-                          <item.icon className="w-7 h-7 text-primary" />
-                        </motion.div>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-foreground mb-2">{item.title}</h4>
-                        <p className="text-muted-foreground mb-3">
-                          {item.description}
-                        </p>
-                        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10">
-                          <Sparkles className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                          <p className="text-sm text-muted-foreground">
-                            <span className="text-primary">Tip:</span> {item.tip}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
           {/* Visual Guide */}
           <motion.div 
-            className="mt-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <PlayCircle className="w-12 h-12 text-primary flex-shrink-0" />
-                  </motion.div>
-                  <div className="flex-1">
-                    <h4 className="text-foreground mb-2">Need a visual guide?</h4>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      We've created a short video showing each step. Watch it once and you'll have PANSGPT installed in less than 30 seconds.
-                    </p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <PlayCircle className="w-8 h-8 text-primary flex-shrink-0" />
+                    <div>
+                      <h4 className="text-foreground mb-1">Need a visual guide?</h4>
+                      <p className="text-muted-foreground text-sm">
+                        Watch this short video showing each step. You'll have PANSGPT installed in less than 30 seconds.
+                      </p>
+                    </div>
                   </div>
-                  <Button variant="outline" className="border-primary/20 hover:bg-primary/10 group">
-                    Watch Tutorial
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
+                  <div className="relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden bg-black/10 border border-border">
+                    <video
+                      className="w-full h-auto max-h-[600px]"
+                      controls
+                      autoPlay
+                      muted
+                      loop
+                      poster="/uploads/Logo.png"
+                      preload="metadata"
+                    >
+                      <source src="https://res.cloudinary.com/djqcs2ngt/video/upload/v1764905428/ios_kqzykb.mp4" type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -526,7 +367,7 @@ export default function DownloadPage() {
 
       {/* Final CTA Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12 bg-gradient-to-br from-primary/10 via-background to-background border-y border-border">
-        <div className="container mx-auto max-w-4xl text-center">
+        <div className="max-w-6xl mx-auto text-center">
           <motion.div 
             className="mb-8"
             initial={{ opacity: 0, scale: 0.8 }}
@@ -556,43 +397,27 @@ export default function DownloadPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 group">
-                <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
+              asChild
+            >
+              <a href="/apk/pansgpt.apk" download>
+                <Download className="w-5 h-5 mr-2" />
                 Download for Android
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button size="lg" variant="outline" className="border-border hover:bg-muted group">
-                <Apple className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+              </a>
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-border hover:bg-muted"
+              asChild
+            >
+              <a href="#ios-instructions">
+                <Apple className="w-5 h-5 mr-2" />
                 Add to iPhone
-              </Button>
-            </motion.div>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div 
-            className="grid grid-cols-3 gap-8 pt-8 border-t border-border max-w-2xl mx-auto"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-          >
-            {[
-              { value: "500+", label: "Students Using", icon: TrendingUp },
-              { value: "10K+", label: "Questions Answered", icon: CheckCircle },
-              { value: "4.8★", label: "Average Rating", icon: Sparkles }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.1, y: -5 }}
-                transition={{ duration: 0.3 }}
-              >
-                <stat.icon className="w-6 h-6 text-primary mx-auto mb-2" />
-                <div className="text-3xl text-primary mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </motion.div>
-            ))}
+              </a>
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -602,4 +427,3 @@ export default function DownloadPage() {
     </div>
   );
 }
-
