@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
+import { analytics } from "@/lib/analytics";
 
 export default function DownloadPage() {
 
@@ -85,7 +86,11 @@ export default function DownloadPage() {
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   asChild
                 >
-                  <a href="/apk/pansgpt.apk" download>
+                  <a 
+                    href="/apk/pansgpt.apk" 
+                    download
+                    onClick={() => analytics.trackDownloadClick('hero_section')}
+                  >
                     <Download className="w-5 h-5 mr-2" />
                     Download for Android
                   </a>
@@ -274,7 +279,11 @@ export default function DownloadPage() {
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-12"
               asChild
             >
-              <a href="/apk/pansgpt.apk" download>
+              <a 
+                href="/apk/pansgpt.apk" 
+                download
+                onClick={() => analytics.trackDownloadClick('download_section')}
+              >
                 <Download className="w-5 h-5 mr-2" />
                 Download PANSGPT (Android APK)
               </a>
@@ -402,7 +411,11 @@ export default function DownloadPage() {
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
               asChild
             >
-              <a href="/apk/pansgpt.apk" download>
+              <a 
+                href="/apk/pansgpt.apk" 
+                download
+                onClick={() => analytics.trackDownloadClick('final_cta')}
+              >
                 <Download className="w-5 h-5 mr-2" />
                 Download for Android
               </a>

@@ -5,6 +5,7 @@ import { Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { analytics } from "@/lib/analytics";
 
 export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -49,7 +50,7 @@ export default function Navigation() {
 
           {/* CTAs */}
           <div className="flex items-center gap-3">
-            <Link href="/login">
+            <Link href="/login" onClick={() => analytics.trackLoginClick('navigation')}>
               <Button 
                 variant="ghost" 
                 className="hidden md:inline-flex text-white"
@@ -57,7 +58,7 @@ export default function Navigation() {
                 Log In
               </Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/signup" onClick={() => analytics.trackSignUpClick('navigation')}>
               <Button 
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
@@ -95,7 +96,14 @@ export default function Navigation() {
             </Link>
             <div className="pt-2">
               <Link href="/login">
-                <Button variant="outline" className="w-full mb-2 text-white" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  variant="outline" 
+                  className="w-full mb-2 text-white" 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    analytics.trackLoginClick('mobile_menu');
+                  }}
+                >
                   Log In
                 </Button>
               </Link>
