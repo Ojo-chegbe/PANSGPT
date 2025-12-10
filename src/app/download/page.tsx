@@ -357,7 +357,6 @@ export default function DownloadPage() {
                     <video
                       className="w-full h-auto max-h-[600px]"
                       controls
-                      autoPlay
                       muted
                       loop
                       poster="/uploads/Logo.png"

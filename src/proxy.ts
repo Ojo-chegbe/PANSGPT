@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { NextRequestWithAuth } from 'next-auth/middleware';
-// Removed: import { prisma } from '@/lib/prisma';
 
 // Paths that are always public
 const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/about', '/contact', '/download', '/terms', '/faq'];
 
-export default async function middleware(request: NextRequestWithAuth) {
+export async function proxy(request: NextRequest) {
   const token = await getToken({ req: request });
   const path = request.nextUrl.pathname;
 
-  // Safety check: Don't run middleware on API routes
+  // Safety check: Don't run proxy on API routes
   if (path.startsWith('/api/')) {
     return NextResponse.next();
   }
@@ -25,7 +24,7 @@ export default async function middleware(request: NextRequestWithAuth) {
   if (publicPaths.includes(path)) {
     // If user is authenticated and tries to access login or signup, redirect to main
     if (token && isValidToken && (path === '/login' || path === '/signup')) {
-    return NextResponse.redirect(new URL('/main', request.url));
+      return NextResponse.redirect(new URL('/main', request.url));
     }
     return NextResponse.next();
   }
@@ -45,4 +44,5 @@ export const config = {
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|logo|uploads|apk|videos).*)',
   ],
-}; 
+};
+

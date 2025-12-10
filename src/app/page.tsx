@@ -22,7 +22,7 @@ import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { ChatMockup } from "@/components/landing/ChatMockup";
 import { QuizMockup } from "@/components/landing/QuizMockup";
 import { FeedbackMockup } from "@/components/landing/FeedbackMockup";
-import { TestimonialCard } from "@/components/landing/TestimonialCard";
+import { TestimonialCarousel } from "@/components/landing/TestimonialCarousel";
 import Link from "next/link";
 import { analytics } from "@/lib/analytics";
 
@@ -196,39 +196,45 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 px-6 sm:px-8 lg:px-12 bg-card/30">
-        <div className="container mx-auto">
-          <div className="text-center space-y-4 mb-16">
+      <section id="testimonials" className="py-20 bg-card/30 w-full">
+        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 mb-16">
+          <div className="text-center space-y-4">
             <h2 className="text-4xl text-foreground">
               Built by PANSites. <span className="text-primary">Trusted by PANSites.</span>
             </h2>
           </div>
+        </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <TestimonialCard 
-              quote="What stood out while test running the app was that it gives you concise and wholesome answers according to what you're expected to know. The tests are really helpful in gauging one's preparedness for an actual test or exam and serve as a good pre-test & post-study drill."
-              name="Naomi C. Okwuzi"
-              role="Pharmacy Student"
+        <div className="w-full">
+          <TestimonialCarousel
+              testimonials={[
+                {
+                  quote: "What stood out while test running the app was that it gives you concise and wholesome answers according to what you're expected to know. The tests are really helpful in gauging one's preparedness for an actual test or exam and serve as a good pre-test & post-study drill.",
+                  name: "Naomi C. Okwuzi",
+                  role: "Pharmacy Student"
+                },
+                {
+                  quote: "PansGPT is a great tool that makes studying a lot easier. It is course-specific to aid us as Pharmacy students. I personally love the quiz section.",
+                  name: "Kelvin E.",
+                  role: "Pharmacy Student"
+                },
+                {
+                  quote: "I love the fact that my responses are tailored to what was taught by the lecturer. The quiz aspect having levels of difficulty allows me to test my knowledge depending on the amount of work I've put in. Overall, using the app was very helpful.",
+                  name: "Anita Dangwam",
+                  role: "Pharmacy Student"
+                },
+                {
+                  quote: "There's so much information out there and as students we struggle with picking out the necessary ones. This Ai model being tailored to the needs of pharmacy students from the materials of the lecturers helps to ensure that not only do students get the necessary information they need but are also spared from having to waste time in gathering data they don't need or feel is important (while it might not be).",
+                  name: "Smith",
+                  role: "Pharmacy Student"
+                },
+                {
+                  quote: "We created PansGPT because we experienced the challenges of pharmacy education firsthand. We knew there had to be a smarter way to study than endless hours with scattered resources. This is the comprehensive study companion we always wished we had during our academic journey—built by students, for students.",
+                  name: "The PansGPT Team",
+                  role: "Creators & Pharmacy Alumni"
+                }
+              ]}
             />
-            
-            <TestimonialCard 
-              quote="PansGPT is a great tool that makes studying a lot easier. It is course-specific to aid us as Pharmacy students. I personally love the quiz section."
-              name="Kelvin E."
-              role="Pharmacy Student"
-            />
-            
-            <TestimonialCard 
-              quote="PansGPT has transformed how I approach my studies. The personalized explanations help me understand complex pharmaceutical concepts, and the quiz feature is perfect for testing my knowledge before exams. It's like having a study partner available 24/7."
-              name="Anita Dangwam"
-              role="Pharmacy Student"
-            />
-            
-            <TestimonialCard 
-              quote="We created PansGPT because we experienced the challenges of pharmacy education firsthand. We knew there had to be a smarter way to study than endless hours with scattered resources. This is the comprehensive study companion we always wished we had during our academic journey—built by students, for students."
-              name="The PansGPT Team"
-              role="Creators & Pharmacy Alumni"
-            />
-          </div>
         </div>
       </section>
 

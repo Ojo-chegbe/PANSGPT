@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 // PATCH /api/conversations/[id] - Rename conversation
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
     if (!conversationId) {
       return NextResponse.json({ error: "Conversation ID is required" }, { status: 400 });
     }
@@ -85,7 +85,7 @@ export async function PATCH(
 // GET /api/conversations/[id] - Get specific conversation
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -101,7 +101,7 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
     if (!conversationId) {
       return NextResponse.json({ error: "Conversation ID is required" }, { status: 400 });
     }
@@ -136,7 +136,7 @@ export async function GET(
 // DELETE /api/conversations/[id] - Delete specific conversation
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -152,7 +152,7 @@ export async function DELETE(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
     if (!conversationId) {
       return NextResponse.json({ error: "Conversation ID is required" }, { status: 400 });
     }
