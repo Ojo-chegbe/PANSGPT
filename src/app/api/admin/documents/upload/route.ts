@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { getClient, closeClient } from '@/lib/db';
 import { DataAPIClient } from '@datastax/astra-db-ts';
 import { generateEmbeddings } from '@/lib/embedding-service';
