@@ -7,7 +7,7 @@
 
 import { getClient } from './db';
 import { generateEmbeddings } from './embedding-service';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 
 export interface DocumentIndexingJob {
   documentId: string;
