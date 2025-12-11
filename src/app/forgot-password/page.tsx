@@ -52,6 +52,10 @@ export default function ForgotPasswordPage() {
       if (response.ok) {
         setStatus("success");
         setError("");
+        // Redirect to reset-password page with email after a short delay
+        setTimeout(() => {
+          window.location.href = `/reset-password?email=${encodeURIComponent(email)}`;
+        }, 2000);
       } else {
         setError(data.error || "Failed to send reset email.");
         setStatus("error");
@@ -73,7 +77,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Reset Password</h1>
             <p className="mt-2 text-lg text-gray-600 dark:text-white/80">
-              Enter your email and we'll send you a link to reset your password
+              Enter your email and we'll send you a code to reset your password
             </p>
           </div>
         </div>
@@ -89,10 +93,13 @@ export default function ForgotPasswordPage() {
                   Check Your Email!
                 </h2>
                 <p className="text-gray-700 dark:text-gray-300 mb-2">
-                  If an account exists for <strong>{email}</strong>, we've sent a password reset link.
+                  If an account exists for <strong>{email}</strong>, we've sent a password reset code.
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Please check your inbox and click the link to reset your password. The link will expire in 1 hour.
+                  Please check your inbox for the 6-digit OTP code. The code will expire in 10 minutes.
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
+                  Redirecting to password reset page...
                 </p>
                 <p className="text-gray-500 dark:text-gray-500 text-xs mt-4">
                   Didn't receive the email? Check your spam folder or try again.
@@ -166,12 +173,12 @@ export default function ForgotPasswordPage() {
                   {isLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Sending Reset Link...</span>
+                      <span>Sending Reset Code...</span>
                     </>
                   ) : (
                     <>
                       <ArrowPathIcon className="h-5 w-5" />
-                      <span>Send Reset Link</span>
+                      <span>Send Reset Code</span>
                     </>
                   )}
                 </button>

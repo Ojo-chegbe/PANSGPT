@@ -1,42 +1,47 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWelcomeEmail } from "@/lib/email-service";
+import { isOTPExpired } from "@/lib/otp-utils";
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const token = searchParams.get("token");
+    const { email, otp } = await request.json();
 
-    console.log('Verification request received, token:', token ? token.substring(0, 8) + '...' : 'MISSING');
+    console.log('Verification request received, email:', email ? email : 'MISSING', 'otp:', otp ? '***' : 'MISSING');
 
-    if (!token) {
-      console.error('No token provided in verification request');
-      return NextResponse.json({ error: "Verification token is required" }, { status: 400 });
+    if (!email || !otp) {
+      console.error('Email or OTP missing in verification request');
+      return NextResponse.json({ error: "Email and OTP are required" }, { status: 400 });
     }
 
-    // Find pending signup with this verification token
+    // Find pending signup with this email and OTP
     const pendingSignup = await prisma.pendingSignup.findFirst({
       where: {
-        verificationToken: token,
-        verificationTokenExpires: {
-          gt: new Date() // Token must not be expired
+        email,
+        otp,
+        otpExpires: {
+          gt: new Date() // OTP must not be expired
         }
       }
     });
 
     if (!pendingSignup) {
-      console.error('Pending signup not found for token:', token.substring(0, 8) + '...');
-      // Check if token exists but expired
+      console.error('Pending signup not found for email/OTP:', email);
+      // Check if OTP exists but expired
       const expiredSignup = await prisma.pendingSignup.findFirst({
         where: {
-          verificationToken: token,
+          email,
+          otp,
         }
       });
       if (expiredSignup) {
-        console.error('Token found but expired. Expires:', expiredSignup.verificationTokenExpires);
+        console.error('OTP found but expired. Expires:', expiredSignup.otpExpires);
+        return NextResponse.json({ 
+          error: "OTP has expired. Please request a new verification code." 
+        }, { status: 400 });
       }
       return NextResponse.json({ 
-        error: "Invalid or expired verification token" 
+        error: "Invalid OTP. Please check the code and try again." 
       }, { status: 400 });
     }
 
@@ -72,6 +77,15 @@ export async function GET(request: Request) {
         emailVerified: new Date(), // Mark as verified immediately
         verificationToken: null,
         verificationTokenExpires: null
+      }
+    });
+
+    // Clear OTP after successful verification
+    await prisma.pendingSignup.update({
+      where: { id: pendingSignup.id },
+      data: {
+        otp: null,
+        otpExpires: null
       }
     });
 

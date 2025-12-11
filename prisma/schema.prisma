@@ -226,13 +226,17 @@ model QuizResult {
 model PasswordResetToken {
   id        String   @id @default(cuid())
   userId    String
-  token     String   @unique
-  expires   DateTime
+  token     String?  @unique
+  otp       String?
+  otpExpires DateTime?
+  expires   DateTime?
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([token])
+  @@index([otp])
+  @@index([otpExpires])
 }
 
 model MessageFeedback {
@@ -257,11 +261,15 @@ model PendingSignup {
   password                String   // Hashed password
   name                    String
   level                   String?
-  verificationToken       String   @unique
-  verificationTokenExpires DateTime
+  verificationToken       String?  @unique
+  verificationTokenExpires DateTime?
+  otp                     String?
+  otpExpires              DateTime?
   createdAt               DateTime @default(now())
 
   @@index([email])
   @@index([verificationToken])
   @@index([verificationTokenExpires])
+  @@index([otp])
+  @@index([otpExpires])
 }

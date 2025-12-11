@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, EMAIL_ADDRESSES } from "@/lib/email-service";
+import { generateOTP, getOTPExpiration } from "@/lib/otp-utils";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
@@ -26,38 +27,35 @@ export async function POST(request: Request) {
     });
     
     if (existingPending) {
-      // Generate new verification token
-      const verificationToken = crypto.randomBytes(32).toString('hex');
-      const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+      // Generate new OTP
+      const otp = generateOTP();
+      const otpExpires = getOTPExpiration();
 
-      // Update pending signup with new token and user info (in case they changed name/level)
+      // Update pending signup with new OTP and user info (in case they changed name/level)
       await prisma.pendingSignup.update({
         where: { email },
         data: {
           name,
           level,
           password: await bcrypt.hash(password, 10), // Update password in case they want to change it
-          verificationToken,
-          verificationTokenExpires
+          otp,
+          otpExpires
         }
       });
 
-      // Resend verification email
-      const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
-      
+      // Resend verification email with OTP
       try {
         const plainText = `Welcome to PansGPT!
 
 Hi ${name},
 
-Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.
+Thank you for signing up for PansGPT. Please verify your email address using the OTP (One-Time Password) below:
 
-Verify your email by clicking this link:
-${verificationUrl}
+Your verification code: ${otp}
 
-This verification link will expire in 24 hours.
+This code will expire in 10 minutes.
 
-If the link doesn't work, copy and paste it into your browser.
+Enter this code on the verification page to complete your registration.
 
 If you didn't create an account with PansGPT, please ignore this email.
 
@@ -67,7 +65,7 @@ The PansGPT Team`;
         const emailResult = await sendEmail({
           from: EMAIL_ADDRESSES.NO_REPLY,
           to: email,
-          subject: 'Verify your PansGPT account',
+          subject: 'Verify your PansGPT account - OTP Code',
           text: plainText,
           html: `
 <!DOCTYPE html>
@@ -109,32 +107,23 @@ The PansGPT Team`;
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
               <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${name},</p>
-              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.</p>
+              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Thank you for signing up for PansGPT. Please verify your email address using the OTP (One-Time Password) below:</p>
             </td>
           </tr>
-          <!-- Button -->
+          <!-- OTP Code -->
           <tr>
             <td style="padding: 0 40px 30px 40px; text-align: center; background-color: #ffffff;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
-                <tr>
-                  <td align="center" style="background-color: #10b981; border-radius: 6px;">
-                    <a href="${verificationUrl}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Verify Email Address</a>
-                  </td>
-                </tr>
-              </table>
+              <div style="background-color: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; padding: 24px; margin: 0 auto; display: inline-block;">
+                <p style="margin: 0 0 8px 0; color: #166534; font-size: 14px; font-weight: 600; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Your Verification Code</p>
+                <p style="margin: 0; color: #10b981; font-size: 36px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace; line-height: 1.2;">${otp}</p>
+              </div>
             </td>
           </tr>
-          <!-- Link fallback -->
-          <tr>
-            <td style="padding: 0 40px 20px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If the button doesn't work, copy and paste this link into your browser:</p>
-              <p style="margin: 0; word-break: break-all; color: #10b981; background-color: #f0fdf4; padding: 12px; border-radius: 4px; font-size: 13px; font-family: 'Courier New', Courier, monospace; line-height: 1.5;">${verificationUrl}</p>
-            </td>
-          </tr>
-          <!-- Footer info -->
+          <!-- Instructions -->
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This verification link will expire in 24 hours.</p>
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Enter this code on the verification page to complete your registration.</p>
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This code will expire in 10 minutes.</p>
               <p style="margin: 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If you didn't create an account with PansGPT, please ignore this email.</p>
             </td>
           </tr>
@@ -176,9 +165,9 @@ The PansGPT Team`;
 
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpires = getOTPExpiration();
 
     // Store in pending signup table instead of creating user
     const pendingSignup = await prisma.pendingSignup.create({
@@ -187,27 +176,24 @@ The PansGPT Team`;
         password: hashedPassword, 
         name, 
         level,
-        verificationToken,
-        verificationTokenExpires
+        otp,
+        otpExpires
       }
     });
 
-    // Send verification email
-    const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
-    
+    // Send verification email with OTP
     try {
       const plainText = `Welcome to PansGPT!
 
 Hi ${name},
 
-Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.
+Thank you for signing up for PansGPT. Please verify your email address using the OTP (One-Time Password) below:
 
-Verify your email by clicking this link:
-${verificationUrl}
+Your verification code: ${otp}
 
-This verification link will expire in 24 hours.
+This code will expire in 10 minutes.
 
-If the link doesn't work, copy and paste it into your browser.
+Enter this code on the verification page to complete your registration.
 
 If you didn't create an account with PansGPT, please ignore this email.
 
@@ -217,7 +203,7 @@ The PansGPT Team`;
       const emailResult = await sendEmail({
         from: EMAIL_ADDRESSES.NO_REPLY,
         to: email,
-        subject: 'Verify your PansGPT account',
+        subject: 'Verify your PansGPT account - OTP Code',
         text: plainText,
         html: `
 <!DOCTYPE html>
@@ -259,32 +245,23 @@ The PansGPT Team`;
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
               <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${name},</p>
-              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.</p>
+              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Thank you for signing up for PansGPT. Please verify your email address using the OTP (One-Time Password) below:</p>
             </td>
           </tr>
-          <!-- Button -->
+          <!-- OTP Code -->
           <tr>
             <td style="padding: 0 40px 30px 40px; text-align: center; background-color: #ffffff;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
-                <tr>
-                  <td align="center" style="background-color: #10b981; border-radius: 6px;">
-                    <a href="${verificationUrl}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Verify Email Address</a>
-                  </td>
-                </tr>
-              </table>
+              <div style="background-color: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; padding: 24px; margin: 0 auto; display: inline-block;">
+                <p style="margin: 0 0 8px 0; color: #166534; font-size: 14px; font-weight: 600; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Your Verification Code</p>
+                <p style="margin: 0; color: #10b981; font-size: 36px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace; line-height: 1.2;">${otp}</p>
+              </div>
             </td>
           </tr>
-          <!-- Link fallback -->
-          <tr>
-            <td style="padding: 0 40px 20px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If the button doesn't work, copy and paste this link into your browser:</p>
-              <p style="margin: 0; word-break: break-all; color: #10b981; background-color: #f0fdf4; padding: 12px; border-radius: 4px; font-size: 13px; font-family: 'Courier New', Courier, monospace; line-height: 1.5;">${verificationUrl}</p>
-            </td>
-          </tr>
-          <!-- Footer info -->
+          <!-- Instructions -->
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This verification link will expire in 24 hours.</p>
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Enter this code on the verification page to complete your registration.</p>
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This code will expire in 10 minutes.</p>
               <p style="margin: 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If you didn't create an account with PansGPT, please ignore this email.</p>
             </td>
           </tr>

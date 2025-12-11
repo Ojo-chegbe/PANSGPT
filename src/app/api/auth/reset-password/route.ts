@@ -4,11 +4,11 @@ import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
   try {
-    const { token, password } = await request.json();
+    const { email, otp, password } = await request.json();
 
-    if (!token || !password) {
+    if (!email || !otp || !password) {
       return NextResponse.json({ 
-        error: "Token and password are required" 
+        error: "Email, OTP, and password are required" 
       }, { status: 400 });
     }
 
@@ -18,27 +18,50 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // Find the reset token
-    const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ 
+        error: "Invalid email address" 
+      }, { status: 400 });
+    }
+
+    // Find the reset token with OTP
+    const resetToken = await prisma.passwordResetToken.findFirst({
+      where: { 
+        userId: user.id,
+        otp,
+        otpExpires: {
+          gt: new Date() // OTP must not be expired
+        }
+      },
       include: { user: true }
     });
 
     if (!resetToken) {
-      return NextResponse.json({ 
-        error: "Invalid or expired reset token" 
-      }, { status: 400 });
-    }
-
-    // Check if token is expired
-    if (resetToken.expires < new Date()) {
-      // Clean up expired token
-      await prisma.passwordResetToken.delete({
-        where: { id: resetToken.id }
+      // Check if OTP exists but expired
+      const expiredToken = await prisma.passwordResetToken.findFirst({
+        where: { 
+          userId: user.id,
+          otp
+        }
       });
       
+      if (expiredToken) {
+        // Clean up expired token
+        await prisma.passwordResetToken.delete({
+          where: { id: expiredToken.id }
+        });
+        return NextResponse.json({ 
+          error: "OTP has expired. Please request a new password reset code." 
+        }, { status: 400 });
+      }
+      
       return NextResponse.json({ 
-        error: "Reset token has expired. Please request a new one." 
+        error: "Invalid OTP. Please check the code and try again." 
       }, { status: 400 });
     }
 
@@ -60,7 +83,10 @@ export async function POST(request: Request) {
     await prisma.passwordResetToken.deleteMany({
       where: {
         userId: resetToken.userId,
-        expires: { lt: new Date() }
+        OR: [
+          { otpExpires: { lt: new Date() } },
+          { expires: { lt: new Date() } }
+        ]
       }
     });
 

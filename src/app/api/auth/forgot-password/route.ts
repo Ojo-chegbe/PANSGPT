@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, EMAIL_ADDRESSES } from "@/lib/email-service";
+import { generateOTP, getOTPExpiration } from "@/lib/otp-utils";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
@@ -21,38 +22,41 @@ export async function POST(request: Request) {
       // Don't reveal if user exists or not for security
       return NextResponse.json({ 
         success: true, 
-        message: "If an account with that email exists, a password reset link has been sent." 
+        message: "If an account with that email exists, a password reset code has been sent." 
       });
     }
 
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 3600000); // 1 hour from now
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpires = getOTPExpiration();
 
-    // Store reset token in database
+    // Delete any existing reset tokens for this user
+    await prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id }
+    });
+
+    // Store OTP in database
     await prisma.passwordResetToken.create({
       data: {
         userId: user.id,
-        token: resetToken,
-        expires
+        otp,
+        otpExpires
       }
     });
 
-    // Send reset email
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-    
+    // Send reset email with OTP
     try {
       const plainText = `Password Reset Request
 
 Hi ${user.name || 'there'},
 
-We received a request to reset your password for your PansGPT account. Click the link below to reset your password:
+We received a request to reset your password for your PansGPT account. Use the OTP (One-Time Password) below to reset your password:
 
-${resetUrl}
+Your reset code: ${otp}
 
-This link will expire in 1 hour for security reasons.
+This code will expire in 10 minutes.
 
-If the link doesn't work, copy and paste it into your browser.
+Enter this code on the password reset page to set a new password.
 
 If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
 
@@ -62,7 +66,7 @@ The PansGPT Team`;
       const emailResult = await sendEmail({
         from: EMAIL_ADDRESSES.NO_REPLY,
         to: user.email,
-        subject: 'Reset your PansGPT password',
+        subject: 'Reset your PansGPT password - OTP Code',
         text: plainText,
         html: `
 <!DOCTYPE html>
@@ -104,32 +108,23 @@ The PansGPT Team`;
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
               <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${user.name || 'there'},</p>
-              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">We received a request to reset your password for your PansGPT account. Click the button below to reset your password:</p>
+              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">We received a request to reset your password for your PansGPT account. Use the OTP (One-Time Password) below to reset your password:</p>
             </td>
           </tr>
-          <!-- Button -->
+          <!-- OTP Code -->
           <tr>
             <td style="padding: 0 40px 30px 40px; text-align: center; background-color: #ffffff;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
-                <tr>
-                  <td align="center" style="background-color: #10b981; border-radius: 6px;">
-                    <a href="${resetUrl}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Reset Password</a>
-                  </td>
-                </tr>
-              </table>
+              <div style="background-color: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; padding: 24px; margin: 0 auto; display: inline-block;">
+                <p style="margin: 0 0 8px 0; color: #166534; font-size: 14px; font-weight: 600; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Your Reset Code</p>
+                <p style="margin: 0; color: #10b981; font-size: 36px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', Courier, monospace; line-height: 1.2;">${otp}</p>
+              </div>
             </td>
           </tr>
-          <!-- Link fallback -->
-          <tr>
-            <td style="padding: 0 40px 20px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If the button doesn't work, copy and paste this link into your browser:</p>
-              <p style="margin: 0; word-break: break-all; color: #10b981; background-color: #f0fdf4; padding: 12px; border-radius: 4px; font-size: 13px; font-family: 'Courier New', Courier, monospace; line-height: 1.5;">${resetUrl}</p>
-            </td>
-          </tr>
-          <!-- Footer info -->
+          <!-- Instructions -->
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This link will expire in 1 hour for security reasons.</p>
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Enter this code on the password reset page to set a new password.</p>
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This code will expire in 10 minutes.</p>
               <p style="margin: 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If you didn't request this password reset, please ignore this email. Your password will remain unchanged.</p>
             </td>
           </tr>
@@ -165,7 +160,7 @@ The PansGPT Team`;
 
     return NextResponse.json({ 
       success: true, 
-      message: "If an account with that email exists, a password reset link has been sent." 
+      message: "If an account with that email exists, a password reset code has been sent." 
     });
 
   } catch (error) {

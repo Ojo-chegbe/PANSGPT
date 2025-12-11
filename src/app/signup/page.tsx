@@ -32,6 +32,10 @@ export default function SignupPage() {
   const [termsError, setTermsError] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
   const [signupEmail, setSignupEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
 
   useEffect(() => {
     const deviceId = getDeviceId();
@@ -110,6 +114,7 @@ export default function SignupPage() {
         setVerificationSent(true);
         setSignupEmail(email);
         setIsLoading(false);
+        // Don't redirect - show OTP input on same page
         return;
       }
 
@@ -139,6 +144,67 @@ export default function SignupPage() {
     }
   }
 
+  async function handleVerifyOTP(e: React.FormEvent) {
+    e.preventDefault();
+    setOtpError("");
+    
+    if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+      setOtpError("Please enter a valid 6-digit OTP code.");
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const response = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: signupEmail, otp }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setVerificationSuccess(true);
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+      } else {
+        setOtpError(data.error || "Invalid OTP. Please check the code and try again.");
+      }
+    } catch (error: any) {
+      setOtpError(`Network error: ${error.message}. Please try again.`);
+    } finally {
+      setIsVerifying(false);
+    }
+  }
+
+  async function handleResendOTP() {
+    setOtpError("");
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signupEmail }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Show success message temporarily
+        setOtpError("✓ Verification code resent! Please check your email.");
+        setTimeout(() => setOtpError(""), 5000);
+      } else {
+        setOtpError(data.error || "Failed to resend code. Please try again.");
+      }
+    } catch (err) {
+      setOtpError("Failed to resend code. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:text-white dark:[background-color:#0C120C]">
       {/* Header */}
@@ -155,45 +221,118 @@ export default function SignupPage() {
 
       <div className="max-w-2xl mx-auto px-6 py-8">
         <div className="backdrop-blur-sm border rounded-2xl p-8 bg-white dark:[background-color:#2D3A2D] border-gray-200 dark:border-white/10">
-          {verificationSent ? (
+          {verificationSuccess ? (
             <div className="text-center space-y-6">
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30 rounded-xl p-6">
                 <CheckCircleIcon className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  Check Your Email!
+                  Email Verified Successfully!
                 </h2>
                 <p className="text-gray-700 dark:text-gray-300 mb-2">
-                  We've sent a verification link to <strong>{signupEmail}</strong>
-                </p>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Please click the link in the email to verify your account. You'll be able to log in once your email is verified.
-                </p>
-                <p className="text-gray-500 dark:text-gray-500 text-xs mt-4">
-                  Didn't receive the email? Check your spam folder or try signing up again.
+                  Your account has been verified. Redirecting to login...
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/login"
-                  className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-                >
-                  Go to Login
-                </Link>
-                <button
-                  onClick={() => {
-                    setVerificationSent(false);
-                    setSignupEmail("");
-                    setEmail("");
-                    setPassword("");
-                    setConfirmPassword("");
-                    setFullName("");
-                    setLevel("");
-                  }}
-                  className="inline-block bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-                >
-                  Sign Up Again
-                </button>
+            </div>
+          ) : verificationSent ? (
+            <div className="space-y-6">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30 rounded-xl p-4">
+                <div className="flex items-start space-x-3">
+                  <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">
+                      Verification code sent!
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                      We've sent a 6-digit OTP code to <strong>{signupEmail}</strong>. Please check your email and enter it below.
+                    </p>
+                  </div>
+                </div>
               </div>
+
+              <form onSubmit={handleVerifyOTP} className="space-y-6">
+                {otpError && (
+                  <div className={`rounded-xl p-4 flex items-center space-x-3 ${
+                    otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
+                      ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30"
+                      : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30"
+                  }`}>
+                    {otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success") ? (
+                      <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                    ) : (
+                      <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                    )}
+                    <p className={`text-sm font-medium ${
+                      otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
+                        ? "text-green-700 dark:text-green-300"
+                        : "text-red-700 dark:text-red-300"
+                    }`}>
+                      {otpError}
+                    </p>
+                  </div>
+                )}
+
+                {/* OTP Input */}
+                <div className="space-y-2">
+                  <label htmlFor="otp" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Enter Verification Code
+                  </label>
+                  <input
+                    id="otp"
+                    name="otp"
+                    type="text"
+                    value={otp}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setOtp(value);
+                      setOtpError("");
+                    }}
+                    required
+                    maxLength={6}
+                    autoFocus
+                    className="w-full border rounded-xl px-4 py-4 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 border-gray-300 dark:border-white/20 text-center text-3xl font-mono tracking-widest"
+                    placeholder="000000"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Enter the 6-digit code from your email. Code expires in 10 minutes.
+                  </p>
+                </div>
+
+                {/* Verify Button */}
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={isVerifying || otp.length !== 6}
+                    className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {isVerifying ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        <span>Verifying...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircleIcon className="h-5 w-5" />
+                        <span>Verify Email</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Resend OTP */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Didn't receive the code?{" "}
+                    <button
+                      type="button"
+                      onClick={handleResendOTP}
+                      disabled={isLoading}
+                      className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? "Sending..." : "Resend OTP"}
+                    </button>
+                  </p>
+                </div>
+              </form>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -395,7 +534,7 @@ export default function SignupPage() {
           )}
           
           {/* Login Link */}
-          {!verificationSent && (
+          {!verificationSent && !verificationSuccess && (
           <div className="mt-8 text-center">
               <p className="text-gray-600 dark:text-white/70">
               Already have an account?{' '}
