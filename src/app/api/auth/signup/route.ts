@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { Resend } from "resend";
+import { sendEmail, EMAIL_ADDRESSES } from "@/lib/email-service";
 import crypto from "crypto";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Use verified domain email or fallback to Resend's test domain
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'PansGPT <onboarding@resend.dev>';
 
 export async function POST(request: Request) {
   try {
@@ -16,19 +11,166 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Check if user already exists using the singleton prisma client
+    // Check if user already exists (verified)
     const existingUser = await prisma.user.findUnique({ 
       where: { email },
-      select: { id: true, email: true, name: true, emailVerified: true }
+      select: { id: true, email: true, emailVerified: true }
     });
-    if (existingUser) {
-      if (existingUser.emailVerified) {
-        return NextResponse.json({ error: "User already exists" }, { status: 400 });
-      } else {
-        // User exists but email not verified - allow resending verification
+    if (existingUser && existingUser.emailVerified) {
+      return NextResponse.json({ error: "User already exists" }, { status: 400 });
+    }
+
+    // Check if there's a pending signup for this email
+    const existingPending = await prisma.pendingSignup.findUnique({
+      where: { email },
+    });
+    
+    if (existingPending) {
+      // Generate new verification token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+
+      // Update pending signup with new token and user info (in case they changed name/level)
+      await prisma.pendingSignup.update({
+        where: { email },
+        data: {
+          name,
+          level,
+          password: await bcrypt.hash(password, 10), // Update password in case they want to change it
+          verificationToken,
+          verificationTokenExpires
+        }
+      });
+
+      // Resend verification email
+      const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+      
+      try {
+        const plainText = `Welcome to PansGPT!
+
+Hi ${name},
+
+Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.
+
+Verify your email by clicking this link:
+${verificationUrl}
+
+This verification link will expire in 24 hours.
+
+If the link doesn't work, copy and paste it into your browser.
+
+If you didn't create an account with PansGPT, please ignore this email.
+
+Best regards,
+The PansGPT Team`;
+
+        const emailResult = await sendEmail({
+          from: EMAIL_ADDRESSES.NO_REPLY,
+          to: email,
+          subject: 'Verify your PansGPT account',
+          text: plainText,
+          html: `
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
+  <title>Verify your PansGPT account</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table {border-collapse:collapse;border-spacing:0;margin:0;}
+    div, td {padding:0;}
+    div {margin:0 !important;}
+  </style>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; width: 100%; word-wrap: break-word; -webkit-font-smoothing: antialiased; background-color: #f5f5f5;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0; padding: 0; width: 100%; background-color: #f5f5f5;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #ffffff; border-radius: 8px 8px 0 0;">
+              <h1 style="margin: 0; color: #10b981; font-size: 28px; font-weight: 600; line-height: 1.2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Welcome to PansGPT!</h1>
+            </td>
+          </tr>
+          <!-- Content -->
+          <tr>
+            <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
+              <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${name},</p>
+              <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Thank you for signing up for PansGPT. Please verify your email address to complete your registration and start using the platform.</p>
+            </td>
+          </tr>
+          <!-- Button -->
+          <tr>
+            <td style="padding: 0 40px 30px 40px; text-align: center; background-color: #ffffff;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td align="center" style="background-color: #10b981; border-radius: 6px;">
+                    <a href="${verificationUrl}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Verify Email Address</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Link fallback -->
+          <tr>
+            <td style="padding: 0 40px 20px 40px; background-color: #ffffff;">
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If the button doesn't work, copy and paste this link into your browser:</p>
+              <p style="margin: 0; word-break: break-all; color: #10b981; background-color: #f0fdf4; padding: 12px; border-radius: 4px; font-size: 13px; font-family: 'Courier New', Courier, monospace; line-height: 1.5;">${verificationUrl}</p>
+            </td>
+          </tr>
+          <!-- Footer info -->
+          <tr>
+            <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
+              <p style="margin: 0 0 12px 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">This verification link will expire in 24 hours.</p>
+              <p style="margin: 0; color: #666666; font-size: 14px; line-height: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">If you didn't create an account with PansGPT, please ignore this email.</p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; border-top: 1px solid #eeeeee; background-color: #fafafa; border-radius: 0 0 8px 8px;">
+              <p style="margin: 0; color: #999999; font-size: 13px; line-height: 18px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Best regards,<br><strong style="color: #333333;">The PansGPT Team</strong></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+        `,
+        });
+
+        if (!emailResult.success) {
+          console.error('Error resending verification email:', emailResult.error);
+          return NextResponse.json({ 
+            error: "A verification email was already sent to this address, but we couldn't send a new one. Please check your email or try again later." 
+          }, { status: 500 });
+        }
+
+        console.log('Verification email resent successfully:', emailResult.messageId || 'sent');
+        
         return NextResponse.json({ 
-          error: "An account with this email already exists but is not verified. Please check your email for the verification link or request a new one." 
-        }, { status: 400 });
+          success: true, 
+          message: "A verification email has already been sent to this address. We've sent you a new verification email. Please check your inbox to verify your account." 
+        });
+      } catch (emailSendError: any) {
+        console.error('Exception resending verification email:', emailSendError);
+        return NextResponse.json({ 
+          error: "A verification email was already sent to this address, but we couldn't send a new one. Please check your email or try again later." 
+        }, { status: 500 });
       }
     }
 
@@ -38,7 +180,8 @@ export async function POST(request: Request) {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
 
-    const user = await prisma.user.create({
+    // Store in pending signup table instead of creating user
+    const pendingSignup = await prisma.pendingSignup.create({
       data: { 
         email, 
         password: hashedPassword, 
@@ -46,25 +189,12 @@ export async function POST(request: Request) {
         level,
         verificationToken,
         verificationTokenExpires
-      },
-      select: { id: true, email: true, name: true, level: true }
+      }
     });
 
     // Send verification email
     const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
     
-    // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured. Verification email cannot be sent.');
-      // Still create the user, but log the error
-      return NextResponse.json({ 
-        success: true, 
-        message: "Account created successfully, but verification email could not be sent. Please contact support.",
-        requiresVerification: true,
-        warning: "Email service not configured"
-      });
-    }
-
     try {
       const plainText = `Welcome to PansGPT!
 
@@ -84,8 +214,8 @@ If you didn't create an account with PansGPT, please ignore this email.
 Best regards,
 The PansGPT Team`;
 
-      const { data: emailData, error: emailError } = await resend.emails.send({
-        from: FROM_EMAIL,
+      const emailResult = await sendEmail({
+        from: EMAIL_ADDRESSES.NO_REPLY,
         to: email,
         subject: 'Verify your PansGPT account',
         text: plainText,
@@ -173,8 +303,8 @@ The PansGPT Team`;
         `,
       });
 
-      if (emailError) {
-        console.error('Resend API Error sending verification email:', JSON.stringify(emailError, null, 2));
+      if (!emailResult.success) {
+        console.error('Error sending verification email:', emailResult.error);
         // Log the error but still return success (user is created)
         // In production, you might want to queue this for retry
         return NextResponse.json({ 
@@ -185,7 +315,7 @@ The PansGPT Team`;
         });
       }
 
-      console.log('Verification email sent successfully:', emailData?.id || 'sent');
+      console.log('Verification email sent successfully:', emailResult.messageId || 'sent');
     } catch (emailSendError: any) {
       console.error('Exception sending verification email:', emailSendError);
       // User is already created, so return success with warning
@@ -197,8 +327,8 @@ The PansGPT Team`;
       });
     }
 
-    // Log the created user (without sensitive data)
-    console.log("Created user (signup):", { id: user.id, email: user.email, name: user.name, level: user.level });
+    // Log the pending signup (without sensitive data)
+    console.log("Created pending signup:", { email: pendingSignup.email, name: pendingSignup.name, level: pendingSignup.level });
 
     return NextResponse.json({ 
       success: true, 

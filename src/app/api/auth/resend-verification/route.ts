@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Resend } from "resend";
+import { sendEmail, EMAIL_ADDRESSES } from "@/lib/email-service";
 import crypto from "crypto";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Use verified domain email or fallback to Resend's test domain
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'PansGPT <onboarding@resend.dev>';
 
 export async function POST(request: Request) {
   try {
@@ -16,25 +11,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
+    // Check if user already exists and is verified
+    const existingUser = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, email: true, name: true, emailVerified: true }
+      select: { id: true, emailVerified: true }
     });
 
-    if (!user) {
-      // Don't reveal if user exists or not for security
+    if (existingUser) {
+      if (existingUser.emailVerified) {
+        return NextResponse.json({ 
+          success: true, 
+          message: "This email is already verified. You can log in." 
+        });
+      } else {
+        // This shouldn't happen with new flow, but handle it
+        return NextResponse.json({ 
+          success: true, 
+          message: "Please sign up again to receive a new verification email." 
+        });
+      }
+    }
+
+    // Find pending signup
+    const pendingSignup = await prisma.pendingSignup.findUnique({
+      where: { email }
+    });
+
+    if (!pendingSignup) {
+      // Don't reveal if pending signup exists or not for security
       return NextResponse.json({ 
         success: true, 
         message: "If an account with that email exists and is not verified, a verification email has been sent." 
-      });
-    }
-
-    // If already verified, don't send another email
-    if (user.emailVerified) {
-      return NextResponse.json({ 
-        success: true, 
-        message: "This email is already verified. You can log in." 
       });
     }
 
@@ -42,21 +49,23 @@ export async function POST(request: Request) {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Update user with new token
-    await prisma.user.update({
-      where: { id: user.id },
+    // Update pending signup with new token
+    await prisma.pendingSignup.update({
+      where: { id: pendingSignup.id },
       data: {
         verificationToken,
         verificationTokenExpires
       }
     });
 
+    const userName = pendingSignup.name;
+
     // Send verification email
     const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
     
     const plainText = `Verify Your PansGPT Account
 
-Hi ${user.name || 'there'},
+Hi ${userName || 'there'},
 
 You requested a new verification email. Please click the link below to verify your email address:
 
@@ -71,8 +80,8 @@ If you didn't request this verification email, please ignore it.
 Best regards,
 The PansGPT Team`;
 
-    const { error: emailError } = await resend.emails.send({
-      from: FROM_EMAIL,
+    const emailResult = await sendEmail({
+      from: EMAIL_ADDRESSES.NO_REPLY,
       to: email,
       subject: 'Verify your PansGPT account',
       text: plainText,
@@ -115,7 +124,7 @@ The PansGPT Team`;
           <!-- Content -->
           <tr>
             <td style="padding: 0 40px 30px 40px; background-color: #ffffff;">
-              <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${user.name || 'there'},</p>
+              <p style="margin: 0 0 16px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">Hi ${userName || 'there'},</p>
               <p style="margin: 0 0 24px 0; color: #333333; font-size: 16px; line-height: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">You requested a new verification email. Please click the button below to verify your email address:</p>
             </td>
           </tr>
@@ -160,8 +169,8 @@ The PansGPT Team`;
       `,
     });
 
-    if (emailError) {
-      console.error('Error sending verification email:', emailError);
+    if (!emailResult.success) {
+      console.error('Error sending verification email:', emailResult.error);
       return NextResponse.json({ 
         error: "Failed to send verification email. Please try again later." 
       }, { status: 500 });

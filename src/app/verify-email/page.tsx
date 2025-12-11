@@ -10,20 +10,62 @@ function VerifyEmailContent() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
 
+  console.log('🔵 VerifyEmailContent component rendered');
+
   useEffect(() => {
-    const token = searchParams.get("token");
+    console.log('🔍 VerifyEmailContent useEffect running');
+    
+    // Try to get token from searchParams first, then fallback to window.location
+    let token = searchParams.get("token");
+    
+    // If searchParams doesn't have it, try window.location (works better in some cases)
+    if (!token && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      token = urlParams.get("token");
+      console.log('🔍 Token from window.location:', token ? token.substring(0, 8) + '...' : 'NOT FOUND');
+    }
+    
+    console.log('🔍 Token from searchParams:', searchParams.get("token") ? searchParams.get("token")!.substring(0, 8) + '...' : 'NOT FOUND');
+    console.log('🔍 Final token value:', token ? token.substring(0, 8) + '...' : 'NOT FOUND');
+    console.log('🔍 Full URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
     
     if (!token) {
+      console.error('❌ No verification token found in URL');
       setStatus("error");
-      setMessage("No verification token provided.");
+      setMessage("No verification token provided. Please check your verification email and click the link again.");
       return;
     }
 
     // Verify the email
-    fetch(`/api/auth/verify-email?token=${token}`)
+    console.log('✅ Starting verification with token:', token.substring(0, 8) + '...');
+    const verifyUrl = `/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+    console.log('📡 Calling API:', verifyUrl.substring(0, 50) + '...');
+    
+    fetch(verifyUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store'
+    })
       .then(async (res) => {
-        const data = await res.json();
-        if (res.ok) {
+        console.log('📥 API Response received:', { ok: res.ok, status: res.status, statusText: res.statusText });
+        
+        let data;
+        try {
+          data = await res.json();
+          console.log('📥 Verification response data:', data);
+        } catch (jsonError) {
+          console.error('❌ Failed to parse JSON response:', jsonError);
+          const text = await res.text();
+          console.error('❌ Response text:', text);
+          setStatus("error");
+          setMessage("Invalid response from server. Please try again.");
+          return;
+        }
+        
+        if (res.ok && data.success) {
+          console.log('✅ Verification successful!');
           setStatus("success");
           setMessage(data.message || "Email verified successfully!");
           // Redirect to login after 3 seconds
@@ -31,16 +73,22 @@ function VerifyEmailContent() {
             router.push("/login");
           }, 3000);
         } else {
+          console.error('❌ Verification failed:', data);
           setStatus("error");
           setMessage(data.error || "Verification failed. The link may have expired.");
         }
       })
       .catch((error) => {
-        console.error("Verification error:", error);
+        console.error("❌ Verification error (catch):", error);
+        console.error("❌ Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
         setStatus("error");
-        setMessage("An error occurred during verification. Please try again.");
+        setMessage(`Network error: ${error.message}. Please check your connection and try again.`);
       });
-  }, [searchParams, router]);
+  }, [searchParams, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0C120C] flex items-center justify-center px-4">

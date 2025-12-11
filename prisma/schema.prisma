@@ -250,3 +250,18 @@ model MessageFeedback {
   @@index([rating])
   @@index([createdAt])
 }
+
+model PendingSignup {
+  id                      String   @id @default(cuid())
+  email                   String   @unique
+  password                String   // Hashed password
+  name                    String
+  level                   String?
+  verificationToken       String   @unique
+  verificationTokenExpires DateTime
+  createdAt               DateTime @default(now())
+
+  @@index([email])
+  @@index([verificationToken])
+  @@index([verificationTokenExpires])
+}

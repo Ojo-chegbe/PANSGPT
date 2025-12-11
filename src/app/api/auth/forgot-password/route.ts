@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Resend } from "resend";
+import { sendEmail, EMAIL_ADDRESSES } from "@/lib/email-service";
 import crypto from "crypto";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Use verified domain email or fallback to Resend's test domain
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'PansGPT <onboarding@resend.dev>';
 
 export async function POST(request: Request) {
   try {
@@ -43,14 +38,6 @@ export async function POST(request: Request) {
       }
     });
 
-    // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured. Password reset email cannot be sent.');
-      return NextResponse.json({ 
-        error: "Email service is not configured. Please contact support." 
-      }, { status: 500 });
-    }
-
     // Send reset email
     const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
     
@@ -72,9 +59,9 @@ If you didn't request this password reset, please ignore this email. Your passwo
 Best regards,
 The PansGPT Team`;
 
-      const { data: emailData, error: emailError } = await resend.emails.send({
-        from: FROM_EMAIL,
-        to: user.email, // Send to the user's actual email
+      const emailResult = await sendEmail({
+        from: EMAIL_ADDRESSES.NO_REPLY,
+        to: user.email,
         subject: 'Reset your PansGPT password',
         text: plainText,
         html: `
@@ -161,14 +148,14 @@ The PansGPT Team`;
         `,
       });
 
-      if (emailError) {
-        console.error('Resend API Error sending reset email:', JSON.stringify(emailError, null, 2));
+      if (!emailResult.success) {
+        console.error('Error sending reset email:', emailResult.error);
         return NextResponse.json({ 
           error: "Failed to send reset email. Please try again later." 
         }, { status: 500 });
       }
 
-      console.log('Password reset email sent successfully:', emailData?.id || 'sent', 'to:', user.email);
+      console.log('Password reset email sent successfully:', emailResult.messageId || 'sent', 'to:', user.email);
     } catch (emailSendError: any) {
       console.error('Exception sending reset email:', emailSendError);
       return NextResponse.json({ 
