@@ -9,6 +9,7 @@ interface FeedbackItem {
   rating: string;
   feedback: string | null;
   messageContent: string | null;
+  userPrompt: string | null;
   createdAt: string;
   user: {
     id: string;
@@ -230,48 +231,58 @@ export default function AdminFeedbackPage() {
                   </div>
                 )}
 
-                 {item.messageContent && (
-                   <div className="p-4 bg-gray-900 rounded-lg border border-gray-700">
-                     <div className="flex items-center justify-between mb-2">
-                       <p className="text-sm text-gray-300 font-medium">
-                         AI Message ({item.messageContent.length.toLocaleString()} characters):
-                       </p>
-                       {item.messageContent.length > 500 && (
-                         <button
-                           onClick={() => {
-                             const newExpanded = new Set(expandedMessages);
-                             if (newExpanded.has(item.id)) {
-                               newExpanded.delete(item.id);
-                             } else {
-                               newExpanded.add(item.id);
-                             }
-                             setExpandedMessages(newExpanded);
-                           }}
-                           className="text-xs text-blue-400 hover:text-blue-300 underline font-medium transition-colors"
-                         >
-                           {expandedMessages.has(item.id) ? '▼ Show Less' : '▶ Show Full Message'}
-                         </button>
-                       )}
-                     </div>
-                     <div 
-                       className={`text-gray-300 text-sm whitespace-pre-wrap break-words ${
-                         expandedMessages.has(item.id) || item.messageContent.length <= 500
-                           ? ''
-                           : 'line-clamp-4'
-                       }`}
-                       style={{
-                         wordBreak: 'break-word',
-                         overflowWrap: 'break-word',
-                         maxWidth: '100%',
-                         whiteSpace: expandedMessages.has(item.id) || item.messageContent.length <= 500 ? 'pre-wrap' : 'normal',
-                       }}
-                     >
-                       {expandedMessages.has(item.id) || item.messageContent.length <= 500
-                         ? item.messageContent
-                         : `${item.messageContent.substring(0, 500)}...`}
-                     </div>
-                   </div>
-                 )}
+                {item.userPrompt && (
+                  <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-700/50 mb-3">
+                    <p className="text-sm text-blue-300 font-medium mb-2">
+                      User Prompt ({item.userPrompt.length.toLocaleString()} characters):
+                    </p>
+                    <div className="text-gray-200 text-sm whitespace-pre-wrap break-words">
+                      {item.userPrompt}
+                    </div>
+                  </div>
+                )}
+
+                {item.messageContent && (
+                  <div className="p-4 bg-gray-900 rounded-lg border border-gray-700">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-gray-300 font-medium">
+                        AI Message ({item.messageContent.length.toLocaleString()} characters):
+                      </p>
+                      {item.messageContent.length > 500 && (
+                        <button
+                          onClick={() => {
+                            const newExpanded = new Set(expandedMessages);
+                            if (newExpanded.has(item.id)) {
+                              newExpanded.delete(item.id);
+                            } else {
+                              newExpanded.add(item.id);
+                            }
+                            setExpandedMessages(newExpanded);
+                          }}
+                          className="text-xs text-blue-400 hover:text-blue-300 underline font-medium transition-colors"
+                        >
+                          {expandedMessages.has(item.id) ? '▼ Show Less' : '▶ Show Full Message'}
+                        </button>
+                      )}
+                    </div>
+                    <div
+                      className={`text-gray-300 text-sm whitespace-pre-wrap break-words ${expandedMessages.has(item.id) || item.messageContent.length <= 500
+                          ? ''
+                          : 'line-clamp-4'
+                        }`}
+                      style={{
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                        maxWidth: '100%',
+                        whiteSpace: expandedMessages.has(item.id) || item.messageContent.length <= 500 ? 'pre-wrap' : 'normal',
+                      }}
+                    >
+                      {expandedMessages.has(item.id) || item.messageContent.length <= 500
+                        ? item.messageContent
+                        : `${item.messageContent.substring(0, 500)}...`}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

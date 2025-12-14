@@ -246,8 +246,9 @@ model MessageFeedback {
   rating      String   // "thumbs_up", "thumbs_down", or "popup_feedback"
   feedback    String?  @db.Text // Optional text feedback
   messageContent String? @db.Text // Store full message content for context (unlimited length)
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userPrompt    String?  @db.Text // Store the user prompt that led to this response
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([messageId])

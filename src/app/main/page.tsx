@@ -35,7 +35,7 @@ interface Conversation {
  */
 function formatAuthorName(lecturerName: string): string {
   let formattedAuthor = lecturerName.trim();
-  
+
   // If the name doesn't contain a comma, try to format it
   if (!formattedAuthor.includes(',')) {
     const nameParts = formattedAuthor.split(/\s+/);
@@ -48,20 +48,20 @@ function formatAuthorName(lecturerName: string): string {
       formattedAuthor = `${lastName}, ${firstInitial}.`;
     }
   }
-  
+
   return formattedAuthor;
 }
 
 // Memoize the message list component
-const MessageList = React.memo(({ 
-  messages, 
-  editingIdx, 
+const MessageList = React.memo(({
+  messages,
+  editingIdx,
   editingText,
   setEditingText,
-  copiedIdx, 
-  handleEdit, 
-  handleEditCancel, 
-  handleEditSave, 
+  copiedIdx,
+  handleEdit,
+  handleEditCancel,
+  handleEditSave,
   handleCopy,
   isLoading,
   showCitationsFor,
@@ -107,7 +107,7 @@ const MessageList = React.memo(({
                   placeholder="Edit your message..."
                   autoFocus
                 />
-                
+
                 <div className="flex items-center justify-end gap-3">
                   <button
                     onClick={() => handleEditCancel()}
@@ -156,11 +156,10 @@ const MessageList = React.memo(({
                     e.stopPropagation();
                     handleFeedback(idx, 'thumbs_up');
                   }}
-                  className={`transition-colors ${
-                    message.feedback === 'thumbs_up'
-                      ? 'text-green-600 dark:text-[#00A400]'
-                      : 'text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white'
-                  }`}
+                  className={`transition-colors ${message.feedback === 'thumbs_up'
+                    ? 'text-green-600 dark:text-[#00A400]'
+                    : 'text-gray-500 dark:text-gray-500 hover:text-green-600 dark:hover:text-white'
+                    }`}
                   title="Helpful"
                 >
                   {message.feedback === 'thumbs_up' ? (
@@ -174,11 +173,10 @@ const MessageList = React.memo(({
                     e.stopPropagation();
                     handleFeedback(idx, 'thumbs_down');
                   }}
-                  className={`transition-colors ${
-                    message.feedback === 'thumbs_down'
-                      ? 'text-red-600 dark:text-red-400'
-                      : 'text-gray-500 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400'
-                  }`}
+                  className={`transition-colors ${message.feedback === 'thumbs_down'
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-500 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400'
+                    }`}
                   title="Not helpful"
                 >
                   {message.feedback === 'thumbs_down' ? (
@@ -208,41 +206,41 @@ const MessageList = React.memo(({
                 <PencilIcon className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             )}
-                    {showCitationsFor === idx && (
-                      <>
-                        <div 
-                  className="fixed inset-0 z-[45]" 
-                          onClick={() => setShowCitationsFor(null)}
-                        />
+            {showCitationsFor === idx && (
+              <>
+                <div
+                  className="fixed inset-0 z-[45]"
+                  onClick={() => setShowCitationsFor(null)}
+                />
                 <div className="absolute z-[60] left-0 bottom-full mb-2 p-3 bg-gray-100 dark:bg-[#2D3A2D] border border-gray-300 dark:border-green-800/50 rounded-lg shadow-lg max-w-sm min-w-[200px]">
-                          <div className="text-xs font-semibold text-gray-700 dark:text-green-100 mb-2">
-                            Sources:
-                          </div>
+                  <div className="text-xs font-semibold text-gray-700 dark:text-green-100 mb-2">
+                    Sources:
+                  </div>
                   {message.citations && message.citations.length > 0 ? (
-                          <div className="space-y-2">
-                            {message.citations.map((citation: { lecturerName: string; documentTitle: string }, citationIdx: number) => {
-                              const formattedAuthor = formatAuthorName(citation.lecturerName);
-                              const formattedTitle = citation.documentTitle.trim();
-                              return (
-                                <div key={citationIdx} className="text-xs text-gray-600 dark:text-green-200/80 leading-relaxed">
-                                  {formattedAuthor}. <span className="italic">{formattedTitle}</span> [Lecture notes]. University of Jos, Faculty of Pharmaceutical Sciences.
-                                </div>
-                              );
-                            })}
+                    <div className="space-y-2">
+                      {message.citations.map((citation: { lecturerName: string; documentTitle: string }, citationIdx: number) => {
+                        const formattedAuthor = formatAuthorName(citation.lecturerName);
+                        const formattedTitle = citation.documentTitle.trim();
+                        return (
+                          <div key={citationIdx} className="text-xs text-gray-600 dark:text-green-200/80 leading-relaxed">
+                            {formattedAuthor}. <span className="italic">{formattedTitle}</span> [Lecture notes]. University of Jos, Faculty of Pharmaceutical Sciences.
                           </div>
+                        );
+                      })}
+                    </div>
                   ) : (
                     <div className="text-xs text-gray-600 dark:text-green-200/80">
                       No references available for this message.
-                        </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
         </div>
       </div>
     ))}
-    
+
     {/* Loading indicator */}
     {isLoading && (
       <div className="flex justify-start">
@@ -264,15 +262,15 @@ const MessageList = React.memo(({
 ));
 
 // Memoize the input area component
-const InputArea = React.memo(({ 
-  input, 
+const InputArea = React.memo(({
+  input,
   handleInputChange,
   setInput,
-  handleSend, 
+  handleSend,
   isLoading,
   isStreaming,
   handleStopStreaming,
-  sidebarOpen 
+  sidebarOpen
 }: {
   input: string;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -288,7 +286,7 @@ const InputArea = React.memo(({
     className={`fixed bottom-0 z-30 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-8 pb-4 md:pb-8 bg-transparent`}
   >
     <div className="rounded-2xl flex flex-col gap-3 px-3 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D]" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}
-      >
+    >
       {/* Input field */}
       <input
         type="text"
@@ -298,7 +296,7 @@ const InputArea = React.memo(({
         onChange={handleInputChange}
         disabled={isLoading}
       />
-      
+
       {/* Button group - Stop or Send button */}
       <div className="flex items-center justify-end gap-3 flex-shrink-0 w-full">
         {isStreaming ? (
@@ -354,6 +352,7 @@ function MainPageContent() {
   const messagesRef = useRef<ExtendedChatMessage[]>([]);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [feedbackMessageContent, setFeedbackMessageContent] = useState<string>('');
+  const [feedbackUserPrompt, setFeedbackUserPrompt] = useState<string>('');
   const lastFeedbackPopupTime = useRef<number>(0);
   const messageCountSinceLastPopup = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -376,7 +375,7 @@ function MainPageContent() {
 
   const handleFeedback = async (idx: number, rating: 'thumbs_up' | 'thumbs_down') => {
     if (!session?.user?.id) return;
-    
+
     const message = messagesInConv[idx];
     if (!message || message.role !== 'model') return;
 
@@ -393,13 +392,19 @@ function MainPageContent() {
     setConversations(prev => prev.map(c =>
       c.id === activeId
         ? {
-            ...c,
-            messages: c.messages.map((m, i) =>
-              i === idx ? { ...m, feedback: rating } : m
-            )
-          }
+          ...c,
+          messages: c.messages.map((m, i) =>
+            i === idx ? { ...m, feedback: rating } : m
+          )
+        }
         : c
     ));
+
+    // Find the associated user prompt (the message before the AI response)
+    let userPrompt = '';
+    if (idx > 0 && messagesInConv[idx - 1].role === 'user') {
+      userPrompt = messagesInConv[idx - 1].content;
+    }
 
     // Send feedback to server
     try {
@@ -410,6 +415,7 @@ function MainPageContent() {
           messageId: null, // We don't have message IDs in the frontend
           rating,
           messageContent: message.content, // Store full message content
+          userPrompt, // Store user prompt
         }),
       });
     } catch (error) {
@@ -476,7 +482,7 @@ function MainPageContent() {
                 // Regular content chunk
                 onChunk(parsed.chunk);
               }
-            } catch {}
+            } catch { }
           }
         }
       }
@@ -490,7 +496,7 @@ function MainPageContent() {
             // Regular content chunk
             onChunk(parsed.chunk);
           }
-        } catch {}
+        } catch { }
       }
     } catch (error: any) {
       // If aborted, don't throw error
@@ -511,7 +517,7 @@ function MainPageContent() {
       abortControllerRef.current = null;
     }
     if (readerRef.current) {
-      readerRef.current.cancel().catch(() => {});
+      readerRef.current.cancel().catch(() => { });
       readerRef.current = null;
     }
     setIsStreaming(false);
@@ -520,11 +526,11 @@ function MainPageContent() {
 
   const handleEditSave = async (idx: number) => {
     if (!editingText.trim()) return;
-    
+
     // Get the current active conversation to avoid stale closure
     const currentActiveConv = conversations.find(c => c.id === activeId);
     if (!currentActiveConv) return;
-    
+
     const updatedMessages = [...currentActiveConv.messages];
     updatedMessages[idx] = {
       ...updatedMessages[idx],
@@ -548,11 +554,11 @@ function MainPageContent() {
     setEditingText("");
     setIsLoading(true);
     setIsStreaming(true);
-    
+
     // Create AbortController for this request
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
-    
+
     try {
       await streamChatApi(
         editingText.trim(),
@@ -565,7 +571,7 @@ function MainPageContent() {
             if (parsed && typeof parsed === 'object' && parsed.response) {
               text = parsed.response;
             }
-          } catch {}
+          } catch { }
           setMessages(prev => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
@@ -594,20 +600,20 @@ function MainPageContent() {
               };
             }
             messagesRef.current = updated;
-            
+
             // Also update conversations state to preserve citations
             setConversations(prev => prev.map(c =>
               c.id === activeId
                 ? { ...c, messages: updated }
                 : c
             ));
-            
+
             return updated;
           });
         },
         abortController.signal
       );
-      
+
       // Clear abort controller reference if streaming completed successfully
       if (!abortController.signal.aborted) {
         abortControllerRef.current = null;
@@ -623,28 +629,28 @@ function MainPageContent() {
           messages: latestMessages,
           userId: session.user.id
         };
-        
+
         console.log('Saving edited conversation:', {
           activeId,
           hasActiveConv: !!currentActiveConv,
           messageCount: latestMessages.length,
           payload
         });
-        
+
         const saveResponse = await fetch("/api/conversations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
           credentials: 'include',
         });
-        
+
         if (saveResponse.ok) {
           const savedConversation = await saveResponse.json();
           console.log('Edited conversation saved successfully:', {
             conversationId: savedConversation.id,
             messageCount: savedConversation.messages?.length || 0
           });
-          
+
           const updatedConversation = {
             id: savedConversation.id,
             name: savedConversation.title,
@@ -655,7 +661,7 @@ function MainPageContent() {
               citations: msg.citations || undefined
             }))
           };
-          
+
           // Update conversations list and set active conversation
           setConversations(prev => {
             const existingIndex = prev.findIndex(c => c.id === activeId);
@@ -669,19 +675,19 @@ function MainPageContent() {
               return [updatedConversation, ...prev];
             }
           });
-          
+
           // Update active ID if it changed (for new conversations)
           if (savedConversation.id !== activeId) {
             setActiveId(savedConversation.id);
           }
-          
-            // Ensure messages are sorted by createdAt before setting
-            const sortedLoadedMessages = [...updatedConversation.messages].sort((a, b) => {
-              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-              return dateA - dateB;
-            });
-            setMessages(sortedLoadedMessages);
+
+          // Ensure messages are sorted by createdAt before setting
+          const sortedLoadedMessages = [...updatedConversation.messages].sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateA - dateB;
+          });
+          setMessages(sortedLoadedMessages);
         } else {
           console.error('Failed to save edited conversation:', saveResponse.status, saveResponse.statusText);
           const errorText = await saveResponse.text();
@@ -742,16 +748,16 @@ function MainPageContent() {
         name: "New Conversation",
         messages: []
       };
-      
+
       setConversations(prev => [tempConversation, ...prev]);
       setActiveId(tempId);
       setMessages([]);
       setEditingIdx(null);
       setEditingText("");
-      
+
       // Navigate to clean URL without conversation ID
       router.push('/main');
-      
+
       console.log('Created temporary conversation for new chat:', {
         tempConversationId: tempId
       });
@@ -770,7 +776,7 @@ function MainPageContent() {
             credentials: 'include',
           });
           const data = await response.json();
-          
+
           console.log('Loaded conversations from database:', {
             hasData: !!data,
             conversationsCount: data.conversations?.length || 0,
@@ -780,10 +786,10 @@ function MainPageContent() {
               messageCount: data.conversations[0].messages?.length || 0
             } : null
           });
-          
+
           // Check if there's a conversation ID in the URL
           const conversationIdFromUrl = searchParams.get('conversation');
-          
+
           if (conversationIdFromUrl) {
             // Try to load the specific conversation from URL
             console.log('Loading conversation from URL:', conversationIdFromUrl);
@@ -795,7 +801,7 @@ function MainPageContent() {
           } else {
             // No conversation ID in URL - check localStorage for previous conversation
             const storedActiveId = typeof window !== 'undefined' ? localStorage.getItem('ai_activeId') : null;
-            
+
             if (storedActiveId && !storedActiveId.startsWith('temp_')) {
               // Check if the stored conversation exists in the loaded conversations
               const storedConv = data.conversations?.find((conv: any) => conv.id === storedActiveId);
@@ -845,7 +851,7 @@ function MainPageContent() {
                   } else {
                     // Conversation not found, create new one
                     console.log('Stored conversation not found, creating new conversation');
-            await createNewConversation();
+                    await createNewConversation();
                   }
                 } catch (err) {
                   console.error('Error fetching stored conversation:', err);
@@ -871,11 +877,11 @@ function MainPageContent() {
   // Function to load a specific conversation from URL
   const loadConversationFromUrl = async (conversationId: string, existingConversations: any[]) => {
     if (!session?.user?.id) return;
-    
+
     try {
       // First check if the conversation is already in our loaded conversations
       const existingConv = existingConversations.find(conv => conv.id === conversationId);
-      
+
       if (existingConv) {
         // Convert to our format and set as active
         const formattedConversations = existingConversations.map((conv: any) => ({
@@ -888,7 +894,7 @@ function MainPageContent() {
             citations: msg.citations || undefined
           }))
         }));
-        
+
         setConversations(formattedConversations);
         setActiveId(conversationId);
         const sortedExistingMessages = [...existingConv.messages].sort((a, b) => {
@@ -902,24 +908,24 @@ function MainPageContent() {
           createdAt: msg.createdAt ? (typeof msg.createdAt === 'string' ? msg.createdAt : new Date(msg.createdAt).toISOString()) : undefined,
           citations: msg.citations || undefined
         })));
-        
+
         console.log('Loaded existing conversation from URL:', {
           conversationId,
           messageCount: existingConv.messages.length
         });
         return;
       }
-      
+
       // If not found in loaded conversations, try to fetch it directly
       console.log('Conversation not in loaded list, fetching directly:', conversationId);
       const response = await fetch(`/api/conversations/${conversationId}`, {
         credentials: 'include',
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         const conversation = data.conversation;
-        
+
         // Convert to our format
         const formattedConversation = {
           id: conversation.id,
@@ -931,7 +937,7 @@ function MainPageContent() {
             citations: msg.citations || undefined
           }))
         };
-        
+
         // Add this conversation to the list and set as active
         const allConversations = [formattedConversation, ...existingConversations.map((conv: any) => ({
           id: conv.id,
@@ -943,7 +949,7 @@ function MainPageContent() {
             citations: msg.citations || undefined
           }))
         }))];
-        
+
         setConversations(allConversations);
         setActiveId(conversationId);
         const sortedFormattedMessages = [...formattedConversation.messages].sort((a, b) => {
@@ -952,7 +958,7 @@ function MainPageContent() {
           return dateA - dateB;
         });
         setMessages(sortedFormattedMessages);
-        
+
         console.log('Loaded conversation directly from API:', {
           conversationId,
           messageCount: conversation.messages.length
@@ -970,14 +976,14 @@ function MainPageContent() {
   // Function to create a new conversation (UI-only, not saved to database until first message)
   const createNewConversation = async () => {
     if (!session?.user?.id) return;
-    
+
     try {
       // Load existing conversations for the sidebar
       const conversationsResponse = await fetch(`/api/conversations?userId=${session.user.id}&limit=10&messageLimit=50`, {
         credentials: 'include',
       });
       const conversationsData = await conversationsResponse.json();
-      
+
       let existingConversations = [];
       if (conversationsData.conversations && conversationsData.conversations.length > 0) {
         existingConversations = conversationsData.conversations.map((conv: any) => ({
@@ -991,7 +997,7 @@ function MainPageContent() {
           }))
         }));
       }
-      
+
       // Create a temporary conversation (not saved to database yet)
       const tempId = `temp_${Date.now()}`;
       const tempConversation = {
@@ -999,13 +1005,13 @@ function MainPageContent() {
         name: "New Conversation",
         messages: []
       };
-      
+
       // Add the temporary conversation to the beginning of the list
       const allConversations = [tempConversation, ...existingConversations];
       setConversations(allConversations);
       setActiveId(tempId);
       setMessages([]);
-      
+
       console.log('Created temporary conversation (not saved to database yet):', {
         tempConversationId: tempId,
         totalConversations: allConversations.length
@@ -1096,18 +1102,18 @@ function MainPageContent() {
             const data = await res.json();
             if (data.user?.level) setUserLevel(data.user.level);
           }
-        } catch {}
+        } catch { }
       }
     }
     fetchLevel();
-    
+
     // Refresh level every 30 seconds to catch profile updates
     const interval = setInterval(fetchLevel, 30000);
-    
+
     // Also refresh when window regains focus (user might have updated profile in another tab)
     const handleFocus = () => fetchLevel();
     window.addEventListener('focus', handleFocus);
-    
+
     return () => {
       clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
@@ -1138,11 +1144,11 @@ function MainPageContent() {
     ));
     setInput('');
     setIsStreaming(true);
-    
+
     // Create AbortController for this request
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
-    
+
     try {
       await streamChatApi(
         userMessage.content,
@@ -1176,63 +1182,70 @@ function MainPageContent() {
               };
             }
             messagesRef.current = updated;
-            
+
             // Also update conversations state to preserve citations
             setConversations(prev => prev.map(c =>
               c.id === activeId
                 ? { ...c, messages: updated }
                 : c
             ));
-            
+
             return updated;
           });
         },
         abortController.signal
       );
-      
+
       // Clear abort controller reference if streaming completed successfully
       if (!abortController.signal.aborted) {
         abortControllerRef.current = null;
       }
-      
+
       // Check if we should show feedback popup (every 25th AI response, at least 5 minutes apart)
       messageCountSinceLastPopup.current += 1;
       const now = Date.now();
       const timeSinceLastPopup = now - lastFeedbackPopupTime.current;
       const fiveMinutes = 5 * 60 * 1000;
-      
+
       if (messageCountSinceLastPopup.current >= 25 && timeSinceLastPopup >= fiveMinutes) {
         const lastMessage = messagesRef.current[messagesRef.current.length - 1];
         if (lastMessage && lastMessage.role === 'model' && lastMessage.content) {
           setFeedbackMessageContent(lastMessage.content);
+          // Find the user prompt that triggered this AI response
+          const messagesLength = messagesRef.current.length;
+          if (messagesLength >= 2 && messagesRef.current[messagesLength - 2].role === 'user') {
+            setFeedbackUserPrompt(messagesRef.current[messagesLength - 2].content);
+          } else {
+            setFeedbackUserPrompt('');
+          }
           setShowFeedbackPopup(true);
           lastFeedbackPopupTime.current = now;
           messageCountSinceLastPopup.current = 0;
         }
       }
-      
+
       // Auto-save after streaming completes, using latest messages from ref
       // Wait a bit to ensure citations are set (they arrive after stream completes)
       await new Promise(resolve => setTimeout(resolve, 500));
       if (session?.user?.id) {
         const latestMessages = messagesRef.current;
-        
+
         // Check if this is a temporary conversation (first message)
         const isTemporaryConversation = activeId?.startsWith('temp_');
-        
+
         // Generate title from AI's first response if this is a new conversation or has default title
         let conversationTitle = activeConv?.name || 'Conversation';
-        
+
         // Only generate title from AI response if:
         // 1. It's a temporary conversation (first message), OR
         // 2. The conversation has a default title AND this appears to be the first AI response
-        const shouldGenerateFromAI = isTemporaryConversation || 
+        const shouldGenerateFromAI = isTemporaryConversation ||
           (isDefaultTitle(conversationTitle) && latestMessages.filter(msg => msg.role === 'model').length === 1);
-        
+
         if (shouldGenerateFromAI && latestMessages.length > 0) {
           // Find the first AI response (model role message)
           const firstAIResponse = latestMessages.find(msg => msg.role === 'model' && msg.content && msg.content.trim().length > 0);
-          
+
           if (firstAIResponse && firstAIResponse.content) {
             try {
               // Call API to generate title from AI's first response
@@ -1242,7 +1255,7 @@ function MainPageContent() {
                 body: JSON.stringify({ aiResponse: firstAIResponse.content }),
                 credentials: 'include',
               });
-              
+
               if (titleResponse.ok) {
                 const titleData = await titleResponse.json();
                 if (titleData.title) {
@@ -1268,31 +1281,31 @@ function MainPageContent() {
             }
           }
         }
-        
+
         if (isTemporaryConversation) {
           // This is the first message in a temporary conversation - create it in the database
           console.log('Creating new conversation in database for first message');
-          
+
           const payload = {
             title: conversationTitle,
             messages: latestMessages,
             userId: session.user.id
           };
-          
+
           const saveResponse = await fetch("/api/conversations", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
             credentials: 'include',
           });
-          
+
           if (saveResponse.ok) {
             const savedConversation = await saveResponse.json();
             console.log('New conversation created in database:', {
               conversationId: savedConversation.id,
               messageCount: savedConversation.messages?.length || 0
             });
-            
+
             const updatedConversation = {
               id: savedConversation.id,
               name: savedConversation.title,
@@ -1303,7 +1316,7 @@ function MainPageContent() {
                 citations: msg.citations || undefined
               }))
             };
-            
+
             // Replace the temporary conversation with the real one
             setConversations(prev => {
               const updated = [...prev];
@@ -1313,7 +1326,7 @@ function MainPageContent() {
               }
               return updated;
             });
-            
+
             // Update active ID to the real conversation ID
             setActiveId(savedConversation.id);
             // Merge citations from current messages if they exist
@@ -1331,7 +1344,7 @@ function MainPageContent() {
               return dateA - dateB;
             });
             setMessages(sortedMergedMessages);
-            
+
             // Update URL with the real conversation ID
             router.push(`/main?conversation=${savedConversation.id}`);
           } else {
@@ -1347,28 +1360,28 @@ function MainPageContent() {
             messages: latestMessages,
             userId: session.user.id
           };
-          
+
           console.log('Updating existing conversation:', {
             activeId,
             hasActiveConv: !!activeConv,
             messageCount: latestMessages.length,
             payload
           });
-          
+
           const saveResponse = await fetch("/api/conversations", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
             credentials: 'include',
           });
-          
+
           if (saveResponse.ok) {
             const savedConversation = await saveResponse.json();
             console.log('Conversation updated successfully:', {
               conversationId: savedConversation.id,
               messageCount: savedConversation.messages?.length || 0
             });
-            
+
             const updatedConversation = {
               id: savedConversation.id,
               name: savedConversation.title,
@@ -1379,7 +1392,7 @@ function MainPageContent() {
                 citations: msg.citations || undefined
               }))
             };
-            
+
             // Update conversations list
             setConversations(prev => {
               const existingIndex = prev.findIndex(c => c.id === activeId);
@@ -1390,7 +1403,7 @@ function MainPageContent() {
               }
               return prev;
             });
-            
+
             // Merge citations from current messages if they exist
             const currentMessages = messagesRef.current;
             const mergedMessages = updatedConversation.messages.map((savedMsg: ExtendedChatMessage, idx: number) => {
@@ -1444,14 +1457,14 @@ function MainPageContent() {
     setActiveId(id);
     setEditingIdx(null);
     setEditingText("");
-    
+
     // Update URL with conversation ID (only for real conversations, not temp ones)
     if (!id.startsWith('temp_')) {
       router.push(`/main?conversation=${id}`);
     } else {
       router.push('/main');
     }
-    
+
     // Close sidebar on mobile when conversation is selected
     // Use a more reliable method to check if we're on mobile
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -1510,12 +1523,12 @@ function MainPageContent() {
       setRenameText("");
       return;
     }
-    
+
     // Update UI immediately
     setConversations(prev => prev.map((c, i) => i === idx ? { ...c, name: updatedName } : c));
     setRenamingIdx(null);
     setRenameText("");
-    
+
     // Persist to backend using the new PATCH endpoint
     try {
       const response = await fetch(`/api/conversations/${conv.id}`, {
@@ -1530,7 +1543,7 @@ function MainPageContent() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Failed to rename conversation:', errorData.error);
-        
+
         // Revert UI change on failure
         setConversations(prev => prev.map((c, i) => i === idx ? { ...c, name: conv.name } : c));
         alert(`Failed to rename conversation: ${errorData.error}`);
@@ -1539,10 +1552,10 @@ function MainPageContent() {
 
       const result = await response.json();
       console.log('Conversation renamed successfully:', result);
-      
+
     } catch (err) {
       console.error('Error renaming conversation:', err);
-      
+
       // Revert UI change on failure
       setConversations(prev => prev.map((c, i) => i === idx ? { ...c, name: conv.name } : c));
       alert('Failed to rename conversation. Please try again.');
@@ -1616,19 +1629,18 @@ function MainPageContent() {
     <div className="flex h-[100dvh] w-full overflow-hidden text-gray-800 dark:text-white bg-gray-50 dark:[background-color:#0C120C]">
       {/* Mobile backdrop overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-[55] md:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-label="Close sidebar"
         />
       )}
-      
+
       {/* Sidebar - Always visible collapsed, expands when sidebarOpen */}
-      <aside className={`h-[100dvh] fixed left-0 top-0 flex flex-col transition-all duration-300 ${
-        sidebarOpen 
-          ? 'w-[85vw] md:w-72 border-r border-gray-200 dark:border-white/10 bg-white dark:[background-color:#2D3A2D] z-[60]' 
-          : 'w-0 md:w-20 z-50'
-      }`}>
+      <aside className={`h-[100dvh] fixed left-0 top-0 flex flex-col transition-all duration-300 ${sidebarOpen
+        ? 'w-[85vw] md:w-72 border-r border-gray-200 dark:border-white/10 bg-white dark:[background-color:#2D3A2D] z-[60]'
+        : 'w-0 md:w-20 z-50'
+        }`}>
         {/* Sidebar toggle button - always visible on mobile when collapsed */}
         <div className={`${sidebarOpen ? 'px-4 pt-4 pb-3' : 'p-3 md:px-4 md:pt-4 md:pb-3'} flex items-center justify-start ${!sidebarOpen ? 'md:border-r md:border-gray-200 dark:md:border-white/10' : ''}`}>
           <button
@@ -1637,46 +1649,46 @@ function MainPageContent() {
             aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
           >
             <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </button>
         </div>
-        
+
         {/* New Chat button */}
         <div className={`px-4 ${sidebarOpen ? 'pt-8 mb-4' : 'pt-6 mb-2 hidden md:block'}`}>
           <div className={!sidebarOpen ? 'flex justify-center' : ''}>
-          <button
+            <button
               className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 border border-green-300 dark:border-green-600/30 bg-green-50 dark:bg-transparent hover:bg-green-100 dark:hover:bg-transparent hover:border-green-400 dark:hover:border-green-600/50`}
               onClick={handleNewChat}
-            title="New Chat"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
-              <circle cx="21" cy="5" r="1.5" fill="currentColor" />
-            </svg>
-            {sidebarOpen && <span>New Chat</span>}
-          </button>
+              title="New Chat"
+            >
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+                <circle cx="21" cy="5" r="1.5" fill="currentColor" />
+              </svg>
+              {sidebarOpen && <span>New Chat</span>}
+            </button>
           </div>
         </div>
-        
+
         {/* Take A Quiz entry */}
         <div className={`px-4 ${sidebarOpen ? 'mb-4' : 'mb-2 hidden md:block'}`}>
           <div className={!sidebarOpen ? 'flex justify-center' : ''}>
-          <button
-            className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
-            onClick={() => window.location.href = '/quiz'}
-            title="Take A Quiz"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-            </svg>
-            {sidebarOpen && <span>Take A Quiz</span>}
-          </button>
+            <button
+              className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
+              onClick={() => window.location.href = '/quiz'}
+              title="Take A Quiz"
+            >
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+              </svg>
+              {sidebarOpen && <span>Take A Quiz</span>}
+            </button>
           </div>
         </div>
-        
+
         {/* History section - only visible when expanded */}
         {(sidebarOpen) && (
           <>
@@ -1684,101 +1696,100 @@ function MainPageContent() {
             <div className="px-4 mb-3">
               <div className="text-sm font-semibold text-green-600 dark:text-[#4ade80]">History</div>
             </div>
-            
+
             {/* Chat history (scrollable only here) */}
             <div className="flex-1 flex flex-col px-4 min-h-0">
               <div className="flex-1 overflow-y-auto pr-2 min-h-0">
                 <ul className="space-y-1">
-                {conversations.map((conv, idx) => (
-                  <li
-                    key={conv.id}
-                    className={`px-4 py-3 rounded-xl cursor-pointer text-sm flex items-center justify-between transition-all duration-200 ${conv.id === activeId ? "text-gray-900 dark:text-white border border-green-300 dark:border-green-600/30 bg-green-50 dark:bg-green-900/10" : "text-gray-700 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white border border-transparent"}`}
-                    onClick={() => handleSelectConv(conv.id)}
-                  >
-                    {renamingIdx === idx ? (
-                      <form
-                        onSubmit={e => { e.preventDefault(); handleRenameSave(idx); }}
-                        className="flex-1 flex gap-2 items-center"
-                      >
-                        <input
-                          className="bg-gray-100 dark:bg-white/20 text-gray-900 dark:text-white rounded px-2 py-1 text-xs border border-gray-300 dark:border-white/30 flex-1 placeholder-gray-400 dark:placeholder-white/50"
-                          value={renameText || ""}
-                          onChange={e => setRenameText(e.target.value)}
-                          autoFocus
-                        />
-                        <button type="submit" className="text-gray-900 dark:text-white text-xs font-semibold hover:text-gray-700 dark:hover:text-white/80">Save</button>
-                        <button type="button" className="text-gray-600 dark:text-white/70 text-xs font-semibold hover:text-gray-900 dark:hover:text-white" onClick={handleRenameCancel}>Cancel</button>
-                      </form>
-                    ) : (
-                      <>
-                        <span className="truncate flex-1">{conv.name}</span>
-                        {/* Three-dot menu (desktop only) */}
-                        <div className="relative" ref={historyMenuRef}>
-                          <button
-                            className="p-1 ml-2 rounded hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-white/80"
-                            onClick={e => { e.stopPropagation(); setHistoryMenuIdx(idx === historyMenuIdx ? null : idx); }}
-                          >
-                            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <circle cx="12" cy="5" r="2"/>
-                              <circle cx="12" cy="12" r="2"/>
-                              <circle cx="12" cy="19" r="2"/>
-                            </svg>
-                          </button>
-                          {historyMenuIdx === idx && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#2D3A2D] backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200 dark:border-white/10 overflow-hidden">
-                              <button 
-                                className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-700 dark:text-white group"
-                                onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}
-                              >
-                                <PencilIcon className="w-4 h-4 text-gray-500 dark:text-white/70 group-hover:text-gray-700 dark:group-hover:text-white transition-colors flex-shrink-0" />
-                                <span className="text-sm font-medium">Rename</span>
-                              </button>
-                              <div className="h-px bg-gray-200 dark:bg-white/10 mx-2 my-1"></div>
-                              <button 
-                                className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-300 transition-colors text-gray-700 dark:text-white group"
-                                onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}
-                              >
-                                <svg className="w-4 h-4 text-gray-500 dark:text-white/70 group-hover:text-red-600 dark:group-hover:text-red-300 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                <span className="text-sm font-medium">Delete conversation</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                  {conversations.map((conv, idx) => (
+                    <li
+                      key={conv.id}
+                      className={`px-4 py-3 rounded-xl cursor-pointer text-sm flex items-center justify-between transition-all duration-200 ${conv.id === activeId ? "text-gray-900 dark:text-white border border-green-300 dark:border-green-600/30 bg-green-50 dark:bg-green-900/10" : "text-gray-700 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white border border-transparent"}`}
+                      onClick={() => handleSelectConv(conv.id)}
+                    >
+                      {renamingIdx === idx ? (
+                        <form
+                          onSubmit={e => { e.preventDefault(); handleRenameSave(idx); }}
+                          className="flex-1 flex gap-2 items-center"
+                        >
+                          <input
+                            className="bg-gray-100 dark:bg-white/20 text-gray-900 dark:text-white rounded px-2 py-1 text-xs border border-gray-300 dark:border-white/30 flex-1 placeholder-gray-400 dark:placeholder-white/50"
+                            value={renameText || ""}
+                            onChange={e => setRenameText(e.target.value)}
+                            autoFocus
+                          />
+                          <button type="submit" className="text-gray-900 dark:text-white text-xs font-semibold hover:text-gray-700 dark:hover:text-white/80">Save</button>
+                          <button type="button" className="text-gray-600 dark:text-white/70 text-xs font-semibold hover:text-gray-900 dark:hover:text-white" onClick={handleRenameCancel}>Cancel</button>
+                        </form>
+                      ) : (
+                        <>
+                          <span className="truncate flex-1">{conv.name}</span>
+                          {/* Three-dot menu (desktop only) */}
+                          <div className="relative" ref={historyMenuRef}>
+                            <button
+                              className="p-1 ml-2 rounded hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-white/80"
+                              onClick={e => { e.stopPropagation(); setHistoryMenuIdx(idx === historyMenuIdx ? null : idx); }}
+                            >
+                              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="5" r="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="12" cy="19" r="2" />
+                              </svg>
+                            </button>
+                            {historyMenuIdx === idx && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#2D3A2D] backdrop-blur-xl rounded-xl py-2 z-50 border border-gray-200 dark:border-white/10 overflow-hidden">
+                                <button
+                                  className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-700 dark:text-white group"
+                                  onClick={e => { e.stopPropagation(); handleRenameConv(idx); }}
+                                >
+                                  <PencilIcon className="w-4 h-4 text-gray-500 dark:text-white/70 group-hover:text-gray-700 dark:group-hover:text-white transition-colors flex-shrink-0" />
+                                  <span className="text-sm font-medium">Rename</span>
+                                </button>
+                                <div className="h-px bg-gray-200 dark:bg-white/10 mx-2 my-1"></div>
+                                <button
+                                  className="flex items-center gap-3 w-full text-left px-4 py-3 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-300 transition-colors text-gray-700 dark:text-white group"
+                                  onClick={e => { e.stopPropagation(); handleDeleteConv(idx); }}
+                                >
+                                  <svg className="w-4 h-4 text-gray-500 dark:text-white/70 group-hover:text-red-600 dark:group-hover:text-red-300 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                  <span className="text-sm font-medium">Delete conversation</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </>
         )}
-        
+
         {/* Settings link at bottom of sidebar */}
         <div className={`px-4 pb-4 mt-auto ${sidebarOpen ? '' : 'hidden md:block'}`}>
           <div className={!sidebarOpen ? 'flex justify-center' : ''}>
-          <button
-            className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
-            onClick={() => router.push('/settings')}
-            title="Settings and Help"
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {sidebarOpen && <span>Settings and Help</span>}
-          </button>
+            <button
+              className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
+              onClick={() => router.push('/settings')}
+              title="Settings and Help"
+            >
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {sidebarOpen && <span>Settings and Help</span>}
+            </button>
           </div>
         </div>
       </aside>
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col h-[100dvh] bg-transparent transition-all duration-300 overflow-hidden w-0 min-w-0 ${sidebarOpen ? 'md:ml-72' : 'md:ml-20'}`}>
         {/* Top Bar - Fixed */}
-        <div className={`fixed top-0 right-0 z-40 flex items-center justify-center px-3 md:px-6 h-16 md:h-20 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-hidden bg-white dark:[background-color:#0C120C] ${
-          sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'
-        }`}>
+        <div className={`fixed top-0 right-0 z-40 flex items-center justify-center px-3 md:px-6 h-16 md:h-20 transition-all duration-300 border-b border-gray-200 dark:border-white/10 overflow-hidden bg-white dark:[background-color:#0C120C] ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'
+          }`}>
           {/* Constrained content container - matches conversation and input width */}
           <div className="w-full max-w-6xl mx-auto flex items-center gap-2 md:gap-4 overflow-hidden" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}>
             {/* Logo */}
@@ -1800,14 +1811,14 @@ function MainPageContent() {
             {/* Right: User profile */}
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 md:w-8 md:h-8 relative cursor-pointer" onClick={() => router.push('/profile')}>
-                  <Image
-                    src="/uploads/user-placeholder.png"
-                    alt="User"
-                    fill
+                <Image
+                  src="/uploads/user-placeholder.png"
+                  alt="User"
+                  fill
                   className="rounded-full object-cover"
                   title="View Profile"
-                  />
-                </div>
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -1850,7 +1861,7 @@ function MainPageContent() {
                   handleFeedback={handleFeedback}
                 />
                 <div ref={chatEndRef} />
-                
+
                 {/* Scroll to bottom button - only show when streaming and user has scrolled up */}
                 {showScrollButton && (
                   <button
@@ -1872,18 +1883,18 @@ function MainPageContent() {
           </div>
         </div>
         {/* Input Area */}
-          <InputArea
-            input={input}
-            handleInputChange={handleInputChange}
-            setInput={setInput}
-            handleSend={handleSend}
-            isLoading={isLoading}
-            isStreaming={isStreaming}
-            handleStopStreaming={handleStopStreaming}
-            sidebarOpen={sidebarOpen}
-          />
+        <InputArea
+          input={input}
+          handleInputChange={handleInputChange}
+          setInput={setInput}
+          handleSend={handleSend}
+          isLoading={isLoading}
+          isStreaming={isStreaming}
+          handleStopStreaming={handleStopStreaming}
+          sidebarOpen={sidebarOpen}
+        />
       </div>
-      
+
       {/* Feedback Popup */}
       <FeedbackPopup
         isOpen={showFeedbackPopup}
@@ -1898,6 +1909,7 @@ function MainPageContent() {
                 rating: 'popup_feedback',
                 feedback: feedbackText,
                 messageContent: feedbackMessageContent,
+                userPrompt: feedbackUserPrompt,
               }),
             });
           } catch (error) {

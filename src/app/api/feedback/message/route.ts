@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { messageId, rating, feedback, messageContent } = await request.json();
+    const { messageId, rating, feedback, messageContent, userPrompt } = await request.json();
 
     if (!rating) {
       return NextResponse.json({ error: 'Rating is required' }, { status: 400 });
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         rating,
         feedback: feedback || null,
         messageContent: messageContent || null, // Store full message content
+        userPrompt: userPrompt || null, // Store user prompt
       },
     });
 
