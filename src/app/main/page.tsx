@@ -273,59 +273,88 @@ const InputArea = React.memo(({
   sidebarOpen
 }: {
   input: string;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   setInput: (value: string) => void;
   handleSend: (e: React.FormEvent) => void;
   isLoading: boolean;
   isStreaming: boolean;
   handleStopStreaming: () => void;
   sidebarOpen: boolean;
-}) => (
-  <form
-    onSubmit={handleSend}
-    className={`fixed bottom-0 z-30 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-8 pb-4 md:pb-8 bg-transparent`}
-  >
-    <div className="rounded-2xl flex flex-col gap-3 px-3 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 overflow-hidden bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D]" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}
-    >
-      {/* Input field */}
-      <input
-        type="text"
-        placeholder={isLoading ? "PANSGPT is processing your message..." : "Ask a question from any course."}
-        className="w-full bg-transparent outline-none text-sm md:text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 flex-shrink"
-        value={input}
-        onChange={handleInputChange}
-        disabled={isLoading}
-      />
+}) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-      {/* Button group - Stop or Send button */}
-      <div className="flex items-center justify-end gap-3 flex-shrink-0 w-full">
-        {isStreaming ? (
-          <button
-            type="button"
-            onClick={handleStopStreaming}
-            className="text-white p-2 md:p-3 rounded-xl font-semibold flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800"
-            title="Stop generating"
-          >
-            <StopIcon className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="text-white p-2 md:p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
-            disabled={isLoading || !input.trim()}
-            title="Send message"
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <PaperAirplaneIcon className="w-5 h-5 md:w-6 md:h-6" />
-            )}
-          </button>
-        )}
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      // Reset height to auto to get the correct scrollHeight
+      textarea.style.height = 'auto';
+      // Set height based on scrollHeight, with min and max constraints
+      const newHeight = Math.min(Math.max(textarea.scrollHeight, 24), 200);
+      textarea.style.height = `${newHeight}px`;
+    }
+  }, [input]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on Enter without Shift (Shift+Enter for new line)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!isLoading && input.trim()) {
+        handleSend(e);
+      }
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSend}
+      className={`fixed bottom-0 z-30 transition-all duration-300 ${sidebarOpen ? 'left-0 md:left-72 w-full md:w-[calc(100%-18rem)]' : 'left-0 md:left-20 w-full md:w-[calc(100%-5rem)]'} px-4 md:px-8 pb-4 md:pb-8 bg-transparent`}
+    >
+      <div className="rounded-2xl flex flex-col gap-3 px-3 md:px-8 py-4 md:py-6 max-w-6xl mx-auto border-2 transition-all duration-300 bg-white dark:[background-color:#0C120C] border-gray-200 dark:border-[#2D3A2D]" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}
+      >
+        {/* Input field - textarea for multi-line support */}
+        <textarea
+          ref={textareaRef}
+          placeholder={isLoading ? "PANSGPT is processing your message..." : "Ask a question from any course."}
+          className="w-full bg-transparent outline-none text-sm md:text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 resize-none overflow-y-auto"
+          style={{ minHeight: '24px', maxHeight: '200px' }}
+          value={input}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          rows={1}
+        />
+
+        {/* Button group - Stop or Send button */}
+        <div className="flex items-center justify-end gap-3 flex-shrink-0 w-full">
+          {isStreaming ? (
+            <button
+              type="button"
+              onClick={handleStopStreaming}
+              className="text-white p-2 md:p-3 rounded-xl font-semibold flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800"
+              title="Stop generating"
+            >
+              <StopIcon className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="text-white p-2 md:p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+              disabled={isLoading || !input.trim()}
+              title="Send message"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <PaperAirplaneIcon className="w-5 h-5 md:w-6 md:h-6" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
-  </form>
-));
+    </form>
+  );
+});
 
 function MainPageContent() {
   const { data: session, status } = useSession();
@@ -1088,7 +1117,7 @@ function MainPageContent() {
   }, [messages]);
 
   // Memoize the input handler
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
   }, []);
 
