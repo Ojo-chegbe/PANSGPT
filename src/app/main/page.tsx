@@ -1851,8 +1851,8 @@ function MainPageContent() {
             </div>
           </div>
         </div>
-        {/* Chat Area - Only this div should scroll */}
-        <div className={`flex-1 flex flex-col min-h-0 overflow-y-auto pt-20 md:pt-24 pb-32 md:pb-40 bg-transparent ${messages.length === 0 ? 'scrollbar-hidden' : 'scrollbar-thin'}`}
+        {/* Chat Area - Full width scroll container with scrollbar at edge */}
+        <div className={`flex-1 min-h-0 overflow-y-auto pt-20 md:pt-24 pb-32 md:pb-40 bg-transparent ${messages.length === 0 ? 'scrollbar-hidden' : 'scrollbar-thin'}`}
           ref={(el) => {
             if (el) {
               // Store reference for scroll detection
@@ -1860,56 +1860,54 @@ function MainPageContent() {
             }
           }}
         >
-          <div className="w-full max-w-6xl mx-auto px-4 md:px-8 flex flex-col gap-6 md:gap-8" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}>
-            {messages.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <div className="text-center space-y-4 w-full">
-                  <span className="text-3xl md:text-6xl font-bold text-gray-900 dark:text-white">
-                    Hello, Pharm. {session?.user?.name ? session.user.name.split(' ')[0] : ''}
-                  </span>
-                  <p className="text-lg md:text-xl text-gray-700 dark:text-white font-light">
-                    Ask me anything about your courses
-                  </p>
-                </div>
+          {messages.length === 0 ? (
+            <div className="w-full max-w-6xl mx-auto px-4 md:px-8 flex-1 flex items-center justify-center min-h-[calc(100vh-200px)]" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}>
+              <div className="text-center space-y-4 w-full">
+                <span className="text-3xl md:text-6xl font-bold text-gray-900 dark:text-white">
+                  Hello, Pharm. {session?.user?.name ? session.user.name.split(' ')[0] : ''}
+                </span>
+                <p className="text-lg md:text-xl text-gray-700 dark:text-white font-light">
+                  Ask me anything about your courses
+                </p>
               </div>
-            ) : (
-              <div className="mb-20 md:mb-24">
-                <MessageList
-                  messages={messages}
-                  editingIdx={editingIdx}
-                  editingText={editingText}
-                  setEditingText={setEditingText}
-                  copiedIdx={copiedIdx}
-                  handleEdit={handleEdit}
-                  handleEditCancel={handleEditCancel}
-                  handleEditSave={handleEditSave}
-                  handleCopy={handleCopy}
-                  isLoading={isLoading}
-                  showCitationsFor={showCitationsFor}
-                  setShowCitationsFor={setShowCitationsFor}
-                  handleFeedback={handleFeedback}
-                />
-                <div ref={chatEndRef} />
+            </div>
+          ) : (
+            <div className="w-full max-w-6xl mx-auto px-4 md:px-8 flex flex-col gap-6 md:gap-8 mb-20 md:mb-24" style={{ maxWidth: '72rem', boxSizing: 'border-box' }}>
+              <MessageList
+                messages={messages}
+                editingIdx={editingIdx}
+                editingText={editingText}
+                setEditingText={setEditingText}
+                copiedIdx={copiedIdx}
+                handleEdit={handleEdit}
+                handleEditCancel={handleEditCancel}
+                handleEditSave={handleEditSave}
+                handleCopy={handleCopy}
+                isLoading={isLoading}
+                showCitationsFor={showCitationsFor}
+                setShowCitationsFor={setShowCitationsFor}
+                handleFeedback={handleFeedback}
+              />
+              <div ref={chatEndRef} />
 
-                {/* Scroll to bottom button - only show when streaming and user has scrolled up */}
-                {showScrollButton && (
-                  <button
-                    onClick={() => {
-                      if (chatEndRef.current) {
-                        chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
-                    className="fixed bottom-20 right-4 md:right-8 z-30 text-white p-3 rounded-full transition-all duration-200 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
-                    title="Scroll to latest message"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+              {/* Scroll to bottom button - only show when streaming and user has scrolled up */}
+              {showScrollButton && (
+                <button
+                  onClick={() => {
+                    if (chatEndRef.current) {
+                      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="fixed bottom-20 right-4 md:right-8 z-30 text-white p-3 rounded-full transition-all duration-200 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+                  title="Scroll to latest message"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
         {/* Input Area */}
         <InputArea

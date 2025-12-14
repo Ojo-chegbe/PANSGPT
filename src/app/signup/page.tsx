@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { getDeviceId } from "../../lib/device-id";
-import { 
-  EnvelopeIcon, 
-  LockClosedIcon, 
+import {
+  EnvelopeIcon,
+  LockClosedIcon,
   AcademicCapIcon,
   EyeIcon,
   EyeSlashIcon,
@@ -147,7 +147,7 @@ export default function SignupPage() {
   async function handleVerifyOTP(e: React.FormEvent) {
     e.preventDefault();
     setOtpError("");
-    
+
     if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
       setOtpError("Please enter a valid 6-digit OTP code.");
       return;
@@ -251,21 +251,19 @@ export default function SignupPage() {
 
               <form onSubmit={handleVerifyOTP} className="space-y-6">
                 {otpError && (
-                  <div className={`rounded-xl p-4 flex items-center space-x-3 ${
-                    otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
+                  <div className={`rounded-xl p-4 flex items-center space-x-3 ${otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
                       ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30"
                       : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30"
-                  }`}>
+                    }`}>
                     {otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success") ? (
                       <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                     ) : (
                       <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
                     )}
-                    <p className={`text-sm font-medium ${
-                      otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
+                    <p className={`text-sm font-medium ${otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
                         ? "text-green-700 dark:text-green-300"
                         : "text-red-700 dark:text-red-300"
-                    }`}>
+                      }`}>
                       {otpError}
                     </p>
                   </div>
@@ -343,209 +341,217 @@ export default function SignupPage() {
                 </div>
               )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Full Name */}
-              <div className="space-y-2">
-                <label htmlFor="fullName" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <UserIcon className="h-4 w-4" />
-                  <span>Full Name *</span>
-                </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  className="w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 border-gray-300 dark:border-white/20"
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <EnvelopeIcon className="h-4 w-4" />
-                  <span>Email Address *</span>
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
-                  placeholder="Enter your email"
-                />
-                {emailError && (
-                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
-                    <ExclamationTriangleIcon className="h-4 w-4" />
-                    <span>{emailError}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <LockClosedIcon className="h-4 w-4" />
-                  <span>Password *</span>
-                </label>
-                <div className="relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Full Name */}
+                <div className="space-y-2">
+                  <label htmlFor="fullName" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <UserIcon className="h-4 w-4" />
+                    <span>Full Name *</span>
+                  </label>
                   <input
-                    id="password"
-                    name="password"
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    className="w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 border-gray-300 dark:border-white/20"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <label htmlFor="email" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <EnvelopeIcon className="h-4 w-4" />
+                    <span>Email Address *</span>
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${emailError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
+                    placeholder="Enter your email"
+                  />
+                  {emailError && (
+                    <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      <span>{emailError}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <label htmlFor="password" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <LockClosedIcon className="h-4 w-4" />
+                    <span>Password *</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      required
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className={`w-full border rounded-xl px-4 py-3 pr-12 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
+                      placeholder="Create a password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    >
+                      {showPassword ? (
+                        <EyeSlashIcon className="h-5 w-5" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                  {passwordError && (
+                    <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      <span>{passwordError}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="space-y-2">
+                  <label htmlFor="confirmPassword" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <LockClosedIcon className="h-4 w-4" />
+                    <span>Confirm Password *</span>
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
                     required
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className={`w-full border rounded-xl px-4 py-3 pr-12 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${passwordError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
-                    placeholder="Create a password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${confirmPasswordError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
+                    placeholder="Confirm your password"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeSlashIcon className="h-5 w-5" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5" />
-                    )}
-                  </button>
+                  {confirmPasswordError && (
+                    <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
+                      <ExclamationTriangleIcon className="h-4 w-4" />
+                      <span>{confirmPasswordError}</span>
+                    </div>
+                  )}
                 </div>
-                {passwordError && (
-                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
-                    <ExclamationTriangleIcon className="h-4 w-4" />
-                    <span>{passwordError}</span>
-                  </div>
-                )}
+
+                {/* Level */}
+                <div className="space-y-2 md:col-span-2">
+                  <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <AcademicCapIcon className="h-4 w-4" />
+                    <span>Academic Level *</span>
+                  </label>
+                  <select
+                    id="level"
+                    name="level"
+                    required
+                    value={level}
+                    onChange={e => setLevel(e.target.value)}
+                    className="w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 border-gray-300 dark:border-white/20"
+                  >
+                    <option value="" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Select your academic level</option>
+                    <option value="100" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">100 Level</option>
+                    <option value="200" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">200 Level</option>
+                    <option value="300" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">300 Level</option>
+                    <option value="400" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">400 Level</option>
+                    <option value="500" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">500 Level</option>
+                    <option value="600" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">600 Level</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Confirm Password */}
+              {/* Terms and Conditions Checkbox */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <LockClosedIcon className="h-4 w-4" />
-                  <span>Confirm Password *</span>
-                </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  className={`w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50 focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 ${confirmPasswordError ? 'border-red-500 dark:border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-white/20'}`}
-                  placeholder="Confirm your password"
-                />
-                {confirmPasswordError && (
-                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm">
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    name="terms"
+                    checked={acceptedTerms}
+                    onChange={e => {
+                      setAcceptedTerms(e.target.checked);
+                      if (e.target.checked) {
+                        setTermsError("");
+                      }
+                    }}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-white/20 text-green-600 dark:text-[#00A400] focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:ring-offset-0 cursor-pointer"
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                    I agree to the{' '}
+                    <Link
+                      href="/terms"
+                      target="_blank"
+                      className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] underline transition-colors duration-200"
+                    >
+                      Terms and Conditions
+                    </Link>
+                    {' '}and{' '}
+                    <Link
+                      href="/privacy"
+                      target="_blank"
+                      className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] underline transition-colors duration-200"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </label>
+                </div>
+                {termsError && (
+                  <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm ml-7">
                     <ExclamationTriangleIcon className="h-4 w-4" />
-                    <span>{confirmPasswordError}</span>
+                    <span>{termsError}</span>
                   </div>
                 )}
               </div>
 
-              {/* Level */}
-              <div className="space-y-2 md:col-span-2">
-                <label htmlFor="level" className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  <AcademicCapIcon className="h-4 w-4" />
-                  <span>Academic Level *</span>
-                </label>
-                <select
-                  id="level"
-                  name="level"
-                  required
-                  value={level}
-                  onChange={e => setLevel(e.target.value)}
-                  className="w-full border rounded-xl px-4 py-3 bg-gray-50 dark:bg-black/20 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:border-transparent transition-all duration-200 border-gray-300 dark:border-white/20"
+              {/* Submit Button */}
+              <div className="pt-6 border-t border-gray-200 dark:border-white/10">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  <option value="" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">Select your academic level</option>
-                  <option value="100" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">100 Level</option>
-                  <option value="200" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">200 Level</option>
-                  <option value="300" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">300 Level</option>
-                  <option value="400" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">400 Level</option>
-                  <option value="500" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">500 Level</option>
-                  <option value="600" className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">600 Level</option>
-                </select>
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Creating Account...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircleIcon className="h-5 w-5" />
+                      <span>Create Account</span>
+                    </>
+                  )}
+                </button>
               </div>
-            </div>
-
-            {/* Terms and Conditions Checkbox */}
-            <div className="space-y-2">
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  name="terms"
-                  checked={acceptedTerms}
-                  onChange={e => {
-                    setAcceptedTerms(e.target.checked);
-                    if (e.target.checked) {
-                      setTermsError("");
-                    }
-                  }}
-                  className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-white/20 text-green-600 dark:text-[#00A400] focus:ring-2 focus:ring-green-600 dark:focus:ring-[#00A400] focus:ring-offset-0 cursor-pointer"
-                />
-                <label htmlFor="terms" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                  I agree to the{' '}
-                  <Link 
-                    href="/terms" 
-                    target="_blank"
-                    className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] underline transition-colors duration-200"
-                  >
-                    Terms and Conditions
-                  </Link>
-                </label>
-              </div>
-              {termsError && (
-                <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 text-sm ml-7">
-                  <ExclamationTriangleIcon className="h-4 w-4" />
-                  <span>{termsError}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <div className="pt-6 border-t border-gray-200 dark:border-white/10">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex items-center justify-center space-x-2 px-8 py-4 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300] text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Creating Account...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircleIcon className="h-5 w-5" />
-                    <span>Create Account</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            </form>
           )}
-          
+
           {/* Login Link */}
           {!verificationSent && !verificationSuccess && (
-          <div className="mt-8 text-center">
+            <div className="mt-8 text-center">
               <p className="text-gray-600 dark:text-white/70">
-              Already have an account?{' '}
-              <Link 
-                href="/login" 
-                className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200"
-              >
-                Sign in here
-              </Link>
-            </p>
-          </div>
+                Already have an account?{' '}
+                <Link
+                  href="/login"
+                  className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200"
+                >
+                  Sign in here
+                </Link>
+              </p>
+            </div>
           )}
         </div>
       </div>

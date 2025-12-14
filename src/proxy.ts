@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 // Paths that are always public
-const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/about', '/contact', '/download', '/terms', '/faq'];
+const publicPaths = ['/', '/login', '/signup', '/forgot-password', '/reset-password', '/about', '/contact', '/download', '/terms', '/privacy', '/faq'];
 
 export async function proxy(request: NextRequest) {
   const token = await getToken({ req: request });
