@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { motion } from "framer-motion";
-import { 
+import {
   FileText,
   Scale,
   AlertTriangle,
@@ -45,10 +45,11 @@ export default function TermsPage() {
       {/* Navigation */}
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-12 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
-          <motion.div 
+      {/* Main Content Wrapper */}
+      <div className="max-w-6xl mx-auto">
+        {/* Hero Section */}
+        <section className="pt-32 pb-12 px-6 sm:px-8 lg:px-12">
+          <motion.div
             className="text-center space-y-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -63,11 +64,11 @@ export default function TermsPage() {
                 <FileText className="w-10 h-10 text-primary" />
               </div>
             </motion.div>
-            
+
             <h1 className="text-5xl lg:text-6xl text-foreground">
               Terms and Conditions of Service
             </h1>
-            
+
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Please read these terms carefully. By using PansGPT, you agree to be bound by these terms and conditions.
             </p>
@@ -81,12 +82,10 @@ export default function TermsPage() {
               </Badge>
             </div>
           </motion.div>
-        </div>
-      </section>
+        </section>
 
-      {/* Important Notice */}
-      <section className="pb-12 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
+        {/* Important Notice */}
+        <section className="pb-12 px-6 sm:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -99,8 +98,8 @@ export default function TermsPage() {
                   <div>
                     <h3 className="text-foreground mb-2">Important Notice</h3>
                     <p className="text-muted-foreground">
-                      PLEASE READ THESE TERMS AND CONDITIONS OF SERVICE CAREFULLY. BY ACCESSING, REGISTERING FOR, OR USING THE PANSGPT SERVICE, 
-                      YOU ARE CREATING A LEGALLY BINDING CONTRACT WITH THE PANSGPT TEAM AND AGREE TO BE BOUND BY ALL OF THE TERMS, CONDITIONS, 
+                      PLEASE READ THESE TERMS AND CONDITIONS OF SERVICE CAREFULLY. BY ACCESSING, REGISTERING FOR, OR USING THE PANSGPT SERVICE,
+                      YOU ARE CREATING A LEGALLY BINDING CONTRACT WITH THE PANSGPT TEAM AND AGREE TO BE BOUND BY ALL OF THE TERMS, CONDITIONS,
                       AND NOTICES CONTAINED OR REFERENCED HEREIN.
                     </p>
                   </div>
@@ -108,12 +107,10 @@ export default function TermsPage() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
-      </section>
+        </section>
 
-      {/* Quick Navigation */}
-      <section className="pb-12 px-6 sm:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
+        {/* Quick Navigation */}
+        <section className="pb-12 px-6 sm:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -147,13 +144,11 @@ export default function TermsPage() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
-      </section>
+        </section>
 
-      {/* Main Content */}
-      <section className="pb-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-5xl space-y-12">
-          
+        {/* Main Content */}
+        <section className="pb-20 px-6 sm:px-8 lg:px-12 space-y-12">
+
           {/* PART A: BINDING AGREEMENT */}
           <motion.div
             id="binding-agreement"
@@ -312,7 +307,7 @@ export default function TermsPage() {
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground space-y-4 pt-4">
                   <p className="text-sm">Your use of the Service is strictly contingent upon your adherence to the following rules. You shall not (and shall not permit or assist any third party to):</p>
-                  
+
                   <Card className="bg-red-500/10 border-red-500/20">
                     <CardContent className="pt-4">
                       <div className="flex gap-3">
@@ -624,7 +619,7 @@ export default function TermsPage() {
                   <div>
                     <h4 className="text-foreground mb-2">Thank You for Reading</h4>
                     <p className="text-muted-foreground text-sm">
-                      By using PansGPT, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. 
+                      By using PansGPT, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
                       We're committed to providing you with the best study experience while maintaining transparency and legal clarity.
                     </p>
                   </div>
@@ -632,8 +627,8 @@ export default function TermsPage() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* Scroll to Top Button */}
       {showScrollTop && (

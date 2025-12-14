@@ -51,9 +51,10 @@ export default function PrivacyPage() {
             {/* Navigation */}
             <Navigation />
 
-            {/* Hero Section */}
-            <section className="pt-32 pb-12 px-6 sm:px-8 lg:px-12">
-                <div className="max-w-6xl mx-auto">
+            {/* Main Content Wrapper */}
+            <div className="max-w-6xl mx-auto">
+                {/* Hero Section */}
+                <section className="pt-32 pb-12 px-6 sm:px-8 lg:px-12">
                     <motion.div
                         className="text-center space-y-6"
                         initial={{ opacity: 0, y: 30 }}
@@ -85,12 +86,10 @@ export default function PrivacyPage() {
                             </Badge>
                         </div>
                     </motion.div>
-                </div>
-            </section>
+                </section>
 
-            {/* Important Notice */}
-            <section className="pb-12 px-6 sm:px-8 lg:px-12">
-                <div className="max-w-6xl mx-auto">
+                {/* Important Notice */}
+                <section className="pb-12 px-6 sm:px-8 lg:px-12">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -111,12 +110,10 @@ export default function PrivacyPage() {
                             </CardContent>
                         </Card>
                     </motion.div>
-                </div>
-            </section>
+                </section>
 
-            {/* Quick Navigation */}
-            <section className="pb-12 px-6 sm:px-8 lg:px-12">
-                <div className="max-w-6xl mx-auto">
+                {/* Quick Navigation */}
+                <section className="pb-12 px-6 sm:px-8 lg:px-12">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -150,12 +147,10 @@ export default function PrivacyPage() {
                             </CardContent>
                         </Card>
                     </motion.div>
-                </div>
-            </section>
+                </section>
 
-            {/* Main Content */}
-            <section className="pb-20 px-6 sm:px-8 lg:px-12">
-                <div className="container mx-auto max-w-5xl space-y-12">
+                {/* Main Content */}
+                <section className="pb-20 px-6 sm:px-8 lg:px-12 space-y-12">
 
                     {/* SECTION 1: TERMS OF USE */}
                     <motion.div
@@ -737,8 +732,8 @@ export default function PrivacyPage() {
                             </CardContent>
                         </Card>
                     </motion.div>
-                </div>
-            </section>
+                </section>
+            </div>
 
             {/* Scroll to Top Button */}
             {showScrollTop && (

@@ -22,7 +22,7 @@ export default function Footer() {
               Your personalized pharmacy tutor, built specifically for University of Jos students.
             </p>
           </div>
-          
+
           <div>
             <h4 className="text-foreground mb-4">Product</h4>
             <div className="space-y-2">
@@ -40,15 +40,15 @@ export default function Footer() {
               </Link>
             </div>
           </div>
-          
+
           <div>
             <h4 className="text-foreground mb-4">Legal</h4>
             <div className="space-y-2">
               <Link href="/terms" className="block text-muted-foreground hover:text-primary text-sm transition-colors">Terms of Service</Link>
-              <a href="#" className="block text-muted-foreground hover:text-primary text-sm transition-colors">Privacy Policy</a>
+              <Link href="/privacy" className="block text-muted-foreground hover:text-primary text-sm transition-colors">Privacy Policy</Link>
             </div>
           </div>
-          
+
           <div>
             <h4 className="text-foreground mb-4">Support</h4>
             <div className="space-y-2">
@@ -57,7 +57,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        
+
         <div className="pt-8 border-t border-border text-center text-muted-foreground text-sm">
           <p>© 2025 PansGPT. Built with ❤️ for University of Jos Pharmacy Students.</p>
         </div>
