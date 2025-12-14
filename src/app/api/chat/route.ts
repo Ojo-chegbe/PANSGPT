@@ -5,6 +5,7 @@ import { getClient } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 import { readFile } from "fs/promises";
 import { join } from "path";
+import { extractCourseInfo, getCourseCodesByAbbreviation } from "@/lib/course-code-mapper";
 
 const GOOGLE_API_KEY = process.env.GOOGLE_AI_API_KEY!;
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://pansgpt.vercel.app';
@@ -78,18 +79,42 @@ export async function POST(req: Request) {
 
     // Extract source filters from the query
     const extractedFilters = extractSourceFilters(message);
+    
+    // Extract course information for enhanced search
+    const courseInfo = extractCourseInfo(message);
+    let searchQuery = message;
+    
+    // If we found a course abbreviation but no full code, enhance the query
+    if (courseInfo.abbreviation && !courseInfo.courseCode) {
+      const courseCodes = getCourseCodesByAbbreviation(courseInfo.abbreviation);
+      if (courseCodes.length > 0) {
+        // Add course titles to the query to improve search relevance
+        const courseTitles = courseCodes
+          .map(code => {
+            const info = extractCourseInfo(code);
+            return info.title;
+          })
+          .filter(Boolean)
+          .join(' ');
+        if (courseTitles) {
+          searchQuery = `${message} ${courseTitles}`;
+        }
+      }
+    }
+    
     console.log('Extracted filters from message:', extractedFilters);
+    console.log('Course info extracted:', courseInfo);
     
     // Search for relevant document chunks using fast chat search
     const searchResponse = await fetch(`${BASE_URL}/api/chat-search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        query: message,
+        query: searchQuery,
         filters: {
           max_chunks: 8,
           level: userLevel,  // Filter by user's level
-          ...extractedFilters  // Spread the extracted filters directly
+          ...extractedFilters  // Spread the extracted filters directly (includes courseCode if found)
         }
       }),
     });
@@ -372,6 +397,20 @@ export async function POST(req: Request) {
     function extractSourceFilters(query: string): Record<string, string> {
       const filters: Record<string, string> = {};
       
+      // Extract course code information
+      const courseInfo = extractCourseInfo(query);
+      if (courseInfo.courseCode) {
+        // If we found a full course code, use it
+        filters.courseCode = courseInfo.courseCode;
+        console.log('Extracted course code:', courseInfo.courseCode, 'Title:', courseInfo.title);
+      } else if (courseInfo.abbreviation) {
+        // If we found an abbreviation, we'll need to handle it differently
+        // For now, we'll note it but can't filter by abbreviation directly
+        // The search will need to match any course starting with that abbreviation
+        console.log('Extracted course abbreviation:', courseInfo.abbreviation, 'Title:', courseInfo.title);
+        // Note: We can't filter by abbreviation in the current search, but we can enhance the query
+      }
+      
       // Check for professor/author mentions - improved patterns
       const authorMatch = query.match(/according to (?:dr\.? )?(\w+)/i) || 
                          query.match(/from (?:dr\.? )?(\w+)/i) ||
@@ -488,8 +527,16 @@ export async function POST(req: Request) {
       ? `\n\nGENERAL KNOWLEDGE BASE:\n${generalKnowledge}\n` 
       : '';
 
+    // Build course code context for AI if course was detected
+    let courseCodeContext = '';
+    if (courseInfo.courseCode) {
+      courseCodeContext = `\n\nCOURSE CONTEXT: The user is asking about ${courseInfo.courseCode} - ${courseInfo.title || 'a course'}. When searching for information, prioritize documents related to this specific course code.`;
+    } else if (courseInfo.abbreviation) {
+      courseCodeContext = `\n\nCOURSE CONTEXT: The user mentioned the course abbreviation "${courseInfo.abbreviation}" (${courseInfo.title || 'course category'}). When searching for information, prioritize documents related to courses in this category.`;
+    }
+    
     // Update the system message to only reference documents if user requests it
-    let systemMessage = "You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as \"PANSites.\"";
+    let systemMessage = "You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as \"PANSites.\"\n\nCOURSE CODE MATCHING: You can recognize and match course codes (e.g., PCG 211, PCH 311) and course abbreviations (e.g., PCG for Pharmacognosy, PCH for Pharmaceutical Chemistry). When users mention course codes or abbreviations, search the database for documents specifically related to those courses." + courseCodeContext;
     
     // Always use document context if we have relevant content and user is asking for specific sources
     const shouldUseDocs = (userWantsDocs && hasRelevantContent) || 
@@ -571,6 +618,8 @@ Be encouraging and helpful, not restrictive. Show them what they CAN access rath
 You have an empathetic and warm communication style. You have access to a curated database of course materials and documents from the Faculty of Pharmaceutical Sciences at the University of Jos.
 The user (a PANSite) is asking for specific information from documents or sources.
 
+COURSE CODE MATCHING: You can recognize and match course codes (e.g., PCG 211, PCH 311) and course abbreviations (e.g., PCG for Pharmacognosy, PCH for Pharmaceutical Chemistry). When users mention course codes or abbreviations, search the database for documents specifically related to those courses.${courseCodeContext}
+
 CRITICAL RULES - YOU MUST FOLLOW THESE STRICTLY:
 1. ONLY use information that is explicitly provided in the CONTEXT FROM DOCUMENTS section below.
 2. DO NOT make up, fabricate, or invent any information, document names, course codes, lecturer names, or topics.
@@ -610,6 +659,8 @@ REMINDER: ONLY use information from the CONTEXT FROM DOCUMENTS section above. Do
 
 You have an empathetic and warm communication style. You have access to a curated database of course materials and documents from the Faculty of Pharmaceutical Sciences at the University of Jos.
 
+COURSE CODE MATCHING: You can recognize and match course codes (e.g., PCG 211, PCH 311) and course abbreviations (e.g., PCG for Pharmacognosy, PCH for Pharmaceutical Chemistry). When users mention course codes or abbreviations, search the database for documents specifically related to those courses.${courseCodeContext}
+
 CRITICAL RULES - YOU MUST FOLLOW THESE STRICTLY:
 1. ONLY use information that is explicitly provided in the context sections below.
 2. DO NOT make up, fabricate, or invent any information, document names, course codes, lecturer names, or topics.
@@ -641,6 +692,8 @@ You can use this information to enhance your response. However, ONLY use informa
       systemMessage = `You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as "PANSites."
 
 You have an empathetic and warm communication style. Reply warmly and enthusiastically to greetings, general, or non-document questions. Only reference documents if the user explicitly asks for them.
+
+COURSE CODE MATCHING: You can recognize and match course codes (e.g., PCG 211, PCH 311) and course abbreviations (e.g., PCG for Pharmacognosy, PCH for Pharmaceutical Chemistry). When users mention course codes or abbreviations, you can help them find relevant information or documents.${courseCodeContext}
 The user (a PANSite) is at the ${userLevel || 'unspecified'} academic level. Tailor your explanations, examples, and language to be appropriate for this level.
 
 COMMUNICATION STYLE: Be empathetic, warm, and understanding in your responses. When users greet you (e.g., "hello", "hi", "hey", "good morning", "good afternoon"), respond warmly and enthusiastically with a friendly greeting. Answer ONLY the questions asked - do not provide additional information, examples, or explanations unless the user specifically requests them. Be direct and concise while maintaining a friendly, supportive tone.

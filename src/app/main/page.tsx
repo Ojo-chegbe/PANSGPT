@@ -6,10 +6,10 @@ import { type ChatMessage } from '@/lib/google-ai';
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ClipboardIcon, PencilIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, AcademicCapIcon, EllipsisVerticalIcon, HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
+import { ClipboardIcon, PencilIcon, PaperAirplaneIcon, ChatBubbleLeftRightIcon, AcademicCapIcon, EllipsisVerticalIcon, HandThumbUpIcon, HandThumbDownIcon, StopIcon } from '@heroicons/react/24/outline';
 import { HandThumbUpIcon as HandThumbUpIconSolid, HandThumbDownIcon as HandThumbDownIconSolid } from '@heroicons/react/24/solid';
 import MarkdownWithMath from '@/components/MarkdownWithMath';
-import { generateConversationTitle, isDefaultTitle } from '@/lib/conversation-title-generator';
+import { generateConversationTitle, generateConversationTitleFromAIResponse, isDefaultTitle } from '@/lib/conversation-title-generator';
 import FeedbackPopup from '@/components/FeedbackPopup';
 
 type MessageRole = 'user' | 'system' | 'model';
@@ -269,7 +269,9 @@ const InputArea = React.memo(({
   handleInputChange,
   setInput,
   handleSend, 
-  isLoading, 
+  isLoading,
+  isStreaming,
+  handleStopStreaming,
   sidebarOpen 
 }: {
   input: string;
@@ -277,6 +279,8 @@ const InputArea = React.memo(({
   setInput: (value: string) => void;
   handleSend: (e: React.FormEvent) => void;
   isLoading: boolean;
+  isStreaming: boolean;
+  handleStopStreaming: () => void;
   sidebarOpen: boolean;
 }) => (
   <form
@@ -295,20 +299,31 @@ const InputArea = React.memo(({
         disabled={isLoading}
       />
       
-      {/* Button group - Send button */}
+      {/* Button group - Stop or Send button */}
       <div className="flex items-center justify-end gap-3 flex-shrink-0 w-full">
-        <button
-          type="submit"
-          className="text-white p-2 md:p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
-          disabled={isLoading || !input.trim()}
-          title="Send message"
-        >
-          {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <PaperAirplaneIcon className="w-5 h-5 md:w-6 md:h-6" />
-          )}
-        </button>
+        {isStreaming ? (
+          <button
+            type="button"
+            onClick={handleStopStreaming}
+            className="text-white p-2 md:p-3 rounded-xl font-semibold flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800"
+            title="Stop generating"
+          >
+            <StopIcon className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="text-white p-2 md:p-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-200 flex-shrink-0 bg-green-600 dark:bg-[#00A400] hover:bg-green-700 dark:hover:bg-[#008300]"
+            disabled={isLoading || !input.trim()}
+            title="Send message"
+          >
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <PaperAirplaneIcon className="w-5 h-5 md:w-6 md:h-6" />
+            )}
+          </button>
+        )}
       </div>
     </div>
   </form>
@@ -341,6 +356,8 @@ function MainPageContent() {
   const [feedbackMessageContent, setFeedbackMessageContent] = useState<string>('');
   const lastFeedbackPopupTime = useRef<number>(0);
   const messageCountSinceLastPopup = useRef<number>(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
 
   // Helper to get active conversation
   const activeConv = conversations.find(c => c.id === activeId);
@@ -422,51 +439,84 @@ function MainPageContent() {
     conversationHistory: ExtendedChatMessage[],
     onChunk: (chunk: string) => void,
     userLevel?: string,
-    onCitations?: (citations: Array<{ lecturerName: string; documentTitle: string }>) => void
+    onCitations?: (citations: Array<{ lecturerName: string; documentTitle: string }>) => void,
+    abortSignal?: AbortSignal
   ) {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, conversationHistory, userLevel }),
+      signal: abortSignal,
     });
     if (!response.body) throw new Error('No response body');
     const reader = response.body.getReader();
+    readerRef.current = reader;
     const decoder = new TextDecoder();
     let buffer = '';
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      let lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (const line of lines) {
-        if (line.trim()) {
-          try {
-            const parsed = JSON.parse(line);
-            // Check if this is a citations metadata message
-            if (parsed.type === 'citations' && parsed.citations && onCitations) {
-              onCitations(parsed.citations);
-            } else if (parsed.chunk) {
-              // Regular content chunk
-              onChunk(parsed.chunk);
-            }
-          } catch {}
+    try {
+      while (true) {
+        // Check if aborted before reading
+        if (abortSignal?.aborted) {
+          await reader.cancel();
+          break;
+        }
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (line.trim()) {
+            try {
+              const parsed = JSON.parse(line);
+              // Check if this is a citations metadata message
+              if (parsed.type === 'citations' && parsed.citations && onCitations) {
+                onCitations(parsed.citations);
+              } else if (parsed.chunk) {
+                // Regular content chunk
+                onChunk(parsed.chunk);
+              }
+            } catch {}
+          }
         }
       }
-    }
-    if (buffer.trim()) {
-      try {
-        const parsed = JSON.parse(buffer);
-        // Check if this is a citations metadata message
-        if (parsed.type === 'citations' && parsed.citations && onCitations) {
-          onCitations(parsed.citations);
-        } else if (parsed.chunk) {
-          // Regular content chunk
-          onChunk(parsed.chunk);
-        }
-      } catch {}
+      if (buffer.trim() && !abortSignal?.aborted) {
+        try {
+          const parsed = JSON.parse(buffer);
+          // Check if this is a citations metadata message
+          if (parsed.type === 'citations' && parsed.citations && onCitations) {
+            onCitations(parsed.citations);
+          } else if (parsed.chunk) {
+            // Regular content chunk
+            onChunk(parsed.chunk);
+          }
+        } catch {}
+      }
+    } catch (error: any) {
+      // If aborted, don't throw error
+      if (error.name === 'AbortError' || abortSignal?.aborted) {
+        await reader.cancel();
+        return;
+      }
+      throw error;
+    } finally {
+      readerRef.current = null;
     }
   }
+
+  // Stop streaming handler
+  const handleStopStreaming = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    if (readerRef.current) {
+      readerRef.current.cancel().catch(() => {});
+      readerRef.current = null;
+    }
+    setIsStreaming(false);
+    setIsLoading(false);
+  }, []);
 
   const handleEditSave = async (idx: number) => {
     if (!editingText.trim()) return;
@@ -497,6 +547,12 @@ function MainPageContent() {
     setEditingIdx(null);
     setEditingText("");
     setIsLoading(true);
+    setIsStreaming(true);
+    
+    // Create AbortController for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    
     try {
       await streamChatApi(
         editingText.trim(),
@@ -548,8 +604,14 @@ function MainPageContent() {
             
             return updated;
           });
-        }
+        },
+        abortController.signal
       );
+      
+      // Clear abort controller reference if streaming completed successfully
+      if (!abortController.signal.aborted) {
+        abortControllerRef.current = null;
+      }
       // Auto-save after streaming completes, using latest messages from ref
       // Wait a bit to ensure citations are set (they arrive after stream completes)
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -626,14 +688,30 @@ function MainPageContent() {
           console.error('Error details:', errorText);
         }
       }
-    } catch (error) {
-      console.error('Error in handleEditSave:', error);
-      setMessages(prev => [...prev, {
-        role: 'model',
-        content: 'I apologize, but I encountered an error. Please try again.'
-      }]);
+    } catch (error: any) {
+      // Don't show error message if user aborted the request
+      if (error.name !== 'AbortError' && !abortController.signal.aborted) {
+        console.error('Error in handleEditSave:', error);
+        setMessages(prev => {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          // Only show error if the last message is empty or incomplete
+          if (updated[lastIdx]?.role === 'model' && (!updated[lastIdx].content || updated[lastIdx].content.trim().length === 0)) {
+            updated[lastIdx] = {
+              ...updated[lastIdx],
+              content: 'I apologize, but I encountered an error. Please try again.'
+            };
+          }
+          return updated;
+        });
+      }
     } finally {
-      setIsLoading(false);
+      // Only clear loading states if not aborted, or if aborted, clear them anyway
+      if (!abortControllerRef.current || abortController.signal.aborted) {
+        setIsLoading(false);
+        setIsStreaming(false);
+        abortControllerRef.current = null;
+      }
     }
   };
 
@@ -1060,6 +1138,11 @@ function MainPageContent() {
     ));
     setInput('');
     setIsStreaming(true);
+    
+    // Create AbortController for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    
     try {
       await streamChatApi(
         userMessage.content,
@@ -1103,8 +1186,14 @@ function MainPageContent() {
             
             return updated;
           });
-        }
+        },
+        abortController.signal
       );
+      
+      // Clear abort controller reference if streaming completed successfully
+      if (!abortController.signal.aborted) {
+        abortControllerRef.current = null;
+      }
       
       // Check if we should show feedback popup (every 25th AI response, at least 5 minutes apart)
       messageCountSinceLastPopup.current += 1;
@@ -1131,12 +1220,52 @@ function MainPageContent() {
         // Check if this is a temporary conversation (first message)
         const isTemporaryConversation = activeId?.startsWith('temp_');
         
-        // Generate title from first user message if this is a new conversation or has default title
+        // Generate title from AI's first response if this is a new conversation or has default title
         let conversationTitle = activeConv?.name || 'Conversation';
-        if (isDefaultTitle(conversationTitle) && latestMessages.length > 0) {
-          const firstUserMessage = latestMessages.find(msg => msg.role === 'user');
-          if (firstUserMessage) {
-            conversationTitle = generateConversationTitle(firstUserMessage.content);
+        
+        // Only generate title from AI response if:
+        // 1. It's a temporary conversation (first message), OR
+        // 2. The conversation has a default title AND this appears to be the first AI response
+        const shouldGenerateFromAI = isTemporaryConversation || 
+          (isDefaultTitle(conversationTitle) && latestMessages.filter(msg => msg.role === 'model').length === 1);
+        
+        if (shouldGenerateFromAI && latestMessages.length > 0) {
+          // Find the first AI response (model role message)
+          const firstAIResponse = latestMessages.find(msg => msg.role === 'model' && msg.content && msg.content.trim().length > 0);
+          
+          if (firstAIResponse && firstAIResponse.content) {
+            try {
+              // Call API to generate title from AI's first response
+              const titleResponse = await fetch('/api/generate-title', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ aiResponse: firstAIResponse.content }),
+                credentials: 'include',
+              });
+              
+              if (titleResponse.ok) {
+                const titleData = await titleResponse.json();
+                if (titleData.title) {
+                  conversationTitle = titleData.title;
+                } else {
+                  // Fallback to simple generation if API didn't return a title
+                  conversationTitle = generateConversationTitle(firstAIResponse.content);
+                }
+              } else {
+                // Fallback to simple generation if API call failed
+                conversationTitle = generateConversationTitle(firstAIResponse.content);
+              }
+            } catch (error) {
+              console.error('Error generating AI title:', error);
+              // Fallback to simple generation on error
+              conversationTitle = generateConversationTitle(firstAIResponse.content);
+            }
+          } else {
+            // Fallback: if no AI response yet, use first user message
+            const firstUserMessage = latestMessages.find(msg => msg.role === 'user');
+            if (firstUserMessage) {
+              conversationTitle = generateConversationTitle(firstUserMessage.content);
+            }
           }
         }
         
@@ -1284,14 +1413,29 @@ function MainPageContent() {
           }
         }
       }
-    } catch (error) {
-      setMessages(prev => [...prev, {
-        role: 'model',
-        content: 'I apologize, but I encountered an error. Please try again.'
-      }]);
+    } catch (error: any) {
+      // Don't show error message if user aborted the request
+      if (error.name !== 'AbortError' && !abortController.signal.aborted) {
+        setMessages(prev => {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          // Only show error if the last message is empty or incomplete
+          if (updated[lastIdx]?.role === 'model' && (!updated[lastIdx].content || updated[lastIdx].content.trim().length === 0)) {
+            updated[lastIdx] = {
+              ...updated[lastIdx],
+              content: 'I apologize, but I encountered an error. Please try again.'
+            };
+          }
+          return updated;
+        });
+      }
     } finally {
-      setIsLoading(false);
-      setIsStreaming(false);
+      // Only clear loading states if not aborted, or if aborted, clear them anyway
+      if (!abortControllerRef.current || abortController.signal.aborted) {
+        setIsLoading(false);
+        setIsStreaming(false);
+        abortControllerRef.current = null;
+      }
     }
   }, [input, isLoading, activeConv, activeId, session?.user?.id, messages, userLevel]);
 
@@ -1734,6 +1878,8 @@ function MainPageContent() {
             setInput={setInput}
             handleSend={handleSend}
             isLoading={isLoading}
+            isStreaming={isStreaming}
+            handleStopStreaming={handleStopStreaming}
             sidebarOpen={sidebarOpen}
           />
       </div>

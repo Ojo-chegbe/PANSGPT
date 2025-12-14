@@ -13,3 +13,124 @@ This knowledge base contains general academic information, study strategies, and
 
 # Note: Course-specific materials should be uploaded through the document upload system, not added here.
 
+# CURRICULUM STRUCTURE - FACULTY OF PHARMACEUTICAL SCIENCES, UNIVERSITY OF JOS
+
+## 200 LEVEL (FIRST PROFESSIONAL YEAR)
+
+### First Semester
+- Level: 200 | Semester: 1st | Code: PCG 211 | Title: General Pharmacognosy | Units: 3
+- Level: 200 | Semester: 1st | Code: PCH 211 | Title: Introduction to Pharmaceutical Chemistry | Units: 3
+- Level: 200 | Semester: 1st | Code: PMB 211 | Title: Introduction to Pharmaceutical Microbiology | Units: 3
+- Level: 200 | Semester: 1st | Code: PCT 211 | Title: Introduction to Pharmacy | Units: 2
+- Level: 200 | Semester: 1st | Code: ANA 201 | Title: Basic Anatomy and Neuroanatomy | Units: 3
+- Level: 200 | Semester: 1st | Code: BCH 201 | Title: General Biochemistry | Units: 3
+- Level: 200 | Semester: 1st | Code: PHY 201 | Title: Introductory and Blood Physiology | Units: 3
+- Level: 200 | Semester: 1st | Code: PCP 211 | Title: Health Psychology | Units: 2
+
+### Second Semester
+- Level: 200 | Semester: 2nd | Code: PCG 212 | Title: Organized (cellular) and unorganized (acellular) drugs | Units: 3
+- Level: 200 | Semester: 2nd | Code: PCH 222 | Title: Pharmaceutical Organic Chemistry I | Units: 3
+- Level: 200 | Semester: 2nd | Code: PIE 222 | Title: Introduction to Pharmaceutical Technology | Units: 3
+- Level: 200 | Semester: 2nd | Code: ANA 202 | Title: General Embryology, Teratology and Genetic Anatomy | Units: 3
+- Level: 200 | Semester: 2nd | Code: BCH 202 | Title: Introductory Molecular Biology | Units: 3
+- Level: 200 | Semester: 2nd | Code: PHY 202 | Title: Neurophysiology and Special Senses | Units: 3
+
+## 300 LEVEL (SECOND PROFESSIONAL YEAR)
+
+### First Semester
+- Level: 300 | Semester: 1st | Code: PCG 311 | Title: Phytochemistry of drugs of natural origin | Units: 3
+- Level: 300 | Semester: 1st | Code: PCH 311 | Title: Pharmaceutical Organic Chemistry II | Units: 3
+- Level: 300 | Semester: 1st | Code: PCL 311 | Title: Introductory Pharmacology | Units: 2
+- Level: 300 | Semester: 1st | Code: PCP 311 | Title: Pathophysiology I | Units: 2
+- Level: 300 | Semester: 1st | Code: PMB 311 | Title: Pharmaceutical Microbiology I | Units: 4
+- Level: 300 | Semester: 1st | Code: PCT 331 | Title: Physical Pharmacy | Units: 1 (Part 1 of 2)
+- Level: 300 | Semester: 1st | Code: PCT 311 | Title: Formulation of Liquid Dosage Forms | Units: 2
+- Level: 300 | Semester: 1st | Code: PCT 332 | Title: Dispensing I | Units: 1 (Part 1 of 2)
+
+### Second Semester
+- Level: 300 | Semester: 2nd | Code: PCG 312 | Title: Techniques in Phytochemical studies | Units: 3
+- Level: 300 | Semester: 2nd | Code: PCH 322 | Title: Analysis of Pharmaceuticals I | Units: 3
+- Level: 300 | Semester: 2nd | Code: PCL 312 | Title: Autonomic Pharmacology | Units: 3
+- Level: 300 | Semester: 2nd | Code: PCL 323 | Title: Systemic Pharmacology I | Units: 2
+- Level: 300 | Semester: 2nd | Code: PCP 322 | Title: Pathophysiology II | Units: 2
+- Level: 300 | Semester: 2nd | Code: PCT 331 | Title: Physical Pharmacy | Units: 2 (Part 2 of 2)
+- Level: 300 | Semester: 2nd | Code: PCT 332 | Title: Dispensing I | Units: 1 (Part 2 of 2)
+- Level: 300 | Semester: 2nd | Code: PTE 321 | Title: Formulation of Solid Dosage Forms | Units: 2
+
+### Full Session / Undefined Semester
+- Level: 300 | Semester: Both/Total | Code: PPR 331 | Title: Professional Preparedness & Resilience I | Units: 1
+
+## 400 LEVEL (THIRD PROFESSIONAL YEAR)
+
+### First Semester
+- Level: 400 | Semester: 1st | Code: PCG 411 | Title: Nigerian medicinal plants and forensic Pharmacognosy | Units: 3
+- Level: 400 | Semester: 1st | Code: PCH 411 | Title: Pharmaceutical Bioinformatics and Drug Design | Units: 2
+- Level: 400 | Semester: 1st | Code: PCH 412 | Title: Medicinal Chemistry 1 | Units: 2
+- Level: 400 | Semester: 1st | Code: PCH 423 | Title: Analysis of Pharmaceuticals II | Units: 3
+- Level: 400 | Semester: 1st | Code: PCL 421 | Title: Systemic Pharmacology II | Units: 3
+- Level: 400 | Semester: 1st | Code: PCP 411 | Title: Introduction to Clinical Pharmacy & Pharmaceutical Care | Units: 3
+- Level: 400 | Semester: 1st | Code: PCP 412 | Title: Introduction to Health Systems & Supply Chain Management | Units: 3
+- Level: 400 | Semester: 1st | Code: PMB 411 | Title: Pharmaceutical Microbiology II | Units: 4
+- Level: 400 | Semester: 1st | Code: PCT 421 | Title: Formulation of Semi-solid and Gaseous Dosage Forms | Units: 2
+- Level: 400 | Semester: 1st | Code: PCT 432 | Title: Dispensing II | Units: 1 (Part 1 of 2)
+
+### Second Semester
+- Level: 400 | Semester: 2nd | Code: PCG 412 | Title: Alternative/complementary and herbal medicines | Units: 2
+- Level: 400 | Semester: 2nd | Code: PCL 422 | Title: Systemic Pharmacology III | Units: 3
+- Level: 400 | Semester: 2nd | Code: PCL 423 | Title: Chemotherapy | Units: 2
+- Level: 400 | Semester: 2nd | Code: PCP 423 | Title: Supply Chain Management of Health Commodities | Units: 2
+- Level: 400 | Semester: 2nd | Code: PCP 424 | Title: Pharmacotherapeutics I | Units: 3
+- Level: 400 | Semester: 2nd | Code: PTE 411 | Title: Industrial Pharmacy | Units: 4
+- Level: 400 | Semester: 2nd | Code: PCT 432 | Title: Dispensing II | Units: 1 (Part 2 of 2)
+- Level: 400 | Semester: 2nd | Code: PSC 421 | Title: Pharmacy Management | Units: 2
+
+### Full Session / Undefined Semester
+- Level: 400 | Semester: Both/Total | Code: PPR 432 | Title: Professional Preparedness & Resilience II | Units: 1
+
+## 500 LEVEL (FOURTH PROFESSIONAL YEAR)
+
+### First Semester
+- Level: 500 | Semester: 1st | Code: PCG 511 | Title: Biogenesis of Drugs of Natural Origin and Special Classes of Natural Products | Units: 2
+- Level: 500 | Semester: 1st | Code: PCH 511 | Title: Radio Pharmacy | Units: 2
+- Level: 500 | Semester: 1st | Code: PCL 511 | Title: Systematic Pharmacology IV (CNS) | Units: 3
+- Level: 500 | Semester: 1st | Code: PCP 511 | Title: Pharmacotherapeutics II | Units: 2
+- Level: 500 | Semester: 1st | Code: PCP 512 | Title: Pharmacoepidemiology | Units: 2
+- Level: 500 | Semester: 1st | Code: PCP 533 | Title: Clinical Pharmacy Clerkship I | Units: 3 (Part 1 of 2)
+- Level: 500 | Semester: 1st | Code: PSC 511 | Title: Biostatistics & Research Methods | Units: 2
+- Level: 500 | Semester: 1st | Code: PCT 511 | Title: Drug Delivery and Drug Delivery System | Units: 3
+
+### Second Semester
+- Level: 500 | Semester: 2nd | Code: PCH 522 | Title: Medicinal Chemistry II | Units: 2
+- Level: 500 | Semester: 2nd | Code: PCL 522 | Title: Biochemical Pharmacology | Units: 3
+- Level: 500 | Semester: 2nd | Code: PCL 523 | Title: Toxicology and Social pharmacology | Units: 3
+- Level: 500 | Semester: 2nd | Code: PCP 533 | Title: Clinical Pharmacy Clerkship I | Units: 3 (Part 2 of 2)
+- Level: 500 | Semester: 2nd | Code: PCP 524 | Title: Applied and Clinical Pharmacokinetics | Units: 2
+- Level: 500 | Semester: 2nd | Code: PSC 522 | Title: Introduction to Veterinary Pharmacy | Units: 2
+- Level: 500 | Semester: 2nd | Code: PSC 523 | Title: Forensic Pharmacy and Jurisprudence | Units: 2
+- Level: 500 | Semester: 2nd | Code: PMB 511 | Title: Pharmaceutical Microbiology III | Units: 3
+
+### Full Session / Undefined Semester
+- Level: 500 | Semester: Both/Total | Code: PPR 533 | Title: Professional preparedness & Resilience III | Units: 1
+
+## 600 LEVEL (FIFTH PROFESSIONAL YEAR)
+
+### First Semester
+- Level: 600 | Semester: 1st | Code: PCP 632 | Title: Clinical Pharmacy Clerkship II | Units: 2 (Part 1 of 2)
+- Level: 600 | Semester: 1st | Code: PCP 633 | Title: Clinical Pharmacy Clerkship III | Units: 2 (Part 1 of 2)
+- Level: 600 | Semester: 1st | Code: PCP 614 | Title: Drug Information Services | Units: 2
+- Level: 600 | Semester: 1st | Code: PCP 616 | Title: Advance Public Health Pharmacy | Units: 2
+- Level: 600 | Semester: 1st | Code: PSC 613 | Title: Pharmacogenetics & Genomics | Units: 2
+- Level: 600 | Semester: 1st | Code: PSC 634 | Title: Project | Units: 2 (Part 1 of 2)
+
+### Second Semester
+- Level: 600 | Semester: 2nd | Code: PCP 621 | Title: Pharmacoeconomics & Health Economics | Units: 2
+- Level: 600 | Semester: 2nd | Code: PCP 632 | Title: Clinical Pharmacy Clerkship II | Units: 2 (Part 2 of 2)
+- Level: 600 | Semester: 2nd | Code: PCP 633 | Title: Clinical Pharmacy Clerkship III | Units: 2 (Part 2 of 2)
+- Level: 600 | Semester: 2nd | Code: PCP 625 | Title: Nutritional Health & Health Promotion | Units: 2
+- Level: 600 | Semester: 2nd | Code: PSC 621 | Title: Pharmaceutical Quality Systems | Units: 3
+- Level: 600 | Semester: 2nd | Code: PSC 622 | Title: Pharmaceutical Marketing | Units: 2
+- Level: 600 | Semester: 2nd | Code: PSC 634 | Title: Project | Units: 2 (Part 2 of 2)
+
+### Full Session / Undefined Semester
+- Level: 600 | Semester: Both/Total | Code: PPR 634 | Title: Professional Preparedness & Resilience H | Units: 1
+
