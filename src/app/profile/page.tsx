@@ -32,10 +32,10 @@ export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState({ 
-    name: '', 
-    bio: '', 
-    level: '', 
+  const [form, setForm] = useState({
+    name: '',
+    bio: '',
+    level: '',
     image: ''
   });
   const [saving, setSaving] = useState(false);
@@ -75,7 +75,7 @@ export default function ProfilePage() {
           const profileData = await profileRes.json();
           const userData = profileData.user || profileData;
           setUser(userData);
-        setForm({
+          setForm({
             name: userData.name || '',
             bio: userData.bio || '',
             level: userData.level || '',
@@ -104,7 +104,7 @@ export default function ProfilePage() {
 
   const fetchTimetable = async () => {
     if (!user?.level) return;
-    
+
     setTimetableLoading(true);
     try {
       const res = await fetch('/api/timetable');
@@ -128,11 +128,11 @@ export default function ProfilePage() {
     try {
       // Clear device ID from localStorage
       clearDeviceId();
-      
+
       // Sign out using NextAuth
-      await signOut({ 
-        redirect: true, 
-        callbackUrl: '/' 
+      await signOut({
+        redirect: true,
+        callbackUrl: '/'
       });
     } catch (error) {
       console.error('Logout error:', error);
@@ -150,24 +150,24 @@ export default function ProfilePage() {
       image: user?.image || '',
     });
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
-  
+
   const handleSave = async () => {
     setSaving(true);
     setSaveMessage(null);
     try {
-    const res = await fetch('/api/user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setUser(data.user);
-      setEditMode(false);
+      const res = await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        setEditMode(false);
         setSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
         setTimeout(() => setSaveMessage(null), 3000);
       } else {
@@ -197,9 +197,9 @@ export default function ProfilePage() {
   const totalPoints = quizAnalytics?.totalPoints || 0;
   const recentTrend = quizAnalytics?.recentTrendAverage || 0;
   const topCourse = quizAnalytics?.coursePerformance && quizAnalytics.coursePerformance.length > 0
-    ? quizAnalytics.coursePerformance.reduce((prev, current) => 
-        ((prev?.averageScore || 0) > (current?.averageScore || 0)) ? prev : current
-      )
+    ? quizAnalytics.coursePerformance.reduce((prev, current) =>
+      ((prev?.averageScore || 0) > (current?.averageScore || 0)) ? prev : current
+    )
     : null;
 
   return (
@@ -208,9 +208,8 @@ export default function ProfilePage() {
       {saveMessage && (
         <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top duration-300">
           <div
-            className={`px-6 py-4 rounded-xl flex items-center gap-3 ${
-              saveMessage.type === 'success' ? 'bg-green-600 dark:bg-green-600' : 'bg-red-600 dark:bg-red-600'
-            }`}
+            className={`px-6 py-4 rounded-xl flex items-center gap-3 ${saveMessage.type === 'success' ? 'bg-green-600 dark:bg-green-600' : 'bg-red-600 dark:bg-red-600'
+              }`}
           >
             <span className="text-gray-900 dark:text-white font-medium">{saveMessage.text}</span>
             <button
@@ -224,9 +223,9 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Back Button */}
+        {/* Back Button */}
         <div className="mb-6">
           <button
             onClick={() => router.push('/main')}
@@ -242,7 +241,7 @@ export default function ProfilePage() {
           {/* Left Column */}
           <div className="flex flex-col gap-6">
             {/* User Profile Card */}
-            <div 
+            <div
               className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
@@ -279,10 +278,10 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-      </div>
-      
+            </div>
+
             {/* Academic Details Card */}
-            <div 
+            <div
               className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-green-200 dark:border-green-600/10"
             >
               <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Academic Details</h3>
@@ -291,25 +290,25 @@ export default function ProfilePage() {
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
                     University
                   </label>
-                    <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
+                  <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
                     University of Jos
-                    </div>
+                  </div>
                 </div>
                 <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
                     Department
                   </label>
-                    <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
+                  <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
                     Pharmacy
-                    </div>
+                  </div>
                 </div>
                 <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10">
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
                     Faculty
                   </label>
-                    <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
+                  <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
                     Pharmaceutical Sciences
-                    </div>
+                  </div>
                 </div>
                 <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-white/10 sm:border-b-0">
                   <label className="block text-xs font-medium uppercase tracking-wide text-gray-600 dark:text-white/80">
@@ -331,11 +330,11 @@ export default function ProfilePage() {
                     </select>
                   ) : (
                     <div className="text-sm font-medium py-2 text-gray-900 dark:text-white">
-                      {user.level || form.level || 'N/A'} Level
-              </div>
-            )}
+                      {user.level || form.level || 'N/A'}
+                    </div>
+                  )}
                 </div>
-          </div>
+              </div>
               {editMode && (
                 <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-white/10">
                   <button
@@ -361,102 +360,102 @@ export default function ProfilePage() {
                   </button>
                 </div>
               )}
-        </div>
+            </div>
 
             {/* Class Timetable Card */}
-            <div 
+            <div
               className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Class Timetable</h3>
-              <select
-                value={selectedDay}
-                onChange={(e) => setSelectedDay(e.target.value)}
+                <select
+                  value={selectedDay}
+                  onChange={(e) => setSelectedDay(e.target.value)}
                   className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-50 dark:bg-white/10 text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-green-600 dark:focus:ring-white/50 transition-all"
-              >
-                {days.map(day => (
+                >
+                  {days.map(day => (
                     <option key={day} value={day} className="bg-white dark:bg-[#2D3A2D] text-gray-900 dark:text-white">{day}</option>
-                ))}
-              </select>
-          </div>
-          
-          {timetableLoading ? (
+                  ))}
+                </select>
+              </div>
+
+              {timetableLoading ? (
                 <div className="text-center py-8">
                   <div className="w-6 h-6 border-2 border-green-600 dark:border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                   <p className="text-gray-900 dark:text-white/70 text-sm">Loading timetable...</p>
                 </div>
-          ) : (
-            <div className="space-y-3">
-              {(() => {
-                // Filter entries for selected day and sort by time
-                const dayEntries = timetable
-                  .filter(entry => entry.day === selectedDay)
-                  .sort((a, b) => {
-                    // Parse time slots to compare chronologically
-                    const parseTime = (timeSlot: string): number => {
-                      // Extract the start time from time slot (e.g., "8:00 AM - 9:00 AM" -> "8:00 AM")
-                      const startTime = timeSlot.split(' - ')[0] || timeSlot;
-                      
-                      // Handle 12-hour format (e.g., "8:00 AM", "2:00 PM")
-                      const timeMatch = startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-                      if (timeMatch) {
-                        let hours = parseInt(timeMatch[1], 10);
-                        const minutes = parseInt(timeMatch[2], 10);
-                        const period = timeMatch[3].toUpperCase();
-                        
-                        // Convert to 24-hour format
-                        if (period === 'PM' && hours !== 12) hours += 12;
-                        if (period === 'AM' && hours === 12) hours = 0;
-                        
-                        return hours * 60 + minutes; // Return minutes since midnight
-                      }
-                      
-                      // Handle 24-hour format (e.g., "08:00", "14:00")
-                      const time24Match = startTime.match(/(\d{1,2}):(\d{2})/);
-                      if (time24Match) {
-                        const hours = parseInt(time24Match[1], 10);
-                        const minutes = parseInt(time24Match[2], 10);
-                        return hours * 60 + minutes;
-                      }
-                      
-                      // Fallback: return 0 if time can't be parsed
-                      return 0;
-                    };
-                    
-                    return parseTime(a.timeSlot) - parseTime(b.timeSlot);
-                  });
-                
-                return dayEntries.length > 0 ? (
-                  dayEntries.map(entry => (
-                        <div 
-                          key={entry.id} 
+              ) : (
+                <div className="space-y-3">
+                  {(() => {
+                    // Filter entries for selected day and sort by time
+                    const dayEntries = timetable
+                      .filter(entry => entry.day === selectedDay)
+                      .sort((a, b) => {
+                        // Parse time slots to compare chronologically
+                        const parseTime = (timeSlot: string): number => {
+                          // Extract the start time from time slot (e.g., "8:00 AM - 9:00 AM" -> "8:00 AM")
+                          const startTime = timeSlot.split(' - ')[0] || timeSlot;
+
+                          // Handle 12-hour format (e.g., "8:00 AM", "2:00 PM")
+                          const timeMatch = startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                          if (timeMatch) {
+                            let hours = parseInt(timeMatch[1], 10);
+                            const minutes = parseInt(timeMatch[2], 10);
+                            const period = timeMatch[3].toUpperCase();
+
+                            // Convert to 24-hour format
+                            if (period === 'PM' && hours !== 12) hours += 12;
+                            if (period === 'AM' && hours === 12) hours = 0;
+
+                            return hours * 60 + minutes; // Return minutes since midnight
+                          }
+
+                          // Handle 24-hour format (e.g., "08:00", "14:00")
+                          const time24Match = startTime.match(/(\d{1,2}):(\d{2})/);
+                          if (time24Match) {
+                            const hours = parseInt(time24Match[1], 10);
+                            const minutes = parseInt(time24Match[2], 10);
+                            return hours * 60 + minutes;
+                          }
+
+                          // Fallback: return 0 if time can't be parsed
+                          return 0;
+                        };
+
+                        return parseTime(a.timeSlot) - parseTime(b.timeSlot);
+                      });
+
+                    return dayEntries.length > 0 ? (
+                      dayEntries.map(entry => (
+                        <div
+                          key={entry.id}
                           className="rounded-lg p-4 border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/10 hover:bg-gray-100 dark:hover:bg-white/15 transition-all duration-200"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div className="flex-1">
+                            <div className="flex-1">
                               <div className="font-semibold text-gray-900 dark:text-white mb-1">{entry.timeSlot}</div>
                               <div className="text-sm text-gray-600 dark:text-white/80">
-                            {entry.courseCode} - {entry.courseTitle}
+                                {entry.courseCode} - {entry.courseTitle}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-700 dark:text-white/60 bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-full inline-block w-fit">
+                              {entry.level}
+                            </div>
                           </div>
                         </div>
-                            <div className="text-xs text-gray-700 dark:text-white/60 bg-gray-200 dark:bg-white/10 px-3 py-1 rounded-full inline-block w-fit">
-                          {entry.level} Level
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
+                      ))
+                    ) : (
                       <div className="text-center py-8 text-gray-900 dark:text-white/60">
-                    No classes scheduled for {selectedDay}
-                  </div>
-                );
-              })()}
+                        No classes scheduled for {selectedDay}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
             {/* Logout Card */}
-            <div 
+            <div
               className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -486,13 +485,13 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          
+
           {/* Right Column */}
           <div className="flex flex-col gap-6">
             {/* Performance Metrics */}
             <div className="flex flex-col gap-4">
               {/* Quizzes Taken */}
-              <div 
+              <div
                 className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
               >
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
@@ -507,7 +506,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Total Points */}
-              <div 
+              <div
                 className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
               >
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
@@ -522,7 +521,7 @@ export default function ProfilePage() {
               </div>
 
               {/* Recent Trend */}
-              <div 
+              <div
                 className="rounded-xl p-5 sm:p-6 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] cursor-default border border-gray-200 dark:border-white/20 bg-white dark:[background-color:#2D3A2D]"
               >
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 bg-green-100 dark:bg-white/20">
@@ -535,10 +534,10 @@ export default function ProfilePage() {
                   <div className="text-sm font-medium text-gray-600 dark:text-white/80">Recent Trend</div>
                 </div>
               </div>
-                        </div>
+            </div>
 
             {/* Average Score Card */}
-            <div 
+            <div
               className="rounded-2xl p-6 sm:p-8 transition-all duration-300 bg-white dark:[background-color:#2D3A2D] border border-gray-200 dark:border-white/10"
             >
               <h3 className="text-xl font-bold mb-6 text-center text-gray-900 dark:text-white">Average Score</h3>
@@ -588,10 +587,10 @@ export default function ProfilePage() {
                   ) : (
                     <div className="text-base sm:text-lg font-medium text-gray-900 dark:text-white/60">
                       No quiz data yet
-            </div>
-            )}
-          </div>
-        </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
