@@ -58,7 +58,7 @@ interface DocumentChunk {
 
 export async function POST(req: Request) {
   try {
-    const { message, conversationHistory = [] } = await req.json();
+    const { message, conversationHistory = [], isStudyMode = false, studyContext } = await req.json();
 
     if (!message) {
       return new Response(JSON.stringify({ error: "Message is required" }), { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -105,17 +105,96 @@ export async function POST(req: Request) {
     console.log('Extracted filters from message:', extractedFilters);
     console.log('Course info extracted:', courseInfo);
 
+    // If in study mode, BYPASS SEARCH and directly explain the highlighted text
+    // The message already contains the text the user wants explained
+    if (isStudyMode && studyContext?.documentTitle) {
+      console.log('Study mode detected - bypassing search, using message as context directly');
+
+      const studyDocTitle = studyContext.documentTitle;
+      const systemMessage = `You are PansGPT, a concise academic tutor helping a pharmacy student at the University of Jos.
+
+**STUDY MODE**: The student is studying "${studyDocTitle}" and has highlighted text they want explained.
+
+YOUR RULES:
+1. Be CONCISE and STRAIGHT TO THE POINT - no lengthy introductions
+2. Explain the concept in simple, clear terms
+3. Use analogies only if they genuinely help understanding
+4. Keep responses SHORT - aim for 3-5 key points maximum
+5. DO NOT offer suggestions like "Would you like me to..." or list options
+6. End with a simple: "Does this make sense?" or "Do you understand this concept?"
+7. Only expand if the user asks for more detail
+
+FORMAT:
+- Use bold for key terms
+- Use bullet points for lists
+- Keep paragraphs short (2-3 sentences max)
+- For formulas/equations, use LaTeX: $...$ for inline, $$...$$ for block
+
+Remember: Your goal is clarity, not comprehensiveness. Make the concept click quickly.`;
+
+      // Set up messages for AI in study mode
+      const studyMessagesForAI: ChatMessage[] = [
+        { role: "system", content: systemMessage },
+        ...conversationHistory.map((msg: { role: string; content: string }) => ({
+          role: msg.role as "user" | "model" | "system",
+          content: msg.content
+        })),
+        { role: "user", content: message }
+      ];
+
+      // Stream the response
+      const encoder = new TextEncoder();
+      let firstChunk = true;
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            await streamChatResponse(GOOGLE_API_KEY, studyMessagesForAI, {
+              maxOutputTokens: 2048,
+              temperature: 0.3,
+              topK: 40,
+              topP: 0.95,
+            }, (chunk) => {
+              const data = JSON.stringify({ chunk });
+              if (!firstChunk) controller.enqueue(encoder.encode("\n"));
+              controller.enqueue(encoder.encode(data));
+              firstChunk = false;
+            });
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        }
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        }
+      });
+    }
+
+    // Non-study mode: continue with search...
+
     // Search for relevant document chunks using fast chat search
+    const searchFilters: Record<string, unknown> = {
+      max_chunks: isStudyMode ? 12 : 8,  // Get more chunks in study mode
+      level: userLevel,  // Filter by user's level
+      ...extractedFilters  // Spread the extracted filters directly (includes courseCode if found)
+    };
+
+    // In study mode, ignore level filter to ensure we find the document
+    if (isStudyMode) {
+      delete searchFilters.level;
+    }
+
     const searchResponse = await fetch(`${BASE_URL}/api/chat-search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query: searchQuery,
-        filters: {
-          max_chunks: 8,
-          level: userLevel,  // Filter by user's level
-          ...extractedFilters  // Spread the extracted filters directly (includes courseCode if found)
-        }
+        filters: searchFilters
       }),
     });
 
@@ -397,6 +476,15 @@ export async function POST(req: Request) {
     function extractSourceFilters(query: string): Record<string, string> {
       const filters: Record<string, string> = {};
 
+      // Common words that should NOT be treated as author/professor names
+      const ignoredWords = [
+        'my', 'the', 'this', 'that', 'a', 'an', 'our', 'your', 'their',
+        'some', 'any', 'all', 'every', 'said', 'student', 'students',
+        'his', 'her', 'its', 'study', 'course', 'class', 'material', 'materials',
+        'note', 'notes', 'lecture', 'lectures', 'document', 'documents',
+        'book', 'books', 'text', 'texts', 'slide', 'slides', 'content'
+      ];
+
       // Extract course code information
       const courseInfo = extractCourseInfo(query);
       if (courseInfo.courseCode) {
@@ -419,8 +507,15 @@ export async function POST(req: Request) {
         query.match(/dr\.? (\w+)/i) ||
         query.match(/professor (\w+)/i) ||
         query.match(/(\w+) (?:teach|teaches|course|notes|lecture)/i);
+
+      // Only add author filter if the matched word is not a common/ignored word
       if (authorMatch) {
-        filters.author = authorMatch[1];
+        const potentialAuthor = authorMatch[1].toLowerCase();
+        if (!ignoredWords.includes(potentialAuthor)) {
+          filters.author = authorMatch[1];
+        } else {
+          console.log('Ignoring common word as author:', authorMatch[1]);
+        }
       }
 
       // Check for document type mentions
@@ -537,6 +632,75 @@ export async function POST(req: Request) {
 
     // Update the system message to only reference documents if user requests it
     let systemMessage = "You are PansGPT, a specialized web-based academic learning platform. You function as an AI-powered assistant designed to support students. You are built exclusively for the students of the Faculty of Pharmaceutical Sciences at the University of Jos, Nigeria. The userbase is referred to as \"PANSites.\"\n\nCOURSE CODE MATCHING: You can recognize and match course codes (e.g., PCG 211, PCH 311) and course abbreviations (e.g., PCG for Pharmacognosy, PCH for Pharmaceutical Chemistry). When users mention course codes or abbreviations, search the database for documents specifically related to those courses." + courseCodeContext;
+
+    // In STUDY MODE, use a special system prompt that always explains without restrictions
+    if (isStudyMode && hasRelevantContent) {
+      const studyDocTitle = studyContext?.documentTitle || 'their study material';
+      systemMessage = `You are PansGPT, a specialized academic learning assistant helping a student study their course materials at the Faculty of Pharmaceutical Sciences, University of Jos.
+
+**STUDY MODE ACTIVE**: The student is actively studying "${studyDocTitle}" and has asked you to explain or elaborate on specific content from this document.
+
+YOUR BEHAVIOR IN STUDY MODE:
+1. ALWAYS provide thorough explanations - do not refuse or redirect based on academic level
+2. Use the CONTEXT PROVIDED to give accurate, detailed explanations
+3. If the concept is advanced, STILL explain it - use simpler terms and analogies when helpful
+4. Be educational and supportive, like a helpful tutor
+5. Include relevant examples to make concepts clearer
+6. If asked to quiz or give examples, do so enthusiastically
+
+AVAILABLE CONTEXT FROM THE STUDY DOCUMENT:
+${context}
+
+Use this context to answer the student's question thoroughly and educationally.`;
+
+      // Set up messages for AI in study mode
+      const studyMessagesForAI: ChatMessage[] = [
+        { role: "system", content: systemMessage },
+        ...conversationHistory.map((msg: { role: string; content: string }) => ({
+          role: msg.role as "user" | "model" | "system",
+          content: msg.content
+        })),
+        { role: "user", content: message }
+      ];
+
+      // Stream the response
+      const encoder = new TextEncoder();
+      let firstChunk = true;
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            // Send citations first if we have them
+            if (citations.length > 0) {
+              const citationsData = JSON.stringify({ type: 'citations', citations });
+              controller.enqueue(encoder.encode(citationsData + "\n"));
+            }
+
+            await streamChatResponse(GOOGLE_API_KEY, studyMessagesForAI, {
+              maxOutputTokens: 2048,
+              temperature: 0.3,
+              topK: 40,
+              topP: 0.95,
+            }, (chunk) => {
+              const data = JSON.stringify({ chunk });
+              if (!firstChunk) controller.enqueue(encoder.encode("\n"));
+              controller.enqueue(encoder.encode(data));
+              firstChunk = false;
+            });
+            controller.close();
+          } catch (err) {
+            controller.error(err);
+          }
+        }
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        }
+      });
+    }
 
     // Always use document context if we have relevant content and user is asking for specific sources
     const shouldUseDocs = (userWantsDocs && hasRelevantContent) ||

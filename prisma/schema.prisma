@@ -140,6 +140,7 @@ model Document {
   level        String?
   documentType String           @default("course") // "course" or "general"
   content      String?          // Store the text content
+  structuredContent Json?       // Parsed structure for Study Mode: { sections: [...] }
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   accessLogs   DocumentAccess[]

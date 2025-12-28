@@ -5,13 +5,13 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Zap, 
-  Brain, 
-  CheckCircle, 
-  MessageSquare, 
-  ListChecks, 
-  Lightbulb, 
+import {
+  Zap,
+  Brain,
+  CheckCircle,
+  MessageSquare,
+  ListChecks,
+  Lightbulb,
   ArrowRight,
   Download
 } from "lucide-react";
@@ -32,7 +32,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/main");
+      router.push("/study");
     }
   }, [status, router]);
 
@@ -51,162 +51,162 @@ export default function LandingPage() {
 
       {/* Main Content Wrapper */}
       <div className="max-w-6xl mx-auto">
-      {/* Hero Section */}
-      <section className="pt-40 pb-32 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-background via-background to-green-950/5 dark:to-green-950/10">
-        <div className="container mx-auto">
-          <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
-            <div className="space-y-10">
-              {/* Badge */}
-              <div>
-                <Badge variant="secondary" className="w-fit mx-auto px-4 py-1.5 text-xs font-medium tracking-wide uppercase border border-border/50 bg-background/50 backdrop-blur-sm">
-                  Built by PANSites, for PANSites
-                </Badge>
-              </div>
-              
-              {/* Heading */}
-              <div className="space-y-6">
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
-                  The Ultimate Study Hack
-                  <br />
-                  <span className="text-green-600 dark:text-green-500">
-                    for PANSites
-                  </span>
-                </h1>
-                
-                <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light">
-                  PansGPT is a study partner built just for PANSites. It has already read all your official course notes. Ask it a question, and get a simple, correct answer in seconds.
-                </p>
-              </div>
+        {/* Hero Section */}
+        <section className="pt-40 pb-32 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-background via-background to-green-950/5 dark:to-green-950/10">
+          <div className="container mx-auto">
+            <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
+              <div className="space-y-10">
+                {/* Badge */}
+                <div>
+                  <Badge variant="secondary" className="w-fit mx-auto px-4 py-1.5 text-xs font-medium tracking-wide uppercase border border-border/50 bg-background/50 backdrop-blur-sm">
+                    Built by PANSites, for PANSites
+                  </Badge>
+                </div>
 
-              {/* CTA Button */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Link href="/signup" onClick={() => analytics.trackStartStudyingClick()}>
-                  <Button size="lg" className="group px-8 py-6 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 rounded-xl">
-                    Start Studying Smarter
-                    <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-                <Link href="/download" onClick={() => analytics.trackDownloadClick('hero_cta')}>
-                  <Button size="lg" variant="outline" className="px-8 py-6 text-base font-semibold border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 rounded-xl">
-                    <Download className="mr-2 w-5 h-5" />
-                    Download
-                  </Button>
-                </Link>
-              </div>
+                {/* Heading */}
+                <div className="space-y-6">
+                  <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight">
+                    The Ultimate Study Hack
+                    <br />
+                    <span className="text-green-600 dark:text-green-500">
+                      for PANSites
+                    </span>
+                  </h1>
 
-              {/* Trust Indicators */}
-              <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 text-sm text-muted-foreground justify-center pt-6">
-                <div className="flex items-center gap-2.5 group">
+                  <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light">
+                    PansGPT is a study partner built just for PANSites. It has already read all your official course notes. Ask it a question, and get a simple, correct answer in seconds.
+                  </p>
+                </div>
+
+                {/* CTA Button */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                  <Link href="/signup" onClick={() => analytics.trackStartStudyingClick()}>
+                    <Button size="lg" className="group px-8 py-6 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 rounded-xl">
+                      Start Studying Smarter
+                      <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                    </Button>
+                  </Link>
+                  <Link href="/download" onClick={() => analytics.trackDownloadClick('hero_cta')}>
+                    <Button size="lg" variant="outline" className="px-8 py-6 text-base font-semibold border-2 border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 rounded-xl">
+                      <Download className="mr-2 w-5 h-5" />
+                      Download
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-10 text-sm text-muted-foreground justify-center pt-6">
+                  <div className="flex items-center gap-2.5 group">
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Why Use PansGPT Section */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl text-foreground">
-              Pharmacy School is intense, we know, so we built <br />
-              <span className="text-primary">PansGPT to make sure you can...</span>
-            </h2>
+        {/* Why Use PansGPT Section */}
+        <section className="py-20 px-6 sm:px-8 lg:px-12">
+          <div className="container mx-auto">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-4xl text-foreground">
+                Pharmacy School is intense, we know, so we built <br />
+                <span className="text-primary">PansGPT to make sure you can...</span>
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
+                <CardContent className="p-8 space-y-4 text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <Zap className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-foreground">Find Answers in Seconds</h3>
+                  <p className="text-muted-foreground">
+                    No more scrolling through 10 giant PDFs to find one definition. Just ask, "What is the mechanism of action for Metformin?" and get the answer instantly.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
+                <CardContent className="p-8 space-y-4 text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <Brain className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-foreground">Actually Learn the Topic</h3>
+                  <p className="text-muted-foreground">
+                    Don't just memorize—understand. Ask "Why does this drug work this way?" and get a simple explanation, based on your lecturer's exact notes.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
+                <CardContent className="p-8 space-y-4 text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <CheckCircle className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-foreground">Test Yourself Before the Exam</h3>
+                  <p className="text-muted-foreground">
+                    Stop guessing what's important. Create quizzes from your notes to find out what you don't know, so you can fix it before the test.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <HowItWorks />
+
+        {/* Features Section */}
+        <section id="features" className="py-20 px-6 sm:px-8 lg:px-12">
+          <div className="container mx-auto max-w-6xl">
+            <div className="text-center space-y-4 mb-20">
+              <h2 className="text-4xl text-foreground">
+                Everything You Need to <span className="text-primary">Study Better</span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Powerful features designed specifically for pharmacy students at University of Jos
+              </p>
+            </div>
+
+            <div className="space-y-32">
+              <FeatureShowcase
+                icon={MessageSquare}
+                title="Chat With Your Notes"
+                description="Ask questions and get answers from your entire curriculum. You can even filter by Lecturer, Course Code, and Year of Study. No more endless scrolling through PDFs—just ask and get instant, accurate answers from your course materials."
+                mockup={<ChatMockup />}
+              />
+
+              <FeatureShowcase
+                icon={ListChecks}
+                title="Smart Quiz Generator"
+                description="Create quizzes that really test your understanding. It asks you questions in different ways (not just definitions) to make sure you're ready. Generate custom quizzes on any topic and identify your weak spots before exam day."
+                mockup={<QuizMockup />}
+                reverse
+              />
+
+              <FeatureShowcase
+                icon={Lightbulb}
+                title="Helpful Quiz Feedback"
+                description="Our quizzes don't just say 'correct' or 'wrong.' They explain why an answer is right, helping you learn from your mistakes. Get detailed explanations with references to your course materials so you truly understand the concepts."
+                mockup={<FeedbackMockup />}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section id="testimonials" className="py-20 bg-card/30 w-full">
+          <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 mb-16">
+            <div className="text-center space-y-4">
+              <h2 className="text-4xl text-foreground">
+                Built by PANSites. <span className="text-primary">Trusted by PANSites.</span>
+              </h2>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
-              <CardContent className="p-8 space-y-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <Zap className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-foreground">Find Answers in Seconds</h3>
-                <p className="text-muted-foreground">
-                  No more scrolling through 10 giant PDFs to find one definition. Just ask, "What is the mechanism of action for Metformin?" and get the answer instantly.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
-              <CardContent className="p-8 space-y-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <Brain className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-foreground">Actually Learn the Topic</h3>
-                <p className="text-muted-foreground">
-                  Don't just memorize—understand. Ask "Why does this drug work this way?" and get a simple explanation, based on your lecturer's exact notes.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300">
-              <CardContent className="p-8 space-y-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <CheckCircle className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-foreground">Test Yourself Before the Exam</h3>
-                <p className="text-muted-foreground">
-                  Stop guessing what's important. Create quizzes from your notes to find out what you don't know, so you can fix it before the test.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <HowItWorks />
-
-      {/* Features Section */}
-      <section id="features" className="py-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center space-y-4 mb-20">
-            <h2 className="text-4xl text-foreground">
-              Everything You Need to <span className="text-primary">Study Better</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed specifically for pharmacy students at University of Jos
-            </p>
-          </div>
-
-          <div className="space-y-32">
-            <FeatureShowcase 
-              icon={MessageSquare}
-              title="Chat With Your Notes"
-              description="Ask questions and get answers from your entire curriculum. You can even filter by Lecturer, Course Code, and Year of Study. No more endless scrolling through PDFs—just ask and get instant, accurate answers from your course materials."
-              mockup={<ChatMockup />}
-            />
-            
-            <FeatureShowcase 
-              icon={ListChecks}
-              title="Smart Quiz Generator"
-              description="Create quizzes that really test your understanding. It asks you questions in different ways (not just definitions) to make sure you're ready. Generate custom quizzes on any topic and identify your weak spots before exam day."
-              mockup={<QuizMockup />}
-              reverse
-            />
-            
-            <FeatureShowcase 
-              icon={Lightbulb}
-              title="Helpful Quiz Feedback"
-              description="Our quizzes don't just say 'correct' or 'wrong.' They explain why an answer is right, helping you learn from your mistakes. Get detailed explanations with references to your course materials so you truly understand the concepts."
-              mockup={<FeedbackMockup />}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-card/30 w-full">
-        <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 mb-16">
-          <div className="text-center space-y-4">
-            <h2 className="text-4xl text-foreground">
-              Built by PANSites. <span className="text-primary">Trusted by PANSites.</span>
-            </h2>
-          </div>
-        </div>
-
-        <div className="w-full">
-          <TestimonialCarousel
+          <div className="w-full">
+            <TestimonialCarousel
               testimonials={[
                 {
                   quote: "What stood out while test running the app was that it gives you concise and wholesome answers according to what you're expected to know. The tests are really helpful in gauging one's preparedness for an actual test or exam and serve as a good pre-test & post-study drill.",
@@ -235,39 +235,39 @@ export default function LandingPage() {
                 }
               ]}
             />
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Final CTA */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-4xl text-center space-y-8">
-          <h2 className="text-5xl text-foreground mb-12">
-            Your Next Exam is Coming. <br />
-            <span className="text-primary">Be Ready for It.</span>
-          </h2>
-          
-         
+        {/* Final CTA */}
+        <section className="py-20 px-6 sm:px-8 lg:px-12">
+          <div className="container mx-auto max-w-4xl text-center space-y-8">
+            <h2 className="text-5xl text-foreground mb-12">
+              Your Next Exam is Coming. <br />
+              <span className="text-primary">Be Ready for It.</span>
+            </h2>
 
-          <Link href="/signup" onClick={() => analytics.trackSignUpClick('final_cta')}>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              Study Smarter
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
 
-      {/* Quote Section */}
-      <section className="py-20 px-6 sm:px-8 lg:px-12">
-        <div className="container mx-auto max-w-4xl text-center">
-          <blockquote className="space-y-4">
-            <p className="text-3xl md:text-4xl text-foreground italic">
-              "Because every PANSite deserves a friend who understands it all."
-            </p>
-            <footer className="text-xl text-primary">— The PansGPT Team</footer>
-          </blockquote>
-      </div>
-      </section>
+
+            <Link href="/signup" onClick={() => analytics.trackSignUpClick('final_cta')}>
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                Study Smarter
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+          </div>
+        </section>
+
+        {/* Quote Section */}
+        <section className="py-20 px-6 sm:px-8 lg:px-12">
+          <div className="container mx-auto max-w-4xl text-center">
+            <blockquote className="space-y-4">
+              <p className="text-3xl md:text-4xl text-foreground italic">
+                "Because every PANSite deserves a friend who understands it all."
+              </p>
+              <footer className="text-xl text-primary">— The PansGPT Team</footer>
+            </blockquote>
+          </div>
+        </section>
 
       </div>
       {/* Footer */}

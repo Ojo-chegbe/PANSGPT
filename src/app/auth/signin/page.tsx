@@ -19,15 +19,15 @@ function SignIn() {
 
   const handleSignIn = async () => {
     try {
-      const result = await signIn("google", { 
-        callbackUrl: "/main",
-        redirect: false 
+      const result = await signIn("google", {
+        callbackUrl: "/study",
+        redirect: false
       });
-      
+
       if (result?.error) {
         console.error("Sign in error:", result.error);
       } else if (result?.ok) {
-        router.push("/main");
+        router.push("/study");
       }
     } catch (error) {
       console.error("Sign in error:", error);
@@ -50,7 +50,7 @@ function SignIn() {
           <h2 className="mt-6 text-3xl font-bold text-gray-900">Sign in to your account</h2>
           {error && (
             <div className="mt-2 text-sm text-red-600">
-              {error === "OAuthCallback" 
+              {error === "OAuthCallback"
                 ? "There was a problem signing in with Google. Please try again."
                 : "An error occurred during sign in. Please try again."}
             </div>

@@ -127,7 +127,9 @@ const MessageList = React.memo(({
               </div>
             ) : (
               <>
-                <MarkdownWithMath content={message.content} role={message.role} />
+                <div className={message.role === 'model' ? 'prose prose-sm dark:prose-invert prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-white prose-a:text-green-600 dark:prose-a:text-green-400 max-w-none' : ''}>
+                  <MarkdownWithMath content={message.content} role={message.role} />
+                </div>
                 {message.role === 'model' && message.hasContext && (
                   <div className="mt-1.5 md:mt-2 text-xs md:text-sm text-gray-600 dark:text-white/70 italic">
                     Information from uploaded documents
@@ -1698,6 +1700,22 @@ function MainPageContent() {
                 <circle cx="21" cy="5" r="1.5" fill="currentColor" />
               </svg>
               {sidebarOpen && <span>New Chat</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Study Mode entry */}
+        <div className={`px-4 ${sidebarOpen ? 'mb-2' : 'mb-2 hidden md:block'}`}>
+          <div className={!sidebarOpen ? 'flex justify-center' : ''}>
+            <button
+              className={`${sidebarOpen ? 'w-full px-4 py-3 rounded-xl flex items-center gap-3' : 'w-12 h-12 rounded-xl flex items-center justify-center'} text-gray-700 dark:text-white text-sm font-medium transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/5`}
+              onClick={() => window.location.href = '/study'}
+              title="Study Mode"
+            >
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="flex-shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+              </svg>
+              {sidebarOpen && <span>Study Mode</span>}
             </button>
           </div>
         </div>

@@ -7,6 +7,7 @@ import { DataAPIClient } from '@datastax/astra-db-ts';
 import { generateEmbeddings } from '@/lib/embedding-service';
 import { prisma } from '@/lib/prisma';
 import { indexDocument } from '@/lib/document-indexing';
+import { parseDocumentContent } from '@/lib/parse-document';
 
 // Using Qwen3-Embedding-0.6B via embedding-service.ts
 
@@ -21,12 +22,12 @@ function sanitizeFilename(filename: string): string {
 
 export async function POST(request: Request) {
   let client: ReturnType<typeof DataAPIClient.prototype.db> | null = null;
-  
+
   // Set a timeout for the entire operation
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => reject(new Error('Upload timeout')), 120000); // 2 minute timeout
   });
-  
+
   const uploadOperation = async () => {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -58,7 +59,7 @@ export async function POST(request: Request) {
       level: formData.get('level') as string || '',
       documentType: 'course' // All uploaded documents are course materials
     };
-    
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
@@ -79,10 +80,10 @@ export async function POST(request: Request) {
 
     if (existingDocument) {
       return NextResponse.json(
-        { 
+        {
           error: 'A document with this filename already exists. Please rename your file or delete the existing document first.',
           existingDocumentId: existingDocument.id
-        }, 
+        },
         { status: 409 } // Conflict status
       );
     }
@@ -107,6 +108,10 @@ export async function POST(request: Request) {
 
     const chunks = await splitter.createDocuments([text]);
 
+    // Parse the document content for Study Mode
+    const structuredContent = parseDocumentContent(text);
+    console.log(`Parsed document into ${structuredContent.totalSections} sections, ${structuredContent.totalParagraphs} paragraphs`);
+
     // Store document metadata in Neon database using Prisma
     const document = await prisma.document.create({
       data: {
@@ -122,7 +127,8 @@ export async function POST(request: Request) {
         uploadedAt: new Date(metadata.uploadedAt),
         level: metadata.level,
         documentType: metadata.documentType,
-        content: text // Store the text content directly
+        content: text, // Store the text content directly
+        structuredContent: structuredContent as any // Parsed structure for Study Mode
       }
     });
 
@@ -156,7 +162,7 @@ export async function POST(request: Request) {
 
       // Store document chunks with proper error handling
       console.log(`Creating ${chunks.length} chunks for document ${documentId}...`);
-      
+
       const chunkPromises = chunks.map(async (chunk, index) => {
         const chunkId = `${documentId}_chunk_${index}`;
         const chunkMetadata = {
@@ -178,7 +184,7 @@ export async function POST(request: Request) {
           console.log(`Generating embedding for chunk ${index + 1}/${chunks.length}...`);
           const embeddings = await generateEmbeddings([chunk.pageContent]);
           const embedding = embeddings[0];
-          
+
           if (!embedding || !Array.isArray(embedding) || embedding.length === 0) {
             throw new Error(`Invalid embedding generated for chunk ${index}`);
           }

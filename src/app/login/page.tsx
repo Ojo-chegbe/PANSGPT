@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { getDeviceId } from "../../lib/device-id";
-import { 
-  EnvelopeIcon, 
-  LockClosedIcon, 
+import {
+  EnvelopeIcon,
+  LockClosedIcon,
   EyeIcon,
   EyeSlashIcon,
   CheckCircleIcon,
@@ -38,7 +38,7 @@ export default function LoginPage() {
     setError("");
     setEmailError(false);
     setPasswordError(false);
-    
+
     // Basic validation
     if (!email) {
       setEmailError(true);
@@ -72,7 +72,7 @@ export default function LoginPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email }),
           });
-          
+
           if (checkResponse.ok) {
             const checkData = await checkResponse.json();
             if (checkData.exists && !checkData.verified) {
@@ -95,7 +95,7 @@ export default function LoginPage() {
       }
 
       // Successful login
-      window.location.href = "/main";
+      window.location.href = "/study";
     } catch (error) {
       setError("An error occurred during login. Please try again.");
     } finally {
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
     setResendLoading(true);
     setResendMessage("");
-    
+
     try {
       const response = await fetch("/api/auth/resend-verification", {
         method: "POST",
@@ -251,11 +251,11 @@ export default function LoginPage() {
                   <span>Please enter your password</span>
                 </div>
               )}
-              
+
               {/* Forgot Password Link */}
               <div className="text-right">
-                <Link 
-                  href="/forgot-password" 
+                <Link
+                  href="/forgot-password"
                   className="text-sm font-medium text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200"
                 >
                   Forgot password?
@@ -287,10 +287,10 @@ export default function LoginPage() {
 
           {/* Signup Link */}
           <div className="mt-8 text-center">
-              <p className="text-gray-600 dark:text-white/70">
+            <p className="text-gray-600 dark:text-white/70">
               Don't have an account?{' '}
-              <Link 
-                href="/signup" 
+              <Link
+                href="/signup"
                 className="font-semibold text-green-600 dark:text-[#00A400] hover:text-green-700 dark:hover:text-[#008300] transition-colors duration-200"
               >
                 Create one here

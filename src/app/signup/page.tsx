@@ -136,7 +136,7 @@ export default function SignupPage() {
       }
 
       // Use window.location for a full page navigation
-      window.location.href = "/main";
+      window.location.href = "/study";
     } catch (error) {
       setError(error instanceof Error ? error.message : "Something went wrong");
     } finally {
@@ -252,8 +252,8 @@ export default function SignupPage() {
               <form onSubmit={handleVerifyOTP} className="space-y-6">
                 {otpError && (
                   <div className={`rounded-xl p-4 flex items-center space-x-3 ${otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
-                      ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30"
-                      : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30"
+                    ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30"
+                    : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-500/30"
                     }`}>
                     {otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success") ? (
                       <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
@@ -261,8 +261,8 @@ export default function SignupPage() {
                       <XMarkIcon className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
                     )}
                     <p className={`text-sm font-medium ${otpError.includes("✓") || otpError.includes("resent") || otpError.includes("success")
-                        ? "text-green-700 dark:text-green-300"
-                        : "text-red-700 dark:text-red-300"
+                      ? "text-green-700 dark:text-green-300"
+                      : "text-red-700 dark:text-red-300"
                       }`}>
                       {otpError}
                     </p>
