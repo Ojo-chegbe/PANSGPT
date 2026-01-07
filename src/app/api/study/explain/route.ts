@@ -8,7 +8,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || '');
 
 // Explain types
-type ExplainType = 'explain' | 'example' | 'define' | 'quiz';
+type ExplainType = 'explain' | 'example' | 'define' | 'quiz' | 'remember';
 
 // System prompts for different explain types
 const SYSTEM_PROMPTS: Record<ExplainType, string> = {
@@ -42,6 +42,15 @@ D) [Option D]
 
 **Correct Answer:** [Letter]
 **Explanation:** [Brief explanation of why this is correct]`,
+
+    remember: `You are a helpful pharmacy tutor. The student wants help remembering the highlighted concept.
+Create a memorable memory aid to help them retain this information.
+- Use mnemonics, acronyms, or catchy phrases when appropriate
+- Create relatable analogies or stories
+- Use visual imagery or associations
+- Make it fun, creative, and easy to recall
+- Keep it concise but memorable
+- If it's a drug name or medical term, help with pronunciation tricks too`,
 };
 
 /**
@@ -72,7 +81,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate explain type
-        if (!['explain', 'example', 'define', 'quiz'].includes(explainType)) {
+        if (!['explain', 'example', 'define', 'quiz', 'remember'].includes(explainType)) {
             return NextResponse.json(
                 { error: 'Invalid explain type' },
                 { status: 400 }

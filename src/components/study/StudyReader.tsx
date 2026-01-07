@@ -92,8 +92,11 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
     const [showTutorial, setShowTutorial] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
+    const mobileScrollRef = useRef<HTMLDivElement>(null);
+    const desktopScrollRef = useRef<HTMLDivElement>(null);
     const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
     const hasFetched = useRef(false);
+    const hasRestoredScroll = useRef(false);
 
     // Check if user has seen the tutorial
     useEffect(() => {
@@ -278,7 +281,67 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
 
     useEffect(() => {
         hasFetched.current = false;
+        hasRestoredScroll.current = false;
     }, [documentId]);
+
+    // Save scroll position on scroll (debounced)
+    const saveScrollPosition = useCallback(() => {
+        const scrollContainer = isMobile ? mobileScrollRef.current : desktopScrollRef.current;
+        if (scrollContainer && documentId) {
+            const scrollTop = scrollContainer.scrollTop;
+            const scrollHeight = scrollContainer.scrollHeight;
+            const clientHeight = scrollContainer.clientHeight;
+            const progress = scrollHeight > clientHeight ? (scrollTop / (scrollHeight - clientHeight)) * 100 : 0;
+
+            localStorage.setItem(`study_scroll_${documentId}`, JSON.stringify({
+                scrollTop,
+                progress: Math.min(100, Math.round(progress)),
+                timestamp: Date.now()
+            }));
+        }
+    }, [documentId, isMobile]);
+
+    // Restore scroll position when content loads
+    useEffect(() => {
+        if (!structuredContent || hasRestoredScroll.current || isLoading) return;
+
+        const savedData = localStorage.getItem(`study_scroll_${documentId}`);
+        if (savedData) {
+            try {
+                const { scrollTop } = JSON.parse(savedData);
+                // Wait for render to complete, then restore scroll
+                setTimeout(() => {
+                    const scrollContainer = isMobile ? mobileScrollRef.current : desktopScrollRef.current;
+                    if (scrollContainer) {
+                        scrollContainer.scrollTop = scrollTop;
+                        hasRestoredScroll.current = true;
+                    }
+                }, 100);
+            } catch (e) {
+                console.error('Failed to restore scroll position:', e);
+            }
+        } else {
+            hasRestoredScroll.current = true;
+        }
+    }, [structuredContent, documentId, isMobile, isLoading]);
+
+    // Attach scroll listener
+    useEffect(() => {
+        const scrollContainer = isMobile ? mobileScrollRef.current : desktopScrollRef.current;
+        if (!scrollContainer) return;
+
+        let timeout: NodeJS.Timeout;
+        const handleScroll = () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(saveScrollPosition, 300); // Debounce saves
+        };
+
+        scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            scrollContainer.removeEventListener('scroll', handleScroll);
+            clearTimeout(timeout);
+        };
+    }, [saveScrollPosition, isMobile, structuredContent]);
 
     // Handle text selection
     const handleTextSelection = useCallback(() => {
@@ -309,9 +372,29 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
             setTimeout(handleTextSelection, 10);
         };
 
+        // Handle touch selection on mobile - use longer delay to let selection complete
+        const handleTouchEnd = () => {
+            setTimeout(handleTextSelection, 300);
+        };
+
+        // Also listen for selection changes (works better on some mobile browsers)
+        const handleSelectionChange = () => {
+            // Only trigger on mobile and with a delay to avoid rapid firing
+            if (isMobile) {
+                setTimeout(handleTextSelection, 100);
+            }
+        };
+
         window.document.addEventListener('mouseup', handleMouseUp);
-        return () => window.document.removeEventListener('mouseup', handleMouseUp);
-    }, [handleTextSelection]);
+        window.document.addEventListener('touchend', handleTouchEnd);
+        document.addEventListener('selectionchange', handleSelectionChange);
+
+        return () => {
+            window.document.removeEventListener('mouseup', handleMouseUp);
+            window.document.removeEventListener('touchend', handleTouchEnd);
+            document.removeEventListener('selectionchange', handleSelectionChange);
+        };
+    }, [handleTextSelection, isMobile]);
 
     // Touch handlers for swipe navigation
     const onTouchStart = (e: TouchEvent) => {
@@ -378,7 +461,9 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
                 ? `Please give me a practical example for this concept: "${selectedText}"`
                 : type === 'define'
                     ? `Please define this term: "${selectedText}"`
-                    : `Please quiz me on this topic: "${selectedText}"`;
+                    : type === 'remember'
+                        ? `Help me remember this concept with a mnemonic or memory aid: "${selectedText}"`
+                        : `Please quiz me on this topic: "${selectedText}"`;
 
         // Set pending query for ChatInterface to process
         setPendingQuery(userMessage);
@@ -697,69 +782,49 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
 
                     {/* Tab Content */}
                     {activeTab === 'study' ? (
-                        <>
-                            {/* Page Content - Fixed height, no scroll */}
-                            <div
-                                className="flex-1 flex flex-col overflow-hidden"
-                                onTouchStart={onTouchStart}
-                                onTouchMove={onTouchMove}
-                                onTouchEnd={onTouchEnd}
-                                onClick={() => setShowControls(!showControls)}
-                            >
-                                <div className="flex-1 px-5 py-4 overflow-hidden">
-                                    <div className="h-full flex flex-col prose prose-sm dark:prose-invert max-w-none">
-                                        {currentPageContent.map((item, index) => renderContentItem(item, index))}
+                        // Mobile Study Content - Normal scrolling view
+                        <div ref={mobileScrollRef} className="flex-1 overflow-y-auto">
+                            <div className="px-4 py-6 prose prose-sm dark:prose-invert max-w-none">
+                                {/* Document Header */}
+                                <div className="mb-6 pb-4 border-b border-gray-200 dark:border-white/10 not-prose">
+                                    <div className="flex items-center gap-2 text-green-600 dark:text-[#00A400] text-xs mb-2">
+                                        <BookOpenIcon className="h-4 w-4" />
+                                        <span>{docData?.courseCode} - {docData?.courseTitle}</span>
                                     </div>
+                                    <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{docData?.title}</h1>
+                                    <p className="text-sm text-gray-500 dark:text-white/50">{docData?.professorName} • {docData?.topic}</p>
+                                </div>
+
+                                {/* Document Sections */}
+                                {structuredContent?.sections.map((section) => (
+                                    <section
+                                        key={section.id}
+                                        ref={(el) => { if (el) sectionRefs.current.set(section.id, el); }}
+                                        className="mb-6"
+                                    >
+                                        <h2 className={`font-semibold text-gray-900 dark:text-white mb-3 ${section.level === 1 ? 'text-lg' : section.level === 2 ? 'text-base' : 'text-sm'
+                                            }`}>
+                                            {section.title.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/__/g, '')}
+                                        </h2>
+                                        {renderSectionContent(section)}
+                                    </section>
+                                ))}
+
+                                {/* Navigation Footer */}
+                                <div className="mt-8 pt-4 border-t border-gray-200 dark:border-white/10 flex justify-between not-prose pb-8">
+                                    {navigation?.prev && (
+                                        <button onClick={() => router.push(`/study/${navigation.prev?.id}`)} className="text-green-600 dark:text-green-400 hover:underline text-sm">
+                                            ← Previous
+                                        </button>
+                                    )}
+                                    {navigation?.next && (
+                                        <button onClick={() => router.push(`/study/${navigation.next?.id}`)} className="text-green-600 dark:text-green-400 hover:underline text-sm ml-auto">
+                                            Next →
+                                        </button>
+                                    )}
                                 </div>
                             </div>
-
-                            {/* Mobile Bottom Nav */}
-                            <nav className={`flex-shrink-0 bg-white dark:[background-color:#0C120C] border-t border-gray-200 dark:border-white/10 transition-all duration-300 safe-area-inset-bottom ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                                }`}>
-                                <div className="flex items-center justify-center h-16 w-full">
-                                    <div className="flex items-center justify-between w-full max-w-sm px-8">
-                                        {/* Prev Button */}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); goToPrevPage(); }}
-                                            disabled={currentPageIndex === 0}
-                                            className="flex flex-col items-center justify-center w-14 h-14 rounded-xl disabled:opacity-30 active:bg-gray-100 dark:active:bg-white/5"
-                                        >
-                                            <ChevronLeftIcon className="h-7 w-7 text-gray-700 dark:text-white" />
-                                            <span className="text-[10px] text-gray-500 dark:text-white/50 mt-0.5">Prev</span>
-                                        </button>
-
-                                        {/* Page Counter */}
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                                                {currentPageIndex + 1}
-                                            </span>
-                                            <span className="text-sm text-gray-400 dark:text-white/40">
-                                                / {totalPages}
-                                            </span>
-                                        </div>
-
-                                        {/* Pages Button */}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setShowPagesModal(true); }}
-                                            className="flex flex-col items-center justify-center w-14 h-14 rounded-xl active:bg-gray-100 dark:active:bg-white/5"
-                                        >
-                                            <ListBulletIcon className="h-7 w-7 text-gray-700 dark:text-white" />
-                                            <span className="text-[10px] text-gray-500 dark:text-white/50 mt-0.5">Pages</span>
-                                        </button>
-
-                                        {/* Next Button */}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); goToNextPage(); }}
-                                            disabled={currentPageIndex >= totalPages - 1}
-                                            className="flex flex-col items-center justify-center w-14 h-14 rounded-xl disabled:opacity-30 active:bg-gray-100 dark:active:bg-white/5"
-                                        >
-                                            <ChevronRightIcon className="h-7 w-7 text-gray-700 dark:text-white" />
-                                            <span className="text-[10px] text-gray-500 dark:text-white/50 mt-0.5">Next</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </nav>
-                        </>
+                        </div>
                     ) : (
                         // Mobile Chat Tab
                         <div className="flex-1 flex flex-col overflow-hidden">
@@ -780,7 +845,7 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
             ) : (
                 // DESKTOP: Scroll view with side panel chat
                 <div className="flex-1 flex overflow-hidden">
-                    <main className="flex-1 overflow-y-auto pt-1">
+                    <main ref={desktopScrollRef} className="flex-1 overflow-y-auto pt-1">
                         <header className="sticky top-1 z-20 bg-white dark:[background-color:#0C120C] border-b border-gray-200 dark:border-white/10">
                             <div className="flex items-center justify-between px-4 py-3">
                                 <div className="flex items-center gap-2">
@@ -954,6 +1019,9 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
                                 </button>
                                 <button onClick={() => handleExplain('example')} disabled={isExplaining} className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white rounded-lg disabled:opacity-50">
                                     {isExplaining && explainType === 'example' ? '...' : 'Example'}
+                                </button>
+                                <button onClick={() => handleExplain('remember')} disabled={isExplaining} className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white rounded-lg disabled:opacity-50">
+                                    {isExplaining && explainType === 'remember' ? '...' : 'Memory Aid'}
                                 </button>
                             </div>
                         </div>
