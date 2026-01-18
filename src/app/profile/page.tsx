@@ -28,7 +28,7 @@ interface TimetableEntry {
 }
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
@@ -158,6 +158,7 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     setSaveMessage(null);
+    const levelChanged = form.level !== user?.level;
     try {
       const res = await fetch('/api/user', {
         method: 'POST',
@@ -170,6 +171,14 @@ export default function ProfilePage() {
         setEditMode(false);
         setSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
         setTimeout(() => setSaveMessage(null), 3000);
+
+        // Refresh the NextAuth session to propagate level change across the app
+        await update();
+
+        // If level changed, refetch timetable with new level
+        if (levelChanged) {
+          fetchTimetable();
+        }
       } else {
         setSaveMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
       }

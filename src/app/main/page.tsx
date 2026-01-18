@@ -298,8 +298,8 @@ const InputArea = React.memo(({
   }, [input]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Submit on Enter without Shift (Shift+Enter for new line)
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Send on Ctrl+Enter or Cmd+Enter (Enter alone adds new line)
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       if (!isLoading && input.trim()) {
         handleSend(e);
@@ -803,7 +803,7 @@ function MainPageContent() {
       if (session?.user?.id) {
         try {
           // Load conversations from database
-          const response = await fetch(`/api/conversations?userId=${session.user.id}&limit=10&messageLimit=50`, {
+          const response = await fetch(`/api/conversations?userId=${session.user.id}&limit=50&messageLimit=50`, {
             credentials: 'include',
           });
           const data = await response.json();
@@ -1010,7 +1010,7 @@ function MainPageContent() {
 
     try {
       // Load existing conversations for the sidebar
-      const conversationsResponse = await fetch(`/api/conversations?userId=${session.user.id}&limit=10&messageLimit=50`, {
+      const conversationsResponse = await fetch(`/api/conversations?userId=${session.user.id}&limit=50&messageLimit=50`, {
         credentials: 'include',
       });
       const conversationsData = await conversationsResponse.json();

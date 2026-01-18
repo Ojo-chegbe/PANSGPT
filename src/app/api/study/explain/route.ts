@@ -97,7 +97,8 @@ export async function POST(request: NextRequest) {
             documentId,
             sectionTitle,
             context,
-            explainType = 'explain'
+            explainType = 'explain',
+            conversationHistory = []
         } = body;
 
         if (!selectedText) {
@@ -138,18 +139,49 @@ Lecturer: ${doc.professorName}`;
             }
         }
 
+        // Build conversation history for context
+        let historyContext = '';
+        if (conversationHistory && conversationHistory.length > 0) {
+            // Take last 6 messages for context (3 exchanges)
+            const recentHistory = conversationHistory.slice(-6);
+            historyContext = '\n\nPrevious conversation:\n' + recentHistory.map((msg: { role: string; content: string }) =>
+                `${msg.role === 'user' ? 'Student' : 'Tutor'}: ${msg.content}`
+            ).join('\n');
+        }
+
+        // Check if this is a follow-up confirmation response (like "yes", "I understand", etc.)
+        const confirmationPatterns = /^(yes|yeah|yep|yup|ok|okay|got it|i understand|i get it|makes sense|thanks|thank you|understood|clear|uh.?huh|sure)$/i;
+        const isConfirmation = confirmationPatterns.test(selectedText.trim());
+
         // Build the prompt
         const systemPrompt = SYSTEM_PROMPTS[explainType as ExplainType];
-        const userPrompt = `
+
+        // Build user prompt based on whether this is a follow-up or new request
+        let userPrompt;
+        if (isConfirmation && conversationHistory.length > 0) {
+            userPrompt = `
+${documentInfo}
+${historyContext}
+
+The student just responded: "${selectedText}"
+
+This appears to be a confirmation that they understand. Please:
+1. Acknowledge their understanding positively
+2. Ask if they have any follow-up questions
+3. Keep your response brief and encouraging`;
+        } else {
+            userPrompt = `
 ${documentInfo}
 
 ${sectionTitle ? `Current Section: ${sectionTitle}` : ''}
 
 ${context ? `Surrounding Context: "${context}"` : ''}
+${historyContext}
 
 Highlighted Text: "${selectedText}"
 
 Please ${explainType === 'quiz' ? 'create a quiz question about' : explainType} this.`;
+        }
 
         // Generate response using Gemini
         const model = genAI.getGenerativeModel({ model: 'gemma-3-27b-it' });

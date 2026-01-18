@@ -9,7 +9,7 @@ import { createDiversityFirstPrompt, createDiversityFirstPromptWithSourceCount, 
 // Helper function to create a simplified prompt for retry attempts
 function createSimplifiedPrompt(config: DiversityPromptConfig, context: string): string {
   const { courseCode, courseTitle, topic, level, numQuestions, questionType, difficulty } = config;
-  
+
   return `You are an expert exam setter for ${courseCode} - ${courseTitle} at ${level} level.
 
 Using the following course material, generate ${numQuestions} questions of type ${questionType}. The difficulty level should be ${difficulty}.
@@ -20,9 +20,10 @@ ${context}
 REQUIREMENTS:
 1. Generate exactly ${numQuestions} questions
 2. Each question should test understanding of the material
-3. Include brief explanations for correct answers
-4. Questions should be relevant to the provided material
-5. Vary your questions - don't ask about the same concept multiple times
+3. Include ELABORATE explanations for correct answers (2-4 sentences that explain WHY the answer is correct, including the underlying concept or principle)
+4. DO NOT reference sources, textbooks, or use phrases like "according to..." in your explanations
+5. Questions should be relevant to the provided material
+6. Vary your questions - don't ask about the same concept multiple times
 
 ${getQuestionTypeInstructions(questionType)}
 
@@ -35,7 +36,7 @@ RESPONSE FORMAT (JSON):
       "options": ["...", ...],
       "correctAnswer": "...",
       "correctAnswers": ["...", ...],
-      "explanation": "...",
+      "explanation": "A thorough, educational explanation (2-4 sentences) that explains WHY the correct answer is right. Include the underlying concept, mechanism, or principle. Write as if teaching a student.",
       "points": 1
     }
   ]
@@ -79,7 +80,7 @@ function validateQuestionsLeniently(questions: GeneratedQuestion[], questionType
   return questions.filter(q => {
     // Basic validation - must have question text
     if (!q.questionText || q.questionText.trim().length < 10) return false;
-    
+
     // Type-specific validation (more lenient)
     if (questionType === 'MCQ') {
       // Normalize AI output fields
@@ -87,21 +88,21 @@ function validateQuestionsLeniently(questions: GeneratedQuestion[], questionType
         try {
           const parsed = JSON.parse((q as any).correctAnswer as any);
           if (Array.isArray(parsed)) q.correctAnswers = parsed as any;
-        } catch {}
+        } catch { }
       }
       if (!q.options || q.options.length !== 5) return false; // Require exactly 5 options
       if (!q.correctAnswers || q.correctAnswers.length !== 3) return false; // Require exactly 3 correct answers
-      
+
       // Clean up options
-      q.options = q.options.map(option => 
+      q.options = q.options.map(option =>
         option.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
       );
-      
+
       // Clean up correct answers
-      q.correctAnswers = q.correctAnswers.map(answer => 
+      q.correctAnswers = q.correctAnswers.map(answer =>
         answer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
       );
-      
+
       // Ensure correct answers are a subset of options
       q.correctAnswers = q.correctAnswers.filter(ans => q.options!.includes(ans));
       if (q.correctAnswers.length !== 3) return false;
@@ -109,34 +110,34 @@ function validateQuestionsLeniently(questions: GeneratedQuestion[], questionType
       q.questionType = 'MCQ';
       return true;
     }
-    
+
     if (questionType === 'OBJECTIVE') {
       if (!q.options || q.options.length !== 4) return false; // Require exactly 4 options
       if (!q.correctAnswer) return false; // Single correct answer
-      
+
       // Clean up options
-      q.options = q.options.map(option => 
+      q.options = q.options.map(option =>
         option.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim()
       );
-      
+
       // Clean up correct answer
       q.correctAnswer = q.correctAnswer.replace(/\s*\(TRUE\)\s*$/i, '').replace(/\s*\(FALSE\)\s*$/i, '').trim();
-      
+
       q.questionType = 'OBJECTIVE';
       return true;
     }
-    
+
     if (questionType === 'TRUE_FALSE') {
       if (!q.correctAnswer || !['true', 'false'].includes(q.correctAnswer.toLowerCase())) return false;
       q.questionType = 'TRUE_FALSE';
       return true;
     }
-    
+
     if (questionType === 'SHORT_ANSWER') {
       q.questionType = 'SHORT_ANSWER';
       return true;
     }
-    
+
     return true; // Accept other types
   });
 }
@@ -199,7 +200,7 @@ export async function POST(req: Request) {
     }
 
     // Search for relevant document chunks
-    const searchQuery = topic 
+    const searchQuery = topic
       ? `${courseCode} ${courseTitle} ${topic}`
       : `${courseCode} ${courseTitle}`;
 
@@ -208,7 +209,7 @@ export async function POST(req: Request) {
     const searchResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/quiz-search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         query: searchQuery,
         filters: {
           courseCode,
@@ -229,33 +230,33 @@ export async function POST(req: Request) {
         // Create diverse context from chunks - RANDOMLY select for maximum diversity
         // Cast a wider net to get more chunks for true diversity
         const contextSize = topic ? 40 : 30;
-        
+
         // Pure random selection by database index - completely randomize chunk selection
         const selectedChunks: any[] = [];
         const totalChunks = chunks.length;
-        
+
         // Create array of all possible indices
         const allIndices = Array.from({ length: totalChunks }, (_, i) => i);
-        
+
         // Shuffle the indices using Fisher-Yates algorithm
         for (let i = allIndices.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
         }
-        
+
         // Take the first contextSize indices (now randomized)
         selectedIndices = allIndices.slice(0, contextSize);
-    
-    // Get chunks by the randomized indices
-    selectedIndices.forEach(index => {
-      selectedChunks.push(chunks[index]);
-    });
-        
+
+        // Get chunks by the randomized indices
+        selectedIndices.forEach(index => {
+          selectedChunks.push(chunks[index]);
+        });
+
         const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
         console.log(`📚 [${timestamp}] Pure random selection: ${selectedChunks.length} chunks from ${totalChunks} available`);
         console.log(`   - Selected indices: [${selectedIndices.join(', ')}]`);
         console.log(`   - Randomization: Fisher-Yates shuffle applied to all ${totalChunks} chunks`);
-        
+
         // Log source information for debugging
         selectedChunks.forEach((chunk: any, index: number) => {
           const source = chunk.metadata?.source || `Source ${index + 1}`;
@@ -263,7 +264,7 @@ export async function POST(req: Request) {
           const similarity = chunk.similarity || 'N/A';
           console.log(`📖 Random Source ${index + 1}: ${source} (${content.length} chars, similarity: ${similarity})`);
         });
-        
+
         // Create context that emphasizes diversity of sources
         context = `DIVERSE COURSE MATERIAL SOURCES:\n\n` +
           selectedChunks
@@ -273,9 +274,9 @@ export async function POST(req: Request) {
               return `--- SOURCE ${index + 1}: ${source} ---\n${content}`;
             })
             .join('\n\n--- END SOURCE ---\n\n');
-            
+
         console.log(`📝 Context created with ${selectedChunks.length} distinct sources (${context.length} total chars)`);
-        
+
         // Update the prompt to use the actual number of sources available
         const actualSourceCount = selectedChunks.length;
       }
@@ -299,14 +300,14 @@ export async function POST(req: Request) {
       difficulty,
       timeLimit
     };
-    
+
     // Use random index diversity prompt to force different sources
     let diversityPrompt: string;
     try {
       const actualSourceCount = context.split('--- SOURCE').length - 1;
       console.log(`🎯 Using random index diversity prompt with ${actualSourceCount} sources for ${numQuestions} questions`);
       console.log(`📊 Selected database indices: [${selectedIndices.join(', ')}]`);
-      
+
       // If we have selected indices, use the random index prompt, otherwise fall back to aggressive
       if (selectedIndices.length > 0) {
         diversityPrompt = createRandomIndexDiversityPrompt(promptConfig, context, selectedIndices);
@@ -318,15 +319,15 @@ export async function POST(req: Request) {
       console.log('Falling back to simple prompt generation');
       diversityPrompt = createSimplifiedPrompt(promptConfig, context);
     }
-    
+
     // Generate questions with retry logic and fallback
     let allGeneratedQuestions: GeneratedQuestion[] = [];
     const MAX_ATTEMPTS = 3;
     let attempt = 0;
-    
+
     while (allGeneratedQuestions.length < numQuestions && attempt < MAX_ATTEMPTS) {
       attempt++;
-      
+
       // Use simpler prompt for retry attempts
       const promptToUse = attempt === 1 ? diversityPrompt : createSimplifiedPrompt(promptConfig, context);
 
@@ -334,14 +335,14 @@ export async function POST(req: Request) {
         { role: "system", content: promptToUse },
         { role: "user", content: `Generate ${numQuestions} questions based on the material. Attempt ${attempt}.` }
       ];
-      
+
       const aiResponse = await generateChatResponse(GOOGLE_API_KEY, messagesForAI, {
         maxOutputTokens: 4096,
         temperature: 0.8 + (attempt * 0.1), // Increase temperature with each attempt
         topK: 40,
         topP: 0.95,
       });
-      
+
       let batchQuestions: GeneratedQuestion[] = [];
       try {
         const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
@@ -357,52 +358,52 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error(`Error parsing AI response on attempt ${attempt}:`, error);
       }
-      
+
       // More lenient validation - accept questions even if they don't meet all criteria
       const validatedQuestions = validateQuestionsLeniently(batchQuestions, questionType);
       allGeneratedQuestions = [...allGeneratedQuestions, ...validatedQuestions];
-      
+
       // Remove duplicates
-      allGeneratedQuestions = allGeneratedQuestions.filter((question, index, self) => 
+      allGeneratedQuestions = allGeneratedQuestions.filter((question, index, self) =>
         index === self.findIndex(q => q.questionText === question.questionText)
       );
-      
+
       // Check source diversity and reject if not diverse enough
       const sourcesUsed = validatedQuestions.map(q => (q as any).sourceUsed).filter(Boolean);
       const uniqueSources = [...new Set(sourcesUsed)];
       const diversityRatio = uniqueSources.length / validatedQuestions.length;
-      
+
       console.log(`Attempt ${attempt}: Generated ${validatedQuestions.length} questions, Total: ${allGeneratedQuestions.length}`);
       console.log(`📊 Sources used: ${uniqueSources.length} unique sources (${sourcesUsed.join(', ')})`);
       console.log(`📈 Source diversity ratio: ${(diversityRatio * 100).toFixed(1)}%`);
-      
+
       // If diversity is too low, reject this batch and try again
       if (validatedQuestions.length > 1 && diversityRatio < 0.9) {
         console.log(`❌ Low source diversity (${(diversityRatio * 100).toFixed(1)}%), rejecting batch and retrying...`);
         continue; // Skip this batch and try again
       }
-      
+
       // If we have questions but they're all from the same source, reject
       if (validatedQuestions.length > 1 && uniqueSources.length === 1) {
         console.log(`❌ All questions from same source (${uniqueSources[0]}), rejecting batch and retrying...`);
         continue; // Skip this batch and try again
       }
     }
-    
+
     // Take what we have, even if less than requested
     const generatedQuestions = allGeneratedQuestions.slice(0, numQuestions);
-    
+
     // Final diversity check
     const finalSourcesUsed = generatedQuestions.map(q => (q as any).sourceUsed).filter(Boolean);
     const finalUniqueSources = [...new Set(finalSourcesUsed)];
     const finalDiversityRatio = finalUniqueSources.length / generatedQuestions.length;
-    
+
     console.log(`🎯 Final quiz diversity: ${finalUniqueSources.length} unique sources out of ${generatedQuestions.length} questions (${(finalDiversityRatio * 100).toFixed(1)}%)`);
     console.log(`📊 Final sources used: ${finalUniqueSources.join(', ')}`);
-    
+
     // If we have at least some questions, proceed; otherwise return error
     if (generatedQuestions.length === 0) {
-        return NextResponse.json({
+      return NextResponse.json({
         error: `Could not generate any valid questions. Please try with a different topic or course.`
       }, { status: 500 });
     }
@@ -435,7 +436,7 @@ export async function POST(req: Request) {
                 optionsLength: q.options?.length || 0
               });
             }
-            
+
             return {
               questionText: q.questionText,
               questionType: q.questionType,

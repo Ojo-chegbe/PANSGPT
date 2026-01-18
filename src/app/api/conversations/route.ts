@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
-    const limit = parseInt(searchParams.get("limit") || "10"); // Limit conversations
+    const limit = parseInt(searchParams.get("limit") || "50"); // Limit conversations
     const messageLimit = parseInt(searchParams.get("messageLimit") || "50"); // Limit messages per conversation
 
     if (!userId) {
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
       userId: session?.user?.id,
       email: session?.user?.email
     });
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
       id: data.id,
       title: data.title
     });
-    
+
     // Allow creating conversations with no messages (for new conversations)
     // Only require messages when updating existing conversations
     if (data.id && (!data.messages || data.messages.length === 0)) {

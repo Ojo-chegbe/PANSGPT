@@ -91,6 +91,9 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
     // Onboarding tutorial popup
     const [showTutorial, setShowTutorial] = useState(false);
 
+    // Scroll-based progress (works for both mobile and desktop scroll views)
+    const [scrollProgress, setScrollProgress] = useState(0);
+
     const contentRef = useRef<HTMLDivElement>(null);
     const mobileScrollRef = useRef<HTMLDivElement>(null);
     const desktopScrollRef = useRef<HTMLDivElement>(null);
@@ -119,14 +122,25 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
         setShowTutorial(true);
     };
 
-    // Detect mobile viewport
+    // Detect mobile viewport - account for landscape orientation
+    // Mobile in landscape has width > 768 but height is typically < 500
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            // Consider mobile if:
+            // 1. Width is less than 768 (portrait mode)
+            // 2. OR height is less than 500 and width < 1024 (landscape on phone/small tablet)
+            const isMobileDevice = width < 768 || (height < 500 && width < 1024);
+            setIsMobile(isMobileDevice);
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
+        window.addEventListener('orientationchange', checkMobile);
+        return () => {
+            window.removeEventListener('resize', checkMobile);
+            window.removeEventListener('orientationchange', checkMobile);
+        };
     }, []);
 
     // Generate paginated content for mobile - split content to fill pages
@@ -284,7 +298,21 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
         hasRestoredScroll.current = false;
     }, [documentId]);
 
-    // Save scroll position on scroll (debounced)
+    // Calculate scroll progress (called on every scroll for immediate UI update)
+    const updateScrollProgress = useCallback(() => {
+        const scrollContainer = isMobile ? mobileScrollRef.current : desktopScrollRef.current;
+        if (scrollContainer) {
+            const scrollTop = scrollContainer.scrollTop;
+            const scrollHeight = scrollContainer.scrollHeight;
+            const clientHeight = scrollContainer.clientHeight;
+            const progress = scrollHeight > clientHeight ? (scrollTop / (scrollHeight - clientHeight)) * 100 : 0;
+            setScrollProgress(Math.min(100, Math.round(progress)));
+            return progress;
+        }
+        return 0;
+    }, [isMobile]);
+
+    // Save scroll position to localStorage (debounced)
     const saveScrollPosition = useCallback(() => {
         const scrollContainer = isMobile ? mobileScrollRef.current : desktopScrollRef.current;
         if (scrollContainer && documentId) {
@@ -325,23 +353,26 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
         }
     }, [structuredContent, documentId, isMobile, isLoading]);
 
-    // Attach scroll listener
+    // Attach scroll listener - update progress immediately, debounce localStorage save
     useEffect(() => {
         const scrollContainer = isMobile ? mobileScrollRef.current : desktopScrollRef.current;
         if (!scrollContainer) return;
 
-        let timeout: NodeJS.Timeout;
+        let saveTimeout: NodeJS.Timeout;
         const handleScroll = () => {
-            clearTimeout(timeout);
-            timeout = setTimeout(saveScrollPosition, 300); // Debounce saves
+            // Update progress bar immediately (no debounce)
+            updateScrollProgress();
+            // Debounce localStorage save
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveScrollPosition, 300);
         };
 
         scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
         return () => {
             scrollContainer.removeEventListener('scroll', handleScroll);
-            clearTimeout(timeout);
+            clearTimeout(saveTimeout);
         };
-    }, [saveScrollPosition, isMobile, structuredContent]);
+    }, [saveScrollPosition, updateScrollProgress, isMobile, structuredContent]);
 
     // Handle text selection
     const handleTextSelection = useCallback(() => {
@@ -515,8 +546,9 @@ export default function StudyReader({ documentId }: StudyReaderProps) {
         setSelectedText('');
     };
 
-    // Reading progress
-    const readingProgress = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
+    // Reading progress - use scroll-based progress for both views
+    // For mobile in page mode, use page index; for scroll views, use scroll progress
+    const readingProgress = scrollProgress > 0 ? scrollProgress : (totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0);
 
     // Loading state
     if (status === 'loading' || isLoading) {

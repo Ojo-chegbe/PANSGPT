@@ -119,7 +119,7 @@ export default function ChatInterface({
                 const titlePattern = `Study: ${docTitle}`;
 
                 // Fetch conversations that match this document
-                const response = await fetch(`/api/conversations?userId=${session.user.id}&limit=20&messageLimit=50`, {
+                const response = await fetch(`/api/conversations?userId=${session.user.id}&limit=50&messageLimit=50`, {
                     credentials: 'include',
                 });
 
@@ -144,12 +144,18 @@ export default function ChatInterface({
                         const mostRecent = studyConvs[0];
                         const conv = conversations.find((c: any) => c.id === mostRecent.id);
                         if (conv?.messages?.length > 0) {
-                            const loadedMessages = conv.messages.map((msg: any) => ({
-                                role: msg.role as 'user' | 'model' | 'system',
-                                content: msg.content,
-                                createdAt: msg.createdAt,
-                                citations: msg.citations || undefined
-                            }));
+                            const loadedMessages = conv.messages
+                                .map((msg: any) => ({
+                                    role: msg.role as 'user' | 'model' | 'system',
+                                    content: msg.content,
+                                    createdAt: msg.createdAt,
+                                    citations: msg.citations || undefined
+                                }))
+                                // Sort by createdAt to ensure correct chronological order
+                                .sort((a: { createdAt?: string }, b: { createdAt?: string }) => {
+                                    if (!a.createdAt || !b.createdAt) return 0;
+                                    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                                });
                             setMessages(loadedMessages);
                             setConversationId(conv.id);
                             console.log('Loaded study conversation:', conv.id, 'with', loadedMessages.length, 'messages');
@@ -230,12 +236,18 @@ export default function ChatInterface({
             if (response.ok) {
                 const data = await response.json();
                 const conv = data.conversation;
-                const loadedMessages = conv.messages.map((msg: any) => ({
-                    role: msg.role as 'user' | 'model' | 'system',
-                    content: msg.content,
-                    createdAt: msg.createdAt,
-                    citations: msg.citations || undefined
-                }));
+                const loadedMessages = conv.messages
+                    .map((msg: any) => ({
+                        role: msg.role as 'user' | 'model' | 'system',
+                        content: msg.content,
+                        createdAt: msg.createdAt,
+                        citations: msg.citations || undefined
+                    }))
+                    // Sort by createdAt to ensure correct chronological order
+                    .sort((a: { createdAt?: string }, b: { createdAt?: string }) => {
+                        if (!a.createdAt || !b.createdAt) return 0;
+                        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                    });
                 setMessages(loadedMessages);
                 setConversationId(conv.id);
                 setShowHistory(false);
@@ -553,7 +565,8 @@ export default function ChatInterface({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        // Send on Ctrl+Enter or Cmd+Enter (Enter alone adds new line)
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
             handleSend(e);
         }
@@ -614,8 +627,8 @@ export default function ChatInterface({
                                     key={conv.id}
                                     onClick={() => loadConversation(conv.id)}
                                     className={`w-full text-left p-3 rounded-lg transition-colors ${conversationId === conv.id
-                                            ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                                            : 'bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10'
+                                        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                                        : 'bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10'
                                         }`}
                                 >
                                     <div className="text-sm font-medium text-gray-900 dark:text-white truncate">

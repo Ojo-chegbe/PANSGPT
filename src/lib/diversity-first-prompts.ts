@@ -119,14 +119,14 @@ export function generateDiverseQuestionProfiles(
   difficulty: 'easy' | 'medium' | 'hard'
 ): QuestionDiversityProfile[] {
   const profiles: QuestionDiversityProfile[] = [];
-  
+
   // Define distribution based on difficulty
   const bloomDistribution = getBloomDistribution(difficulty);
   const cognitiveLoadDistribution = getCognitiveLoadDistribution(difficulty);
   const questionStyleDistribution = getQuestionStyleDistribution();
   const vocabularyDistribution = getVocabularyDistribution(difficulty);
   const contextTypeDistribution = getContextTypeDistribution();
-  
+
   for (let i = 0; i < numQuestions; i++) {
     const profile: QuestionDiversityProfile = {
       bloomLevel: selectWeightedRandom(BLOOM_TAXONOMY_LEVELS, bloomDistribution),
@@ -135,10 +135,10 @@ export function generateDiverseQuestionProfiles(
       vocabularyLevel: selectWeightedRandom(['basic', 'intermediate', 'advanced'], vocabularyDistribution),
       contextType: selectWeightedRandom(['definition', 'example', 'application', 'scenario'], contextTypeDistribution)
     };
-    
+
     profiles.push(profile);
   }
-  
+
   return profiles;
 }
 
@@ -148,9 +148,9 @@ export function createDiversityFirstPrompt(
   questionProfiles: QuestionDiversityProfile[]
 ): string {
   const { courseCode, courseTitle, topic, level, numQuestions, questionType, difficulty } = config;
-  
+
   const topicContext = topic ? ` focusing specifically on ${topic}` : '';
-  
+
   return `You are an expert exam setter for ${courseCode} - ${courseTitle} at ${level} level.
 
 Using the following DIVERSE course material sources${topicContext}, generate exactly ${numQuestions} diverse questions that test different aspects of the material.
@@ -198,16 +198,23 @@ RESPONSE FORMAT (JSON):
       "options": ["...", ...], // Only for MCQ/OBJECTIVE
       "correctAnswer": "...", // for OBJECTIVE, TRUE_FALSE
       "correctAnswers": ["...", ...], // for MCQ (array of 3 true options)
-      "explanation": "...",
+      "explanation": "A thorough, educational explanation (2-4 sentences) that explains WHY the correct answer is right, including the underlying concept, mechanism, or principle. DO NOT mention sources, textbooks, or 'according to...' - just explain the concept clearly.",
       "points": 1,
     }
   ]
 }
 
+EXPLANATION REQUIREMENTS:
+1. Each explanation MUST be 2-4 sentences long and educational
+2. Explain the underlying concept, principle, or mechanism - not just "this is correct because the book says so"
+3. DO NOT reference sources, textbooks, materials, or use phrases like "according to source X" or "as stated in the material"
+4. Write explanations as if teaching a student who got the question wrong
+5. Include relevant context that helps understanding
+
 CRITICAL INSTRUCTIONS:
 1. Each question MUST use a different source (SOURCE 1, SOURCE 2, SOURCE 3, etc.)
 2. Do NOT use the same source for multiple questions
-3. DO NOT mention sources in question text (no "according to source X" or similar references)
+3. DO NOT mention sources in question text, options, OR explanations
 4. Return ONLY valid JSON, no extra text, no comments, and no trailing commas.
 
 EXAMPLE:
@@ -223,9 +230,9 @@ export function createDiversityFirstPromptWithSourceCount(
   actualSourceCount: number
 ): string {
   const { courseCode, courseTitle, topic, level, numQuestions, questionType, difficulty } = config;
-  
+
   const topicContext = topic ? ` focusing specifically on ${topic}` : '';
-  
+
   return `You are an expert exam setter for ${courseCode} - ${courseTitle} at ${level} level.
 
 Using the following DIVERSE course material sources${topicContext}, generate exactly ${numQuestions} diverse questions that test different aspects of the material.
@@ -282,16 +289,23 @@ RESPONSE FORMAT (JSON):
       "options": ["...", ...], // Only for MCQ/OBJECTIVE
       "correctAnswer": "...", // for OBJECTIVE, TRUE_FALSE
       "correctAnswers": ["...", ...], // for MCQ (array of 3 true options)
-      "explanation": "...",
+      "explanation": "A thorough, educational explanation (2-4 sentences) that explains WHY the correct answer is right, including the underlying concept, mechanism, or principle. DO NOT mention sources, textbooks, or 'according to...' - just explain the concept clearly.",
       "points": 1,
     }
   ]
 }
 
+EXPLANATION REQUIREMENTS:
+1. Each explanation MUST be 2-4 sentences long and educational
+2. Explain the underlying concept, principle, or mechanism - not just "this is correct because the book says so"
+3. DO NOT reference sources, textbooks, materials, or use phrases like "according to source X" or "as stated in the material"
+4. Write explanations as if teaching a student who got the question wrong
+5. Include relevant context that helps understanding
+
 CRITICAL INSTRUCTIONS:
 1. Each question MUST use a different source (SOURCE 1, SOURCE 2, SOURCE 3, etc.)
 2. Do NOT use the same source for multiple questions
-3. DO NOT mention sources in question text (no "according to source X" or similar references)
+3. DO NOT mention sources in question text, options, OR explanations
 4. Return ONLY valid JSON, no extra text, no comments, and no trailing commas.
 
 EXAMPLE:
@@ -389,14 +403,14 @@ function getContextTypeDistribution(): number[] {
 function selectWeightedRandom<T>(items: T[], weights: number[]): T {
   const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
   let random = Math.random() * totalWeight;
-  
+
   for (let i = 0; i < items.length; i++) {
     random -= weights[i];
     if (random <= 0) {
       return items[i];
     }
   }
-  
+
   return items[items.length - 1];
 }
 
@@ -404,27 +418,27 @@ function generateSourceAssignmentInstructions(numQuestions: number): string {
   // Assume we have up to 15 sources (typical context size)
   const maxSources = 15;
   const actualSources = Math.min(numQuestions, maxSources);
-  
+
   if (numQuestions <= maxSources) {
     // If we have enough sources, assign each question to a different source
-    return Array.from({ length: numQuestions }, (_, i) => 
+    return Array.from({ length: numQuestions }, (_, i) =>
       `- Question ${i + 1}: Use SOURCE ${i + 1}`
     ).join('\n');
   } else {
     // If we need more questions than sources, create a smart cycling pattern
     const instructions: string[] = [];
-    
+
     for (let i = 0; i < numQuestions; i++) {
       const sourceNumber = (i % maxSources) + 1;
       const cycleNumber = Math.floor(i / maxSources) + 1;
-      
+
       if (cycleNumber === 1) {
         instructions.push(`- Question ${i + 1}: Use SOURCE ${sourceNumber}`);
       } else {
         instructions.push(`- Question ${i + 1}: Use SOURCE ${sourceNumber} (cycle ${cycleNumber})`);
       }
     }
-    
+
     return instructions.join('\n') + `\n\nNote: You have ${numQuestions} questions but only ${maxSources} sources. Cycle through sources intelligently to ensure variety.`;
   }
 }
@@ -432,24 +446,24 @@ function generateSourceAssignmentInstructions(numQuestions: number): string {
 function generateSourceAssignmentInstructionsWithCount(numQuestions: number, actualSourceCount: number): string {
   if (numQuestions <= actualSourceCount) {
     // If we have enough sources, assign each question to a different source
-    return Array.from({ length: numQuestions }, (_, i) => 
+    return Array.from({ length: numQuestions }, (_, i) =>
       `- Question ${i + 1}: Use SOURCE ${i + 1}`
     ).join('\n');
   } else {
     // If we need more questions than sources, create a smart cycling pattern
     const instructions: string[] = [];
-    
+
     for (let i = 0; i < numQuestions; i++) {
       const sourceNumber = (i % actualSourceCount) + 1;
       const cycleNumber = Math.floor(i / actualSourceCount) + 1;
-      
+
       if (cycleNumber === 1) {
         instructions.push(`- Question ${i + 1}: Use SOURCE ${sourceNumber}`);
       } else {
         instructions.push(`- Question ${i + 1}: Use SOURCE ${sourceNumber} (cycle ${cycleNumber})`);
       }
     }
-    
+
     return instructions.join('\n') + `\n\nNote: You have ${numQuestions} questions but only ${actualSourceCount} sources. Cycle through sources intelligently to ensure variety.`;
   }
 }
@@ -460,9 +474,9 @@ export function createAggressiveDiversityPrompt(
   actualSourceCount: number
 ): string {
   const { courseCode, courseTitle, topic, level, numQuestions, questionType, difficulty } = config;
-  
+
   const topicContext = topic ? ` focusing specifically on ${topic}` : '';
-  
+
   return `You are an expert exam setter for ${courseCode} - ${courseTitle} at ${level} level.
 
 CRITICAL INSTRUCTION: You MUST generate exactly ${numQuestions} questions using the ${actualSourceCount} sources provided below. Each question MUST use a different source in the exact order specified.
@@ -472,19 +486,19 @@ ${context}
 
 MANDATORY SOURCE ASSIGNMENT (NON-NEGOTIABLE):
 ${(() => {
-  // Create array of available source numbers and shuffle them
-  const availableSources = Array.from({ length: actualSourceCount }, (_, i) => i + 1);
-  for (let i = availableSources.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [availableSources[i], availableSources[j]] = [availableSources[j], availableSources[i]];
-  }
-  
-  // Assign shuffled sources to questions
-  return Array.from({ length: numQuestions }, (_, i) => {
-    const sourceNumber = availableSources[i % availableSources.length];
-    return `- Question ${i + 1}: MUST use SOURCE ${sourceNumber} - find "--- SOURCE ${sourceNumber}:" in the material above`;
-  }).join('\n');
-})()}
+      // Create array of available source numbers and shuffle them
+      const availableSources = Array.from({ length: actualSourceCount }, (_, i) => i + 1);
+      for (let i = availableSources.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availableSources[i], availableSources[j]] = [availableSources[j], availableSources[i]];
+      }
+
+      // Assign shuffled sources to questions
+      return Array.from({ length: numQuestions }, (_, i) => {
+        const sourceNumber = availableSources[i % availableSources.length];
+        return `- Question ${i + 1}: MUST use SOURCE ${sourceNumber} - find "--- SOURCE ${sourceNumber}:" in the material above`;
+      }).join('\n');
+    })()}
 
 STRICT RULES:
 1. Each question MUST reference content from its assigned source ONLY
@@ -504,12 +518,18 @@ RESPONSE FORMAT (JSON):
       "options": ["...", ...],
       "correctAnswer": "...",
       "correctAnswers": ["...", ...],
-      "explanation": "...",
+      "explanation": "A thorough, educational explanation (2-4 sentences) that explains WHY the correct answer is right. Include the underlying concept, mechanism, or principle. DO NOT mention sources or textbooks.",
       "points": 1,
       "sourceUsed": "SOURCE X"
     }
   ]
 }
+
+EXPLANATION REQUIREMENTS:
+1. Each explanation MUST be 2-4 sentences long and educational
+2. Explain the underlying concept, principle, or mechanism
+3. DO NOT reference sources, textbooks, or use phrases like "according to..." or "as stated in..."
+4. Write explanations as if teaching a student who got the question wrong
 
 WARNING: If you use the same source for multiple questions, your response will be rejected. Each question must use its assigned source.`;
 }
@@ -520,9 +540,9 @@ export function createRandomIndexDiversityPrompt(
   selectedIndices: number[]
 ): string {
   const { courseCode, courseTitle, topic, level, numQuestions, questionType, difficulty } = config;
-  
+
   const topicContext = topic ? ` focusing specifically on ${topic}` : '';
-  
+
   return `You are an expert exam setter for ${courseCode} - ${courseTitle} at ${level} level.
 
 CRITICAL INSTRUCTION: You MUST generate exactly ${numQuestions} questions using the randomly selected sources below. Each question MUST use a different source in the exact order specified.
@@ -532,20 +552,20 @@ ${context}
 
 MANDATORY SOURCE ASSIGNMENT (RANDOM ORDER):
 ${(() => {
-  // Create array of available source numbers and shuffle them
-  const availableSources = Array.from({ length: selectedIndices.length }, (_, i) => i + 1);
-  for (let i = availableSources.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [availableSources[i], availableSources[j]] = [availableSources[j], availableSources[i]];
-  }
-  
-  // Assign shuffled sources to questions
-  return Array.from({ length: numQuestions }, (_, i) => {
-    const sourceNumber = availableSources[i % availableSources.length];
-    const dbIndex = selectedIndices[sourceNumber - 1] || 0;
-    return `- Question ${i + 1}: MUST use SOURCE ${sourceNumber} (Database Index: ${dbIndex}) - find "--- SOURCE ${sourceNumber}:" in the material above`;
-  }).join('\n');
-})()}
+      // Create array of available source numbers and shuffle them
+      const availableSources = Array.from({ length: selectedIndices.length }, (_, i) => i + 1);
+      for (let i = availableSources.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availableSources[i], availableSources[j]] = [availableSources[j], availableSources[i]];
+      }
+
+      // Assign shuffled sources to questions
+      return Array.from({ length: numQuestions }, (_, i) => {
+        const sourceNumber = availableSources[i % availableSources.length];
+        const dbIndex = selectedIndices[sourceNumber - 1] || 0;
+        return `- Question ${i + 1}: MUST use SOURCE ${sourceNumber} (Database Index: ${dbIndex}) - find "--- SOURCE ${sourceNumber}:" in the material above`;
+      }).join('\n');
+    })()}
 
 STRICT RULES:
 1. Each question MUST reference content from its assigned source ONLY
@@ -565,12 +585,18 @@ RESPONSE FORMAT (JSON):
       "options": ["...", ...],
       "correctAnswer": "...",
       "correctAnswers": ["...", ...],
-      "explanation": "...",
+      "explanation": "A thorough, educational explanation (2-4 sentences) that explains WHY the correct answer is right. Include the underlying concept, mechanism, or principle. DO NOT mention sources or textbooks.",
       "points": 1,
       "sourceUsed": "SOURCE X"
     }
   ]
 }
+
+EXPLANATION REQUIREMENTS:
+1. Each explanation MUST be 2-4 sentences long and educational
+2. Explain the underlying concept, principle, or mechanism
+3. DO NOT reference sources, textbooks, or use phrases like "according to..." or "as stated in..."
+4. Write explanations as if teaching a student who got the question wrong
 
 WARNING: If you use the same source for multiple questions, your response will be rejected. Each question must use its assigned source.`;
 }

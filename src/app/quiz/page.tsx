@@ -10,9 +10,18 @@ export default function QuizPage() {
       {/* Header */}
       <div className="border-b bg-white dark:bg-transparent border-gray-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          {/* Back Button */}
-          <div className="mb-4">
+          {/* Navigation Row */}
+          <div className="flex items-center justify-between mb-4">
             <BackButton href="/main" label="Back to Chat" />
+            <a
+              href="/quiz/history"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-[#00A400] border border-green-200 dark:border-green-600/30"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Quiz History
+            </a>
           </div>
           <div className="flex justify-center">
             <div className="text-center">
