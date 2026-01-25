@@ -5,11 +5,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
 import { motion } from "framer-motion";
-import { 
-  Download, 
-  Smartphone, 
-  CheckCircle, 
-  Clock, 
+import {
+  Download,
+  Smartphone,
+  CheckCircle,
+  Clock,
   Shield,
   Zap,
   BookOpen,
@@ -40,7 +40,7 @@ export default function DownloadPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
-            <motion.div 
+            <motion.div
               className="space-y-6"
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -56,8 +56,8 @@ export default function DownloadPage() {
                   Download Available Now
                 </Badge>
               </motion.div>
-              
-              <motion.h1 
+
+              <motion.h1
                 className="text-5xl lg:text-6xl text-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -65,8 +65,8 @@ export default function DownloadPage() {
               >
                 Get PANSGPT on Your Phone
               </motion.h1>
-              
-              <motion.p 
+
+              <motion.p
                 className="text-xl text-muted-foreground"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -75,19 +75,19 @@ export default function DownloadPage() {
                 Study smarter with PANSGPT right in your pocket. Access your personalized pharmacy tutor anytime, anywhere.
               </motion.p>
 
-              <motion.div 
+              <motion.div
                 className="flex flex-col sm:flex-row gap-4 pt-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   asChild
                 >
-                  <a 
-                    href="/apk/pansgpt.apk" 
+                  <a
+                    href="/apk/pansgpt.apk"
                     download
                     onClick={() => analytics.trackDownloadClick('hero_section')}
                   >
@@ -95,8 +95,8 @@ export default function DownloadPage() {
                     Download for Android
                   </a>
                 </Button>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
                   asChild
                 >
@@ -108,7 +108,7 @@ export default function DownloadPage() {
               </motion.div>
 
               {/* Trust Indicators */}
-              <motion.div 
+              <motion.div
                 className="flex flex-wrap gap-6 pt-6 border-t border-border"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -130,7 +130,7 @@ export default function DownloadPage() {
             </motion.div>
 
             {/* Visual Mockup */}
-            <motion.div 
+            <motion.div
               className="relative"
               initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -139,7 +139,7 @@ export default function DownloadPage() {
               <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full animate-pulse"></div>
               <div className="relative">
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1691256676376-357c3aa66c89?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydHBob25lJTIwbW9ja3VwJTIwaGFuZHxlbnwxfHx8fDE3NjIxMTE4MzJ8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                  src="https://res.cloudinary.com/djqcs2ngt/image/upload/v1769331612/PG_pm3hhr.png"
                   alt="PANSGPT App Mockup"
                   className="w-full h-auto rounded-2xl"
                 />
@@ -152,7 +152,7 @@ export default function DownloadPage() {
       {/* Why Download Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -215,7 +215,7 @@ export default function DownloadPage() {
       {/* Download for Android Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12">
         <div className="max-w-6xl mx-auto">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -268,19 +268,19 @@ export default function DownloadPage() {
           </div>
 
           {/* Download Button */}
-          <motion.div 
+          <motion.div
             className="text-center"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-12"
               asChild
             >
-              <a 
-                href="/apk/pansgpt.apk" 
+              <a
+                href="/apk/pansgpt.apk"
                 download
                 onClick={() => analytics.trackDownloadClick('download_section')}
               >
@@ -294,7 +294,7 @@ export default function DownloadPage() {
           </motion.div>
 
           {/* Security Note */}
-          <motion.div 
+          <motion.div
             className="mt-12"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -307,7 +307,7 @@ export default function DownloadPage() {
                   <div>
                     <h4 className="text-foreground mb-2">Safe & Secure Download</h4>
                     <p className="text-muted-foreground text-sm">
-                      Our APK is digitally signed and verified. If your device shows a security warning about "unknown sources," 
+                      Our APK is digitally signed and verified. If your device shows a security warning about "unknown sources,"
                       it's normal — just go to your settings and allow installation from this source. PANSGPT is completely safe and built specifically for University of Jos Pharmacy students.
                     </p>
                   </div>
@@ -321,7 +321,7 @@ export default function DownloadPage() {
       {/* How to Add to Home Screen (iOS) */}
       <section id="ios-instructions" className="py-20 px-6 sm:px-8 lg:px-12 scroll-mt-20">
         <div className="max-w-6xl mx-auto">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -336,7 +336,7 @@ export default function DownloadPage() {
           </motion.div>
 
           {/* Visual Guide */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -376,14 +376,14 @@ export default function DownloadPage() {
       {/* Final CTA Section */}
       <section className="py-20 px-6 sm:px-8 lg:px-12 bg-gradient-to-br from-primary/10 via-background to-background border-y border-border">
         <div className="max-w-6xl mx-auto text-center">
-          <motion.div 
+          <motion.div
             className="mb-8"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <motion.div 
+            <motion.div
               className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-6"
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -399,19 +399,19 @@ export default function DownloadPage() {
           </motion.div>
 
           {/* CTA Buttons */}
-          <motion.div 
+          <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
               asChild
             >
-              <a 
-                href="/apk/pansgpt.apk" 
+              <a
+                href="/apk/pansgpt.apk"
                 download
                 onClick={() => analytics.trackDownloadClick('final_cta')}
               >
@@ -419,9 +419,9 @@ export default function DownloadPage() {
                 Download for Android
               </a>
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
+            <Button
+              size="lg"
+              variant="outline"
               className="border-border hover:bg-muted"
               asChild
             >

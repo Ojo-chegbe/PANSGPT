@@ -4,6 +4,22 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+// Helper function to normalize level format for matching
+function normalizeLevelForMatching(level: string): string[] {
+  // Extract the numeric part (e.g., "400" from "400 Level" or just "400")
+  const match = level.match(/(\d+)/);
+  if (!match) return [level];
+
+  const numericLevel = match[1];
+  // Return possible formats to match against
+  return [
+    level,                           // Original format (e.g., "400 Level")
+    numericLevel,                   // Just the number (e.g., "400")
+    `${numericLevel} Level`,       // With " Level" suffix
+    `${numericLevel}L`,            // With "L" suffix
+  ];
+}
+
 export async function GET() {
   try {
     // Get user session to filter by level
@@ -22,12 +38,15 @@ export async function GET() {
       return NextResponse.json({ error: "User level not found" }, { status: 404 });
     }
 
+    // Get possible level formats to match
+    const possibleLevels = normalizeLevelForMatching(user.level);
+
     const client = await getClient();
     const documentsCollection = await client.createCollection('documents');
-    
-    // Filter documents by user's level
-    const docs = await documentsCollection.find({ 
-      level: user.level 
+
+    // Filter documents by any matching level format
+    const docs = await documentsCollection.find({
+      level: { $in: possibleLevels }
     }).toArray();
 
     // Get unique courses for the user's level

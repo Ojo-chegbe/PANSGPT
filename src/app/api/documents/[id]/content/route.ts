@@ -43,17 +43,32 @@ export async function GET(
             return NextResponse.json({ error: 'Document not found' }, { status: 404 });
         }
 
+        // Helper function to normalize level format for matching
+        const normalizeLevelForMatching = (level: string): string[] => {
+            const match = level.match(/(\d+)/);
+            if (!match) return [level];
+            const numericLevel = match[1];
+            return [level, numericLevel, `${numericLevel} Level`, `${numericLevel}L`];
+        };
+
         // Check if user's level matches document level (if level-restricted)
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
             select: { level: true },
         });
 
-        if (document.level && user?.level && document.level !== user.level) {
-            return NextResponse.json(
-                { error: 'This document is not available for your level' },
-                { status: 403 }
-            );
+        // Use normalized matching for level comparison
+        if (document.level && user?.level) {
+            const userLevels = normalizeLevelForMatching(user.level);
+            const docLevels = normalizeLevelForMatching(document.level);
+            const hasMatch = userLevels.some(ul => docLevels.includes(ul));
+
+            if (!hasMatch) {
+                return NextResponse.json(
+                    { error: 'This document is not available for your level' },
+                    { status: 403 }
+                );
+            }
         }
 
         // If structured content doesn't exist, generate it lazily

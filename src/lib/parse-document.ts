@@ -150,8 +150,14 @@ function normalizeText(text: string): string {
         .replace(/\r/g, '\n')
         .replace(/\t/g, '  ')    // Replace tabs with spaces
         .replace(/\n{3,}/g, '\n\n')  // Max 2 consecutive newlines
+        // Strip AI-generated prefixes/headers from image analysis
+        .replace(/^\*\*Image Analysis:\*\*.*$/gm, '')  // **Image Analysis:** headers
+        .replace(/^Image Analysis:.*$/gm, '')  // Image Analysis: headers
+        .replace(/^## (Analysis of|Transcribed Content).*$/gm, '')  // ## Analysis headers
+        .replace(/^### (Transcription|Image Content).*$/gm, '')  // ### sub-headers
         .trim();
 }
+
 
 /**
  * Check if a line is likely a page number or header/footer to ignore

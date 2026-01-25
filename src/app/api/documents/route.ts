@@ -4,24 +4,48 @@ import { authOptions } from "@/lib/auth";
 import { getClient } from "@/lib/db";
 import { prisma } from "@/lib/prisma";
 
+// Helper function to normalize level format for matching
+function normalizeLevelForMatching(level: string): string[] {
+  // Extract the numeric part (e.g., "400" from "400 Level" or just "400")
+  const match = level.match(/(\d+)/);
+  if (!match) return [level];
+
+  const numericLevel = match[1];
+  // Return possible formats to match against
+  return [
+    level,                           // Original format (e.g., "400 Level")
+    numericLevel,                   // Just the number (e.g., "400")
+    `${numericLevel} Level`,       // With " Level" suffix
+    `${numericLevel}L`,            // With "L" suffix
+  ];
+}
+
 export async function GET() {
   try {
     // Get user session to filter by level
     const session = await getServerSession(authOptions);
 
+    // Get user's level if logged in
+    let userLevel: string | null = null;
+    if (session?.user?.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { level: true }
+      });
+      userLevel = user?.level || null;
+    }
+
+    // Get possible level formats to match
+    const possibleLevels = userLevel ? normalizeLevelForMatching(userLevel) : [];
+
     // Fetch from Prisma (Neon) for complete data including IDs
     const documents = await prisma.document.findMany({
-      where: session?.user?.id ? {
+      where: userLevel ? {
         // Filter by user's level if available
         OR: [
           { level: null },
           { level: '' },
-          ...(session.user.id ? [{
-            level: (await prisma.user.findUnique({
-              where: { id: session.user.id },
-              select: { level: true }
-            }))?.level || undefined
-          }] : [])
+          { level: { in: possibleLevels } }
         ]
       } : undefined,
       select: {
@@ -61,6 +85,13 @@ export async function DELETE(req: NextRequest) {
 
     // Delete from Neon database (PostgreSQL) first
     try {
+      // First, delete related DocumentAccess records to satisfy foreign key constraint
+      await prisma.documentAccess.deleteMany({
+        where: { documentId: document_id }
+      });
+      console.log(`DocumentAccess records for ${document_id} deleted from Neon database`);
+
+      // Now delete the document
       await prisma.document.delete({
         where: { id: document_id }
       });

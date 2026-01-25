@@ -13,7 +13,8 @@ import {
   ListChecks,
   Lightbulb,
   ArrowRight,
-  Download
+  Download,
+  BookOpen
 } from "lucide-react";
 import Navigation from "@/components/landing/Navigation";
 import Footer from "@/components/landing/Footer";
@@ -22,6 +23,7 @@ import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { ChatMockup } from "@/components/landing/ChatMockup";
 import { QuizMockup } from "@/components/landing/QuizMockup";
 import { FeedbackMockup } from "@/components/landing/FeedbackMockup";
+import { StudyModeMockup } from "@/components/landing/StudyModeMockup";
 import { TestimonialCarousel } from "@/components/landing/TestimonialCarousel";
 import Link from "next/link";
 import { analytics } from "@/lib/analytics";
@@ -178,11 +180,18 @@ export default function LandingPage() {
               />
 
               <FeatureShowcase
+                icon={BookOpen}
+                title="Study Mode - Read Smarter"
+                description="Read your lecture notes in a clean, distraction-free reader. Highlight any text and instantly get AI-powered explanations or memory aids. Navigate through content with ease, track your progress, and access your class timetable—all in one place."
+                mockup={<StudyModeMockup />}
+                reverse
+              />
+
+              <FeatureShowcase
                 icon={ListChecks}
                 title="Smart Quiz Generator"
                 description="Create quizzes that really test your understanding. It asks you questions in different ways (not just definitions) to make sure you're ready. Generate custom quizzes on any topic and identify your weak spots before exam day."
                 mockup={<QuizMockup />}
-                reverse
               />
 
               <FeatureShowcase
@@ -190,6 +199,7 @@ export default function LandingPage() {
                 title="Helpful Quiz Feedback"
                 description="Our quizzes don't just say 'correct' or 'wrong.' They explain why an answer is right, helping you learn from your mistakes. Get detailed explanations with references to your course materials so you truly understand the concepts."
                 mockup={<FeedbackMockup />}
+                reverse
               />
             </div>
           </div>
