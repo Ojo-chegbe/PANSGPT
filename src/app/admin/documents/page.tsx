@@ -88,19 +88,25 @@ export default function AdminDocumentsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Admin Document Management</h1>
         <div className="space-x-4">
-          <a 
-            href="/admin/uptime" 
+          <a
+            href="/admin/access-control"
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm"
+          >
+            Access Control
+          </a>
+          <a
+            href="/admin/uptime"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
           >
             Uptime Monitoring
           </a>
         </div>
       </div>
-      
+
       <div className="mb-8 p-4 bg-green-50 rounded-lg border border-green-200">
         <h2 className="text-lg font-semibold text-blue-800 mb-2">Upload New Document</h2>
         <p className="text-sm text-blue-600 mb-4">
-          To upload a document with full metadata (course code, lecturer name, etc.), please use the 
+          To upload a document with full metadata (course code, lecturer name, etc.), please use the
           <a href="/admin/documents/upload" className="text-blue-800 underline font-medium ml-1">
             Advanced Upload Form
           </a>
@@ -122,10 +128,10 @@ export default function AdminDocumentsPage() {
           {documents.map(doc => (
             <li key={doc._id} className="flex items-center justify-between border-b py-2">
               <div>
-                <a 
-                  href={doc.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-blue-700 underline"
                   onClick={() => handleDocumentClick(doc._id)}
                 >

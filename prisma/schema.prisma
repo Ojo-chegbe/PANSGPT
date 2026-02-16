@@ -275,3 +275,19 @@ model PendingSignup {
   @@index([otp])
   @@index([otpExpires])
 }
+
+model AccessRestriction {
+  id          String   @id @default(cuid())
+  levels      String[] // e.g., ["300", "400"] or ["all"]
+  reason      String   // e.g., "Pharmacology Exam"
+  startTime   DateTime
+  endTime     DateTime
+  isActive    Boolean  @default(true)
+  createdBy   String   // Admin user ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([startTime])
+  @@index([endTime])
+  @@index([isActive])
+}
